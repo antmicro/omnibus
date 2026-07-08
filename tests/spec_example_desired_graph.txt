@@ -1,0 +1,35 @@
+digraph MyInterconnect {
+	rankdir=LR
+	axi_cpu
+	axi_cpu -> "sb_cpu.cpu"
+	axi_dbg
+	axi_dbg -> "sb_cpu.dbg"
+	axi_mem
+	apb_uart
+	apb_i2c
+	"sb_cpu.mem" -> axi_mem
+	"sb_cpu.lpp" -> "sb_lpp.up"
+	"sb_lpp.uart" -> apb_uart
+	"sb_lpp.i2c" -> apb_i2c
+	subgraph "cluster_crossbar sb_cpu" {
+		label="crossbar sb_cpu"
+		color=lightgrey style=dashed
+		"sb_cpu.cpu"
+		"sb_cpu.cpu" -> "sb_cpu.mem"
+		"sb_cpu.cpu" -> "sb_cpu.lpp"
+		"sb_cpu.dbg"
+		"sb_cpu.dbg" -> "sb_cpu.mem"
+		"sb_cpu.dbg" -> "sb_cpu.lpp"
+		"sb_cpu.mem"
+		"sb_cpu.lpp"
+	}
+	subgraph "cluster_crossbar sb_lpp" {
+		label="crossbar sb_lpp"
+		color=lightgrey style=dashed
+		"sb_lpp.up"
+		"sb_lpp.up" -> "sb_lpp.uart"
+		"sb_lpp.up" -> "sb_lpp.i2c"
+		"sb_lpp.uart"
+		"sb_lpp.i2c"
+	}
+}

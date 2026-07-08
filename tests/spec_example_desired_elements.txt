@@ -1,0 +1,58 @@
+### PORTS ###
+== PORT axi_cpu toplevel ==
+{'type': 'AXI4', 'clock': 'clk_cpu', 'role': 'subordinate'}
+- edge to sb_cpu.cpu -
+None
+== PORT axi_dbg toplevel ==
+{'type': 'AXI4', 'clock': 'clk_bus', 'role': 'subordinate'}
+- edge to sb_cpu.dbg -
+None
+== PORT axi_mem toplevel ==
+{'type': 'AXI4', 'clock': 'clk_bus', 'role': 'manager'}
+== PORT apb_uart toplevel ==
+{'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}
+== PORT apb_i2c toplevel ==
+{'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}
+== PORT sb_cpu.cpu crossbar sb_cpu ==
+{'role': 'subordinate'}
+- edge to sb_cpu.mem -
+{}
+- edge to sb_cpu.lpp -
+{}
+== PORT sb_cpu.dbg crossbar sb_cpu ==
+{'role': 'subordinate'}
+- edge to sb_cpu.mem -
+{}
+- edge to sb_cpu.lpp -
+{}
+== PORT sb_cpu.mem crossbar sb_cpu ==
+{'role': 'manager'}
+- edge to axi_mem -
+{'registers': 1}
+== PORT sb_cpu.lpp crossbar sb_cpu ==
+{'role': 'manager'}
+- edge to sb_lpp.up -
+None
+== PORT sb_lpp.up crossbar sb_lpp ==
+{'role': 'subordinate'}
+- edge to sb_lpp.uart -
+{}
+- edge to sb_lpp.i2c -
+{}
+== PORT sb_lpp.uart crossbar sb_lpp ==
+{'role': 'manager'}
+- edge to apb_uart -
+None
+== PORT sb_lpp.i2c crossbar sb_lpp ==
+{'role': 'manager'}
+- edge to apb_i2c -
+None
+### COMPONENTS ###
+== COMP sb_cpu crossbar
+{'clock': 'clk_bus', 'ports': {'cpu': {'role': 'subordinate'}, 'dbg': {'role': 'subordinate'}, 'mem': {'role': 'manager'}, 'lpp': {'role': 'manager'}}}
+['sb_cpu.cpu', 'sb_cpu.dbg', 'sb_cpu.mem', 'sb_cpu.lpp']
+== COMP sb_lpp crossbar
+{'clock': 'clk_lpp', 'ports': {'up': {'role': 'subordinate'}, 'uart': {'role': 'manager'}, 'i2c': {'role': 'manager'}}}
+['sb_lpp.up', 'sb_lpp.uart', 'sb_lpp.i2c']
+### ADDR MAPS ###
+{'memory': {'to': 'axi_mem', 'base': 0, 'size': 536870912}, 'uart': {'from': 'axi_cpu', 'to': 'apb_uart', 'base': 1073741824, 'size': 4096}, 'i2c': {'from': ['axi_cpu', 'axi_dbg'], 'to': 'apb_i2c', 'base': 1073745920, 'size': 4096}}

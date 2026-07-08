@@ -1,0 +1,84 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+name: MyInterconnect
+version: 0.85a
+
+clocks:
+  clk_bus:
+    frequency: 100e6
+  clk_cpu:
+    frequency: 1GHz
+  clk_lpp:
+    frequency: 25M
+
+ports:
+  axi_cpu:
+    type:  AXI4
+    clock: clk_cpu
+    role:  "subordinate"
+  axi_dbg:
+    type:  AXI4
+    clock: clk_bus
+    role:  "subordinate"
+  axi_mem:
+    type:  AXI4
+    clock: clk_bus
+    role:  "manager"
+  apb_uart:
+    type:  APB
+    clock: clk_lpp
+    role:  "manager"
+  apb_i2c:
+    type:  APB
+    clock: clk_lpp
+    role:  "manager"
+
+crossbars:
+  sb_cpu:
+    clock: clk_bus
+    ports:
+      cpu:
+        role: "subordinate"
+      dbg:
+        role: "subordinate"
+      mem:
+        role: "manager"
+      lpp:
+        role: "manager"
+  sb_lpp:    
+    clock: clk_lpp
+    ports:
+      up:
+        role: "subordinate"
+      uart:
+        role: "manager"
+      i2c:
+        role: "manager"
+
+connections:
+  "axi_cpu -> sb_cpu.cpu":
+  "axi_dbg -> sb_cpu.dbg":
+  "sb_cpu.mem -> axi_mem":
+    "registers": 1 # Insert a skid buffer to help timing closure
+  "sb_cpu.lpp -> sb_lpp.up":
+  "sb_lpp.uart -> apb_uart":
+  "sb_lpp.i2c -> apb_i2c":
+
+address_map:
+  "memory": # All ports can access axi_mem
+    to:    axi_mem
+    base:  0x00000000
+    size:  0x20000000
+  "uart":  # Only CPU can access UART
+    from:  axi_cpu
+    to:    apb_uart
+    base:  0x40000000
+    size:  0x00001000
+  "i2c":   # Explicitly axi_cpu and axi_dbg can access apb_i2c
+    from:  ["axi_cpu", "axi_dbg"]
+    to:    apb_i2c
+    base:  0x40001000
+    size:  0x00001000

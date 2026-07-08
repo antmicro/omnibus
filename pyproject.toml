@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="omnibus"
+version = "0.0.0"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies=[
+    "topwrap @ git+https://github.com/antmicro/topwrap@8ada28df663bc3329ba13e8df430c0a2703c232b"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "rich"]
+
+[project.scripts]
+omnibus = "omnibus.main:main"
