@@ -1,1 +1,1 @@
-from .interconnect import Interconnect
+from .interconnect import Interconnect as Interconnect

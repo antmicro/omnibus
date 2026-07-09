@@ -11,8 +11,8 @@ digraph MyInterconnect {
 	"sb_cpu.lpp" -> "sb_lpp.up"
 	"sb_lpp.uart" -> apb_uart
 	"sb_lpp.i2c" -> apb_i2c
-	subgraph "cluster_crossbar sb_cpu" {
-		label="crossbar sb_cpu"
+	subgraph "cluster sb_cpu" {
+		label=sb_cpu
 		color=lightgrey style=dashed
 		"sb_cpu.cpu"
 		"sb_cpu.cpu" -> "sb_cpu.mem"
@@ -23,8 +23,8 @@ digraph MyInterconnect {
 		"sb_cpu.mem"
 		"sb_cpu.lpp"
 	}
-	subgraph "cluster_crossbar sb_lpp" {
-		label="crossbar sb_lpp"
+	subgraph "cluster sb_lpp" {
+		label=sb_lpp
 		color=lightgrey style=dashed
 		"sb_lpp.up"
 		"sb_lpp.up" -> "sb_lpp.uart"

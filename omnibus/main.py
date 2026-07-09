@@ -12,6 +12,7 @@ def main():
     args = argsparser.parse_args()
 
     ic = Interconnect(args.file)
+    ic.find_routing_paths()
 
     if args.debug:
         if args.debug[0] == "parse":
