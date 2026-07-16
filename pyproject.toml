@@ -9,6 +9,8 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies=[
+    "pyyaml", 
+    "graphviz",
     "topwrap @ git+https://github.com/antmicro/topwrap@8ada28df663bc3329ba13e8df430c0a2703c232b"]
 
 [project.optional-dependencies]
@@ -18,3 +20,6 @@ test = [
 
 [project.scripts]
 omnibus = "omnibus.main:main"
+
+[tool.setuptools.packages.find]
+include=["omnibus*"]

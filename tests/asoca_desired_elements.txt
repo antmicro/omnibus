@@ -1,0 +1,171 @@
+### PORTS ###
+== PORT veer_el2_ifu parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 64, 'clock': 'clk_slow'}
+- edge to main_veer_el2_ifu -
+{}
+== PORT veer_el2_lsu parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 64, 'clock': 'clk_slow'}
+- edge to main_veer_el2_lsu -
+{}
+== PORT veer_eh2_ifu parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 64, 'clock': 'clk_fast'}
+- edge to main_veer_eh2_ifu -
+{}
+== PORT veer_eh2_lsu parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 64, 'clock': 'clk_fast'}
+- edge to main_veer_eh2_lsu -
+{}
+== PORT fast_vdma parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 64, 'clock': 'clk_fast'}
+- edge to main_fast_vdma -
+{}
+== PORT fast_vdma_csr parent: None ==
+{'type': 'axi4 lite', 'role': 'manager', 'data_width': 32, 'clock': 'clk_fast'}
+== PORT timers_csr parent: None ==
+{'type': 'apb3', 'role': 'manager', 'data_width': 64, 'clock': 'clk_slow'}
+== PORT coral_npu_out parent: None ==
+{'type': 'axi4', 'role': 'manager', 'data_width': 128, 'clock': 'clk_fast'}
+== PORT coral_npu_in parent: None ==
+{'type': 'axi4', 'role': 'subordinate', 'data_width': 128, 'clock': 'clk_fast'}
+- edge to main_coral_npu_in -
+{}
+== PORT i3c_controller parent: None ==
+{'type': 'axi4', 'role': 'manager', 'data_width': 64, 'clock': 'clk_slow'}
+== PORT i3c_target parent: None ==
+{'type': 'axi4', 'role': 'manager', 'data_width': 64, 'clock': 'clk_slow'}
+== PORT uart_csr parent: None ==
+{'type': 'ahb3', 'role': 'manager', 'data_width': 64, 'clock': 'clk_ahb'}
+== PORT main_veer_el2_ifu parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_el2_lsu parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_eh2_ifu parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_eh2_lsu parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_fast_vdma parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_coral_npu_in parent: main ==
+{'role': 'subordinate'}
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_fast_vdma_csr parent: main ==
+{'role': 'manager'}
+- edge to fast_vdma_csr -
+{}
+== PORT main_timers_csr parent: main ==
+{'role': 'manager'}
+- edge to timers_csr -
+{}
+== PORT main_coral_npu_out parent: main ==
+{'role': 'manager'}
+- edge to coral_npu_out -
+{}
+== PORT main_i3c_controller parent: main ==
+{'role': 'manager'}
+- edge to i3c_controller -
+{}
+== PORT main_i3c_target parent: main ==
+{'role': 'manager'}
+- edge to i3c_target -
+{}
+== PORT main_uart_csr parent: main ==
+{'role': 'manager'}
+- edge to uart_csr -
+{}
+### COMPONENTS ###
+== COMP main crossbar
+{'clock': 'clk_fast', 'ports': {'veer_el2_ifu': {'role': 'subordinate'}, 'veer_el2_lsu': {'role': 'subordinate'}, 'veer_eh2_ifu': {'role': 'subordinate'}, 'veer_eh2_lsu': {'role': 'subordinate'}, 'fast_vdma': {'role': 'subordinate'}, 'coral_npu_in': {'role': 'subordinate'}, 'fast_vdma_csr': {'role': 'manager'}, 'timers_csr': {'role': 'manager'}, 'coral_npu_out': {'role': 'manager'}, 'i3c_controller': {'role': 'manager'}, 'i3c_target': {'role': 'manager'}, 'uart_csr': {'role': 'manager'}}}
+['main_veer_el2_ifu', 'main_veer_el2_lsu', 'main_veer_eh2_ifu', 'main_veer_eh2_lsu', 'main_fast_vdma', 'main_coral_npu_in', 'main_fast_vdma_csr', 'main_timers_csr', 'main_coral_npu_out', 'main_i3c_controller', 'main_i3c_target', 'main_uart_csr']
+### ADDR MAPS ###
+== INTERCONNECT ==
+{'i3c_target_csr': {'to': 'i3c_target', 'base': 1073741824, 'size': 65535}, 'i3c_controller_csr': {'to': 'i3c_controller', 'base': 1073807360, 'size': 65535}, 'uart_csr': {'to': 'uart_csr', 'base': 1073872896, 'size': 65535}, 'timers_csr': {'to': 'timers_csr', 'base': 1073938432, 'size': 65535}, 'fastvdma_csr': {'to': 'fast_vdma_csr', 'base': 1342177280, 'size': 65535}, 'coral_npu_out': {'to': 'coral_npu_out', 'base': 1610612736, 'size': 268435455}}
+== CROSSBAR main==
+--
+_ main_coral_npu_out
+0x60000000 0xfffffff
+--
+_ main_fast_vdma_csr
+0x50000000 0xffff
+--
+_ main_i3c_controller
+0x40010000 0xffff
+--
+_ main_i3c_target
+0x40000000 0xffff
+--
+_ main_timers_csr
+0x40030000 0xffff
+--
+_ main_uart_csr
+0x40020000 0xffff

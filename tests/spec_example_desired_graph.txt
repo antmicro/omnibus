@@ -1,35 +1,35 @@
 digraph MyInterconnect {
 	rankdir=LR
 	axi_cpu
-	axi_cpu -> "sb_cpu.cpu"
+	axi_cpu -> sb_cpu_cpu
 	axi_dbg
-	axi_dbg -> "sb_cpu.dbg"
+	axi_dbg -> sb_cpu_dbg
 	axi_mem
 	apb_uart
 	apb_i2c
-	"sb_cpu.mem" -> axi_mem
-	"sb_cpu.lpp" -> "sb_lpp.up"
-	"sb_lpp.uart" -> apb_uart
-	"sb_lpp.i2c" -> apb_i2c
+	sb_cpu_mem -> axi_mem
+	sb_cpu_lpp -> sb_lpp_up
+	sb_lpp_uart -> apb_uart
+	sb_lpp_i2c -> apb_i2c
 	subgraph "cluster sb_cpu" {
 		label=sb_cpu
 		color=lightgrey style=dashed
-		"sb_cpu.cpu"
-		"sb_cpu.cpu" -> "sb_cpu.mem"
-		"sb_cpu.cpu" -> "sb_cpu.lpp"
-		"sb_cpu.dbg"
-		"sb_cpu.dbg" -> "sb_cpu.mem"
-		"sb_cpu.dbg" -> "sb_cpu.lpp"
-		"sb_cpu.mem"
-		"sb_cpu.lpp"
+		sb_cpu_cpu
+		sb_cpu_cpu -> sb_cpu_mem
+		sb_cpu_cpu -> sb_cpu_lpp
+		sb_cpu_dbg
+		sb_cpu_dbg -> sb_cpu_mem
+		sb_cpu_dbg -> sb_cpu_lpp
+		sb_cpu_mem
+		sb_cpu_lpp
 	}
 	subgraph "cluster sb_lpp" {
 		label=sb_lpp
 		color=lightgrey style=dashed
-		"sb_lpp.up"
-		"sb_lpp.up" -> "sb_lpp.uart"
-		"sb_lpp.up" -> "sb_lpp.i2c"
-		"sb_lpp.uart"
-		"sb_lpp.i2c"
+		sb_lpp_up
+		sb_lpp_up -> sb_lpp_uart
+		sb_lpp_up -> sb_lpp_i2c
+		sb_lpp_uart
+		sb_lpp_i2c
 	}
 }

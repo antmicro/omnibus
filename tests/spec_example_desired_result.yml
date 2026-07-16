@@ -1,0 +1,37 @@
+connections:
+  interfaces:
+    sb_cpu:
+      sb_cpu_cpu: axi_cpu
+      sb_cpu_dbg: axi_dbg
+      sb_cpu_lpp:
+      - sb_lpp
+      - sb_lpp_up
+      sb_cpu_mem: axi_mem
+    sb_lpp:
+      sb_lpp_i2c: apb_i2c
+      sb_lpp_uart: apb_uart
+  ports:
+    sb_cpu:
+      clk_i: clk_bus
+    sb_lpp:
+      clk_i: clk_lpp
+external:
+  interfaces:
+    in:
+    - axi_cpu
+    - axi_dbg
+    out:
+    - axi_mem
+    - apb_uart
+    - apb_i2c
+  ports:
+    in:
+    - clk_bus
+    - clk_cpu
+    - clk_lpp
+ips:
+  sb_cpu:
+    file: file:./out/modules/cores/sb_cpu/module.yaml
+  sb_lpp:
+    file: file:./out/modules/cores/sb_lpp/module.yaml
+name: MyInterconnect

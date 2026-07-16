@@ -1,82 +1,74 @@
+ERROR: it is not possible yet to have address map rules that are different based on source id, rule to sb_cpu_lpp has different paths from axi_cpu and axi_dbg
 ### PORTS ###
 == PORT axi_cpu parent: None ==
 {'type': 'AXI4', 'clock': 'clk_cpu', 'role': 'subordinate'}
-- edge to sb_cpu.cpu -
-None
+- edge to sb_cpu_cpu -
+{}
 == PORT axi_dbg parent: None ==
 {'type': 'AXI4', 'clock': 'clk_bus', 'role': 'subordinate'}
-- edge to sb_cpu.dbg -
-None
+- edge to sb_cpu_dbg -
+{}
 == PORT axi_mem parent: None ==
 {'type': 'AXI4', 'clock': 'clk_bus', 'role': 'manager'}
 == PORT apb_uart parent: None ==
 {'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}
 == PORT apb_i2c parent: None ==
 {'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}
-== PORT sb_cpu.cpu parent: sb_cpu ==
+== PORT sb_cpu_cpu parent: sb_cpu ==
 {'role': 'subordinate'}
-- edge to sb_cpu.mem -
+- edge to sb_cpu_mem -
 {}
-- edge to sb_cpu.lpp -
+- edge to sb_cpu_lpp -
 {}
-== PORT sb_cpu.dbg parent: sb_cpu ==
+== PORT sb_cpu_dbg parent: sb_cpu ==
 {'role': 'subordinate'}
-- edge to sb_cpu.mem -
+- edge to sb_cpu_mem -
 {}
-- edge to sb_cpu.lpp -
+- edge to sb_cpu_lpp -
 {}
-== PORT sb_cpu.mem parent: sb_cpu ==
+== PORT sb_cpu_mem parent: sb_cpu ==
 {'role': 'manager'}
 - edge to axi_mem -
 {'registers': 1}
-== PORT sb_cpu.lpp parent: sb_cpu ==
+== PORT sb_cpu_lpp parent: sb_cpu ==
 {'role': 'manager'}
-- edge to sb_lpp.up -
-None
-== PORT sb_lpp.up parent: sb_lpp ==
+- edge to sb_lpp_up -
+{}
+== PORT sb_lpp_up parent: sb_lpp ==
 {'role': 'subordinate'}
-- edge to sb_lpp.uart -
+- edge to sb_lpp_uart -
 {}
-- edge to sb_lpp.i2c -
+- edge to sb_lpp_i2c -
 {}
-== PORT sb_lpp.uart parent: sb_lpp ==
+== PORT sb_lpp_uart parent: sb_lpp ==
 {'role': 'manager'}
 - edge to apb_uart -
-None
-== PORT sb_lpp.i2c parent: sb_lpp ==
+{}
+== PORT sb_lpp_i2c parent: sb_lpp ==
 {'role': 'manager'}
 - edge to apb_i2c -
-None
+{}
 ### COMPONENTS ###
 == COMP sb_cpu crossbar
 {'clock': 'clk_bus', 'ports': {'cpu': {'role': 'subordinate'}, 'dbg': {'role': 'subordinate'}, 'mem': {'role': 'manager'}, 'lpp': {'role': 'manager'}}}
-['sb_cpu.cpu', 'sb_cpu.dbg', 'sb_cpu.mem', 'sb_cpu.lpp']
+['sb_cpu_cpu', 'sb_cpu_dbg', 'sb_cpu_mem', 'sb_cpu_lpp']
 == COMP sb_lpp crossbar
 {'clock': 'clk_lpp', 'ports': {'up': {'role': 'subordinate'}, 'uart': {'role': 'manager'}, 'i2c': {'role': 'manager'}}}
-['sb_lpp.up', 'sb_lpp.uart', 'sb_lpp.i2c']
+['sb_lpp_up', 'sb_lpp_uart', 'sb_lpp_i2c']
 ### ADDR MAPS ###
 == INTERCONNECT ==
 {'memory': {'to': 'axi_mem', 'base': 0, 'size': 536870912}, 'uart': {'from': 'axi_cpu', 'to': 'apb_uart', 'base': 1073741824, 'size': 4096}, 'i2c': {'from': ['axi_cpu', 'axi_dbg'], 'to': 'apb_i2c', 'base': 1073745920, 'size': 4096}}
 == CROSSBAR sb_cpu==
 --
-axi_cpu sb_cpu.lpp
+_ sb_cpu_lpp
 0x40000000 0x2000
 --
-axi_cpu sb_cpu.mem
-0x0 0x20000000
---
-axi_dbg sb_cpu.lpp
-0x40001000 0x1000
---
-axi_dbg sb_cpu.mem
+_ sb_cpu_mem
 0x0 0x20000000
 == CROSSBAR sb_lpp==
 --
-axi_cpu sb_lpp.i2c
+_ sb_lpp_i2c
 0x40001000 0x1000
 --
-axi_cpu sb_lpp.uart
+_ sb_lpp_uart
 0x40000000 0x1000
---
-axi_dbg sb_lpp.i2c
-0x40001000 0x1000

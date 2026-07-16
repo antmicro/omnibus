@@ -1,0 +1,43 @@
+connections:
+  interfaces:
+    main:
+      main_coral_npu_in: coral_npu_in
+      main_coral_npu_out: coral_npu_out
+      main_fast_vdma: fast_vdma
+      main_fast_vdma_csr: fast_vdma_csr
+      main_i3c_controller: i3c_controller
+      main_i3c_target: i3c_target
+      main_timers_csr: timers_csr
+      main_uart_csr: uart_csr
+      main_veer_eh2_ifu: veer_eh2_ifu
+      main_veer_eh2_lsu: veer_eh2_lsu
+      main_veer_el2_ifu: veer_el2_ifu
+      main_veer_el2_lsu: veer_el2_lsu
+  ports:
+    main:
+      clk_i: clk_fast
+external:
+  interfaces:
+    in:
+    - veer_el2_ifu
+    - veer_el2_lsu
+    - veer_eh2_ifu
+    - veer_eh2_lsu
+    - fast_vdma
+    - coral_npu_in
+    out:
+    - fast_vdma_csr
+    - timers_csr
+    - coral_npu_out
+    - i3c_controller
+    - i3c_target
+    - uart_csr
+  ports:
+    in:
+    - clk_slow
+    - clk_fast
+    - clk_ahb
+ips:
+  main:
+    file: file:./out/modules/cores/main/module.yaml
+name: ASoCaInt
