@@ -1,2 +1,85 @@
-ERROR: it is not possible yet to have address map rules that are different based on source id, rule to sb_cpu_lpp has different paths from axi_cpu and axi_dbg
-{'desc_version': 1.0, 'name': 'MyInterconnect', 'version': '0.85a', 'clocks': {'clk_bus': {'frequency': '100e6'}, 'clk_cpu': {'frequency': '1GHz'}, 'clk_lpp': {'frequency': '25M'}}, 'ports': {'axi_cpu': {'type': 'AXI4', 'clock': 'clk_cpu', 'role': 'subordinate'}, 'axi_dbg': {'type': 'AXI4', 'clock': 'clk_bus', 'role': 'subordinate'}, 'axi_mem': {'type': 'AXI4', 'clock': 'clk_bus', 'role': 'manager'}, 'apb_uart': {'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}, 'apb_i2c': {'type': 'APB', 'clock': 'clk_lpp', 'role': 'manager'}}, 'crossbars': {'sb_cpu': {'clock': 'clk_bus', 'ports': {'cpu': {'role': 'subordinate'}, 'dbg': {'role': 'subordinate'}, 'mem': {'role': 'manager'}, 'lpp': {'role': 'manager'}}}, 'sb_lpp': {'clock': 'clk_lpp', 'ports': {'up': {'role': 'subordinate'}, 'uart': {'role': 'manager'}, 'i2c': {'role': 'manager'}}}}, 'connections': {'axi_cpu -> sb_cpu.cpu': None, 'axi_dbg -> sb_cpu.dbg': None, 'sb_cpu.mem -> axi_mem': {'registers': 1}, 'sb_cpu.lpp -> sb_lpp.up': None, 'sb_lpp.uart -> apb_uart': None, 'sb_lpp.i2c -> apb_i2c': None}, 'address_map': {'memory': {'to': 'axi_mem', 'base': 0, 'size': 536870912}, 'uart': {'from': 'axi_cpu', 'to': 'apb_uart', 'base': 1073741824, 'size': 4096}, 'i2c': {'from': ['axi_cpu', 'axi_dbg'], 'to': 'apb_i2c', 'base': 1073745920, 'size': 4096}}}
+address_map:
+  i2c:
+    base: 1073745920
+    from:
+    - axi_cpu
+    - axi_dbg
+    size: 4096
+    to: apb_i2c
+  memory:
+    base: 0
+    size: 536870912
+    to: axi_mem
+  uart:
+    base: 1073741824
+    from: axi_cpu
+    size: 4096
+    to: apb_uart
+clocks:
+  clk_bus:
+    frequency: 100e6
+  clk_cpu:
+    frequency: 1GHz
+  clk_lpp:
+    frequency: 25M
+connections:
+  axi_cpu -> sb_cpu.cpu: null
+  axi_dbg -> sb_cpu.dbg: null
+  sb_cpu.lpp -> sb_lpp.up: null
+  sb_cpu.mem -> axi_mem:
+    protocol: true
+    registers: 1
+  sb_lpp.i2c -> apb_i2c: null
+  sb_lpp.uart -> apb_uart: null
+crossbars:
+  sb_cpu:
+    clock: clk_bus
+    ports:
+      cpu:
+        clock: clk_bus
+        role: subordinate
+      dbg:
+        clock: clk_bus
+        role: subordinate
+      lpp:
+        clock: clk_bus
+        role: manager
+      mem:
+        clock: clk_bus
+        role: manager
+  sb_lpp:
+    clock: clk_lpp
+    ports:
+      i2c:
+        clock: clk_lpp
+        role: manager
+      uart:
+        clock: clk_lpp
+        role: manager
+      up:
+        clock: clk_lpp
+        role: subordinate
+desc_version: 1.0
+name: MyInterconnect
+ports:
+  apb_i2c:
+    clock: clk_lpp
+    role: manager
+    type: APB
+  apb_uart:
+    clock: clk_lpp
+    role: manager
+    type: APB
+  axi_cpu:
+    clock: clk_cpu
+    role: subordinate
+    type: AXI4
+  axi_dbg:
+    clock: clk_bus
+    role: subordinate
+    type: AXI4
+  axi_mem:
+    clock: clk_bus
+    role: manager
+    type: AXI4
+version: 0.85a

@@ -8,8 +8,9 @@ def main():
     argsparser = argparse.ArgumentParser(prog='omnibus')
     argsparser.add_argument('file') 
     argsparser.add_argument('-o', '--output', nargs=1, default="./out", help="specifies output directory") 
-    argsparser.add_argument('--debug', nargs=1, help="specify at what stage to stop execution and output debug info: {'parse', 'elements', 'graph'}") 
-    argsparser.add_argument('--graph', nargs='?', const='interconnect.gv', default=None, help="show graph, takes optional filename as argument, otherwise assumes 'interconnect.gv'") 
+    argsparser.add_argument('-d', '--debug', help="specify at what stage to stop execution and output debug info: {'parse', 'elements', 'graph'}") 
+    argsparser.add_argument('-g', '--graph', nargs='?', const='interconnect.gv', default=None, help="show graph, takes optional filename as argument, otherwise assumes 'interconnect.gv'") 
+    argsparser.add_argument('-c', '--colorby', default="", help="specify what parameter to color by in a graph", choices=['clock','type','role','data_width']) 
 
     args = argsparser.parse_args()
 
@@ -18,21 +19,27 @@ def main():
     os.makedirs(f"{outdir}/modules", exist_ok=True)
 
     ic = Interconnect(args.file)
-    ic.find_routing_paths()
 
     if args.debug:
-        if args.debug[0] == "parse":
+        if args.debug == "parse":
             ic.print_spec()
             return 0
-        if args.debug[0] == "elements":
+
+        ic.find_routing_paths()
+        ic.propagate_parameters()
+
+        if args.debug == "elements":
             ic.print_elements()
             return 0
-        if args.debug[0] == "graph":
+        if args.debug == "graph":
             ic.generate_graph(filename=f'{outdir}/interconnect.gv', view=False)
             return 0
 
+    ic.find_routing_paths()
+    ic.propagate_parameters()
+
     if args.graph:
-        ic.generate_graph(filename=args.graph, view=True)
+        ic.generate_graph(filename=args.graph, view=True, color_by = args.colorby)
         return 0
 
     ic.map_components()

@@ -1,0 +1,103 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+name: ASoCaInt
+version: 0 
+
+clocks:
+  clk_slow: 
+    frequency: 300MHz
+  clk_fast: 
+    frequency: 800MHz
+  clk_ahb: 
+    frequency: 100MHz
+
+ports:
+  veer_el2_ifu:
+    type: axi4
+    role: "subordinate"
+    data_width: 64
+    clock: clk_slow
+  veer_el2_lsu:
+    type: axi4
+    role: "subordinate"
+    data_width: 64
+    clock: clk_slow
+  veer_eh2_ifu:
+    type: axi4
+    role: "subordinate"
+    data_width: 64
+    clock: clk_fast
+  veer_eh2_lsu:
+    type: axi4
+    role: "subordinate"
+    data_width: 64
+    clock: clk_fast
+  fast_vdma:
+    type: axi4
+    role: "subordinate"
+    data_width: 64
+    clock: clk_fast
+  fast_vdma_csr:
+    type: axi4 lite
+    role: "manager"
+    data_width: 32
+    clock: clk_fast
+  timers_csr:
+    type: apb3
+    role: "manager"
+    data_width: 64
+    clock: clk_slow
+  coral_npu_out:
+    type: axi4
+    role: "manager"
+    data_width: 128
+    clock: clk_fast
+  coral_npu_in:
+    type: axi4
+    role: "subordinate"
+    data_width: 128
+    clock: clk_fast
+  i3c_controller:
+    type: axi4
+    role: "manager"
+    data_width: 64
+    clock: clk_slow
+  i3c_target:
+    type: axi4
+    role: "manager"
+    data_width: 64
+    clock: clk_slow
+  uart_csr:
+    type: ahb3
+    role: "manager"
+    data_width: 64
+    clock: clk_ahb
+
+address_map:
+  "i3c_target_csr":
+    to: i3c_target
+    base: 0x4000_0000
+    size: 0x0000_FFFF
+  "i3c_controller_csr":
+    to: i3c_controller
+    base: 0x4001_0000
+    size: 0x0000_FFFF
+  "uart_csr":
+    to: uart_csr
+    base: 0x4002_0000
+    size: 0x0000_FFFF
+  "timers_csr":
+    to: timers_csr
+    base: 0x4003_0000
+    size: 0x0000_FFFF
+  "fastvdma_csr":
+    to: fast_vdma_csr
+    base: 0x5000_0000
+    size: 0x0000_FFFF
+  "coral_npu_out":
+    to: coral_npu_out
+    base: 0x6000_0000
+    size: 0x0FFF_FFFF

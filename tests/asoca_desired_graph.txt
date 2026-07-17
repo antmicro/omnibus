@@ -1,23 +1,24 @@
 digraph ASoCaInt {
+	node [colorscheme=paired12 style=filled]
 	rankdir=LR
-	veer_el2_ifu
+	veer_el2_ifu [fillcolor=white]
 	veer_el2_ifu -> main_veer_el2_ifu
-	veer_el2_lsu
+	veer_el2_lsu [fillcolor=white]
 	veer_el2_lsu -> main_veer_el2_lsu
-	veer_eh2_ifu
+	veer_eh2_ifu [fillcolor=white]
 	veer_eh2_ifu -> main_veer_eh2_ifu
-	veer_eh2_lsu
+	veer_eh2_lsu [fillcolor=white]
 	veer_eh2_lsu -> main_veer_eh2_lsu
-	fast_vdma
+	fast_vdma [fillcolor=white]
 	fast_vdma -> main_fast_vdma
-	fast_vdma_csr
-	timers_csr
-	coral_npu_out
-	coral_npu_in
+	fast_vdma_csr [fillcolor=white]
+	timers_csr [fillcolor=white]
+	coral_npu_out [fillcolor=white]
+	coral_npu_in [fillcolor=white]
 	coral_npu_in -> main_coral_npu_in
-	i3c_controller
-	i3c_target
-	uart_csr
+	i3c_controller [fillcolor=white]
+	i3c_target [fillcolor=white]
+	uart_csr [fillcolor=white]
 	main_fast_vdma_csr -> fast_vdma_csr
 	main_timers_csr -> timers_csr
 	main_coral_npu_out -> coral_npu_out
@@ -27,53 +28,53 @@ digraph ASoCaInt {
 	subgraph "cluster main" {
 		label=main
 		color=lightgrey style=dashed
-		main_veer_el2_ifu
+		main_veer_el2_ifu [fillcolor=white]
 		main_veer_el2_ifu -> main_fast_vdma_csr
 		main_veer_el2_ifu -> main_timers_csr
 		main_veer_el2_ifu -> main_coral_npu_out
 		main_veer_el2_ifu -> main_i3c_controller
 		main_veer_el2_ifu -> main_i3c_target
 		main_veer_el2_ifu -> main_uart_csr
-		main_veer_el2_lsu
+		main_veer_el2_lsu [fillcolor=white]
 		main_veer_el2_lsu -> main_fast_vdma_csr
 		main_veer_el2_lsu -> main_timers_csr
 		main_veer_el2_lsu -> main_coral_npu_out
 		main_veer_el2_lsu -> main_i3c_controller
 		main_veer_el2_lsu -> main_i3c_target
 		main_veer_el2_lsu -> main_uart_csr
-		main_veer_eh2_ifu
+		main_veer_eh2_ifu [fillcolor=white]
 		main_veer_eh2_ifu -> main_fast_vdma_csr
 		main_veer_eh2_ifu -> main_timers_csr
 		main_veer_eh2_ifu -> main_coral_npu_out
 		main_veer_eh2_ifu -> main_i3c_controller
 		main_veer_eh2_ifu -> main_i3c_target
 		main_veer_eh2_ifu -> main_uart_csr
-		main_veer_eh2_lsu
+		main_veer_eh2_lsu [fillcolor=white]
 		main_veer_eh2_lsu -> main_fast_vdma_csr
 		main_veer_eh2_lsu -> main_timers_csr
 		main_veer_eh2_lsu -> main_coral_npu_out
 		main_veer_eh2_lsu -> main_i3c_controller
 		main_veer_eh2_lsu -> main_i3c_target
 		main_veer_eh2_lsu -> main_uart_csr
-		main_fast_vdma
+		main_fast_vdma [fillcolor=white]
 		main_fast_vdma -> main_fast_vdma_csr
 		main_fast_vdma -> main_timers_csr
 		main_fast_vdma -> main_coral_npu_out
 		main_fast_vdma -> main_i3c_controller
 		main_fast_vdma -> main_i3c_target
 		main_fast_vdma -> main_uart_csr
-		main_coral_npu_in
+		main_coral_npu_in [fillcolor=white]
 		main_coral_npu_in -> main_fast_vdma_csr
 		main_coral_npu_in -> main_timers_csr
 		main_coral_npu_in -> main_coral_npu_out
 		main_coral_npu_in -> main_i3c_controller
 		main_coral_npu_in -> main_i3c_target
 		main_coral_npu_in -> main_uart_csr
-		main_fast_vdma_csr
-		main_timers_csr
-		main_coral_npu_out
-		main_i3c_controller
-		main_i3c_target
-		main_uart_csr
+		main_fast_vdma_csr [fillcolor=white]
+		main_timers_csr [fillcolor=white]
+		main_coral_npu_out [fillcolor=white]
+		main_i3c_controller [fillcolor=white]
+		main_i3c_target [fillcolor=white]
+		main_uart_csr [fillcolor=white]
 	}
 }

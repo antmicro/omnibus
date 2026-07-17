@@ -23,6 +23,7 @@ class Port:
         self.parent     = parent
         self.attributes = attributes
         self.edges      = list()
+        self.backedges  = list()
 
 
 class AddressMapEntry:
@@ -53,15 +54,12 @@ class Interconnect:
         if not self.spec.get('ports'):
             print("ERROR: lack of 'ports' field")
             err = True
-        if not self.spec.get('crossbars'):
-            print("ERROR: lack of 'crossbars' field")
+        if bool(self.spec.get('crossbars')) ^ bool(self.spec.get('connections')):
+            print("ERROR: 'crossbar' and 'connections' must be both either defined or left for inference")
             err = True
-        if not self.spec.get('connections'):
-            print("ERROR: lack of 'connections' field")
-            return
         if not self.spec.get('address_map'):
             print("ERROR: lack of 'address_map' field")
-            return
+            err = True
         if err:
             return
 
@@ -99,7 +97,23 @@ class Interconnect:
             else:
                 print(f"ERROR: entry '{k}' in ports has wrong role, should be either 'manager' or 'subordinate'")
                 return
-        
+
+        #if not present, generate all to all
+        if not self.spec.get('crossbars'):
+            self.spec['crossbars'] = {'main': {'clock': None, 'ports': dict()}}
+            self.spec['connections'] = dict()
+
+            xb_ports = self.spec['crossbars']['main']['ports']
+            
+            for portname, port in self.ports.items():
+                role = port.attributes['role']
+                xb_ports[portname] = {'role': role}
+
+                if role == 'subordinate':
+                    self.spec['connections'][f"{portname} -> main.{portname}"] = {}
+                else:
+                    self.spec['connections'][f"main.{portname} -> {portname}"] = {}
+                        
         for crossbar, cpars in self.spec['crossbars'].items():
             #store which ports are subs and which are managers, later use this info to create edges
             subs     = list()
@@ -111,9 +125,12 @@ class Interconnect:
 
             self.components[crossbar] = Component('crossbar', cpars)
 
+            clock = cpars.get('clock')
+
             for k, v in cpars['ports'].items():
                 name = crossbar + '_' + k
                 self.ports[name] = Port(crossbar, v)
+                self.ports[name].attributes['clock'] = clock
 
                 self.components[crossbar].ports.append(name)
 
@@ -133,6 +150,7 @@ class Interconnect:
 
                 for manager in managers:
                     subport.edges.append(Edge(manager, dict()))
+                    self.ports[manager].backedges.append(Edge(sub, dict()))
 
         for conn, params in self.spec['connections'].items():
             parts = conn.split(' ')
@@ -154,10 +172,16 @@ class Interconnect:
                 print(f"ERROR: entry in 'connections' '{conn}' invalid: second port does not exist")
                 return
 
-            if not params:
-                port1.edges.append(Edge(parts[2], dict()))
-            else:
-                port1.edges.append(Edge(parts[2], params))
+            
+            if params is None:
+                params = dict()
+
+            #by default, protocol should not be propagated from subordinates 
+            if not params.get('protocol') and port2.parent is None:
+                params['protocol'] = True
+
+            port1.edges.append(Edge(parts[2], params))
+            port2.backedges.append(Edge(parts[0], params))
 
         self.address_map = self.spec['address_map']
 
@@ -258,6 +282,90 @@ class Interconnect:
             for entry in params.address_map:
                 entry.src = '_'
 
+
+    def propagate_parameters(self):
+        #data width is a bit special in that it can be forced on connections
+        #to deal with this:
+        # 1. find all connections that have it forced 
+        # 2. assign it to connected ports
+        # 3. if this process leads to conflict, there exists no valid configuration
+
+        for portname, port in self.ports.items():
+            for edge in port.edges:
+                destname = edge.dest
+                dest = self.ports[destname]
+
+                data_width = edge.attributes.get('data_width')
+
+                if data_width is None:
+                    continue
+                
+                port_width = port.attributes.get('data_width')
+                dest_width = dest.attributes.get('data_width')
+
+                if port_width != data_width:
+                    print(f"ERROR: no valid configuration exists for data width, port {portname} has assigned data width that is different than its outgoing connection to {destname}")
+
+                    continue
+                if dest_width != data_width:
+                    print(f"ERROR: no valid configuration exists for data width, port {destname} has assigned data width that is different than its incoming connection from {portname}")
+
+                    continue
+
+                port.attributes['data_width'] = data_width
+                dest.attributes['data_width'] = data_width
+
+        ports_to_process = list()
+
+        for attr, barrier in {('clock', 'cdc'), ('type', 'protocol'), ('data_width', None)}:
+
+            for portname, port in self.ports.items():
+                if port.attributes.get(attr):
+                    ports_to_process.append(portname)
+
+
+            if len(ports_to_process) == 0:
+                print(f"WARNING: parameter {attr} is never specified, propagation not possible")
+                continue
+
+            while len(ports_to_process) > 0:
+                portname = ports_to_process[0]
+                ports_to_process.pop(0)
+
+                port = self.ports[portname]
+
+                for edge in port.edges + port.backedges: 
+                    destname = edge.dest 
+                    dest = self.ports[destname]
+
+                    if dest.attributes.get(attr):
+                        continue
+
+                    if edge.attributes.get(barrier):
+                        continue
+
+                    if dest.parent is None:
+                        dest.attributes[attr] = port.attributes[attr]
+                        ports_to_process.append(destname)
+                        continue
+
+                    #all ports in crossbars must share the same parameter type
+                    #NOTE: this probably should be done smarter, include some metric for picking best attribute for crossbar
+                    #      metrics can include: majority, throughput, latency, etc
+                    parent = dest.parent
+                    for childportname, childport in self.ports.items():
+                        if childport.parent == parent:
+                            childport.attributes[attr] = port.attributes[attr]
+                            ports_to_process.append(childportname)
+
+            #if by this point attribute is not populated, then this must be an error and proper propagation is impossible
+            #this might happen eg when a region is fully surrounded by CDC and no clock is provided inside
+            for portname, port in self.ports.items():
+                if not port.attributes.get(attr):
+                    print(f"ERROR: could not propagate attribute '{attr}' to port '{portname}', it is likely surrounded by barriers that stop propagation")
+
+
+        return
 
     def map_components(self):
         
@@ -392,25 +500,23 @@ class Interconnect:
             yaml.dump(tree, file)
 
     def print_spec(self):
-        print(self.spec)
+        yaml.dump(self.spec, sys.stdout)
 
     def print_elements(self):
         print("### PORTS ###")
         for k, v in self.ports.items():
             print(f"== PORT {k} parent: {v.parent} ==")
-            print(v.attributes)
+            print(sorted(v.attributes.items()))
 
             for edge in v.edges:
                 print(f"- edge to {edge.dest} -")
-                print(edge.attributes)
+                print(sorted(edge.attributes.items()))
 
         print("### COMPONENTS ###")
 
         for k, v in self.components.items():
             print(f"== COMP {k} {v.kind}")
-
-            print(v.attributes)
-            print(v.ports)
+            yaml.dump(v.attributes, sys.stdout, sort_keys=True)
 
         print("### ADDR MAPS ###")
         print("== INTERCONNECT ==") 
@@ -427,18 +533,42 @@ class Interconnect:
                 print(entry.src + ' ' + entry.dest)
                 print(hex(entry.base) + ' ' + hex(entry.size))
 
-
-    def generate_graph(self, filename='interconnect.gv', view=False):
-        g = graphviz.Digraph(self.name, filename=filename)
-
+    def generate_graph(self, filename='interconnect.gv', view=False, color_by=""):
+        g = graphviz.Digraph(self.name, filename=filename, node_attr={'style': 'filled', 'colorscheme': 'paired12'})
         g.attr(rankdir='LR')
+
+        #max color id determined by paired12 colorscheme
+        param_to_color_id = dict()
+        color_nxt_id = 1
+        color_max_id = 11
 
         crossbars = dict()
 
         for port, params in self.ports.items():
+            
+            color = "white"
 
+            if color_by != "":
+                color = None
+
+                paramval = params.attributes.get(color_by)
+
+                if paramval is not None:
+                    if not param_to_color_id.get(paramval):
+                        if color_nxt_id > color_max_id:
+                            print("ERROR: too many different parameter's values to color by")
+                            return
+
+                        param_to_color_id[paramval] = str(color_nxt_id)
+                        color_nxt_id += 1 
+
+                    color = param_to_color_id[paramval]
+
+                if color is None:
+                    color = '12'
+            
             if params.parent is None:
-                g.node(port)
+                g.node(port, fillcolor=color)
 
                 for edge in params.edges:
                     g.edge(port, edge.dest)
@@ -447,13 +577,13 @@ class Interconnect:
 
             cb = crossbars.get(params.parent)
             if not cb:
-                #"==cluster" is necessary to generate  grouping
+                #"cluster" is necessary to generate  grouping
                 crossbars[params.parent] = graphviz.Digraph(name='cluster ' + params.parent)
                 cb = crossbars[params.parent]
                 cb.attr(label=params.parent)
                 cb.attr(style='dashed', color='lightgrey')
 
-            cb.node(port)
+            cb.node(port, fillcolor=color)
 
             for edge in params.edges:
                 dest = edge.dest
@@ -464,6 +594,28 @@ class Interconnect:
                 else:
                     cb.edge(port, dest)
                 
+
+        # create a legend
+        if color_by != "":
+            legend = graphviz.Digraph(name="cluster legend")
+            legend.attr(label="legend")
+            legend.attr(color='lightgrey')
+            legend.attr(rank="same")
+            
+            for name, color in param_to_color_id.items():
+                name = str(name)
+                legend.node(name, fillcolor=color)
+                #force layout
+                legend.edge(name, "none", style="invis")
+
+            legend.node("none", fillcolor=str(color_max_id + 1))
+
+            #force layout
+            g.edge(list(self.ports.keys())[0], "none", style="invis")
+
+            g.subgraph(legend)
+
+            
 
         for k, v in crossbars.items():
             g.subgraph(v)

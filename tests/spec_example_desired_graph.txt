@@ -1,12 +1,13 @@
 digraph MyInterconnect {
+	node [colorscheme=paired12 style=filled]
 	rankdir=LR
-	axi_cpu
+	axi_cpu [fillcolor=white]
 	axi_cpu -> sb_cpu_cpu
-	axi_dbg
+	axi_dbg [fillcolor=white]
 	axi_dbg -> sb_cpu_dbg
-	axi_mem
-	apb_uart
-	apb_i2c
+	axi_mem [fillcolor=white]
+	apb_uart [fillcolor=white]
+	apb_i2c [fillcolor=white]
 	sb_cpu_mem -> axi_mem
 	sb_cpu_lpp -> sb_lpp_up
 	sb_lpp_uart -> apb_uart
@@ -14,22 +15,22 @@ digraph MyInterconnect {
 	subgraph "cluster sb_cpu" {
 		label=sb_cpu
 		color=lightgrey style=dashed
-		sb_cpu_cpu
+		sb_cpu_cpu [fillcolor=white]
 		sb_cpu_cpu -> sb_cpu_mem
 		sb_cpu_cpu -> sb_cpu_lpp
-		sb_cpu_dbg
+		sb_cpu_dbg [fillcolor=white]
 		sb_cpu_dbg -> sb_cpu_mem
 		sb_cpu_dbg -> sb_cpu_lpp
-		sb_cpu_mem
-		sb_cpu_lpp
+		sb_cpu_mem [fillcolor=white]
+		sb_cpu_lpp [fillcolor=white]
 	}
 	subgraph "cluster sb_lpp" {
 		label=sb_lpp
 		color=lightgrey style=dashed
-		sb_lpp_up
+		sb_lpp_up [fillcolor=white]
 		sb_lpp_up -> sb_lpp_uart
 		sb_lpp_up -> sb_lpp_i2c
-		sb_lpp_uart
-		sb_lpp_i2c
+		sb_lpp_uart [fillcolor=white]
+		sb_lpp_i2c [fillcolor=white]
 	}
 }

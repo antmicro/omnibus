@@ -1,0 +1,155 @@
+address_map:
+  coral_npu_out:
+    base: 1610612736
+    size: 268435455
+    to: coral_npu_out
+  fastvdma_csr:
+    base: 1342177280
+    size: 65535
+    to: fast_vdma_csr
+  i3c_controller_csr:
+    base: 1073807360
+    size: 65535
+    to: i3c_controller
+  i3c_target_csr:
+    base: 1073741824
+    size: 65535
+    to: i3c_target
+  timers_csr:
+    base: 1073938432
+    size: 65535
+    to: timers_csr
+  uart_csr:
+    base: 1073872896
+    size: 65535
+    to: uart_csr
+clocks:
+  clk_ahb:
+    frequency: 100MHz
+  clk_fast:
+    frequency: 800MHz
+  clk_slow:
+    frequency: 300MHz
+connections:
+  coral_npu_in -> main.coral_npu_in: {}
+  fast_vdma -> main.fast_vdma: {}
+  main.coral_npu_out -> coral_npu_out:
+    protocol: true
+  main.fast_vdma_csr -> fast_vdma_csr:
+    protocol: true
+  main.i3c_controller -> i3c_controller:
+    protocol: true
+  main.i3c_target -> i3c_target:
+    protocol: true
+  main.timers_csr -> timers_csr:
+    protocol: true
+  main.uart_csr -> uart_csr:
+    protocol: true
+  veer_eh2_ifu -> main.veer_eh2_ifu: {}
+  veer_eh2_lsu -> main.veer_eh2_lsu: {}
+  veer_el2_ifu -> main.veer_el2_ifu: {}
+  veer_el2_lsu -> main.veer_el2_lsu: {}
+crossbars:
+  main:
+    clock: null
+    ports:
+      coral_npu_in:
+        clock: null
+        role: subordinate
+      coral_npu_out:
+        clock: null
+        role: manager
+      fast_vdma:
+        clock: null
+        role: subordinate
+      fast_vdma_csr:
+        clock: null
+        role: manager
+      i3c_controller:
+        clock: null
+        role: manager
+      i3c_target:
+        clock: null
+        role: manager
+      timers_csr:
+        clock: null
+        role: manager
+      uart_csr:
+        clock: null
+        role: manager
+      veer_eh2_ifu:
+        clock: null
+        role: subordinate
+      veer_eh2_lsu:
+        clock: null
+        role: subordinate
+      veer_el2_ifu:
+        clock: null
+        role: subordinate
+      veer_el2_lsu:
+        clock: null
+        role: subordinate
+desc_version: 1.0
+name: ASoCaInt
+ports:
+  coral_npu_in:
+    clock: clk_fast
+    data_width: 128
+    role: subordinate
+    type: axi4
+  coral_npu_out:
+    clock: clk_fast
+    data_width: 128
+    role: manager
+    type: axi4
+  fast_vdma:
+    clock: clk_fast
+    data_width: 64
+    role: subordinate
+    type: axi4
+  fast_vdma_csr:
+    clock: clk_fast
+    data_width: 32
+    role: manager
+    type: axi4 lite
+  i3c_controller:
+    clock: clk_slow
+    data_width: 64
+    role: manager
+    type: axi4
+  i3c_target:
+    clock: clk_slow
+    data_width: 64
+    role: manager
+    type: axi4
+  timers_csr:
+    clock: clk_slow
+    data_width: 64
+    role: manager
+    type: apb3
+  uart_csr:
+    clock: clk_ahb
+    data_width: 64
+    role: manager
+    type: ahb3
+  veer_eh2_ifu:
+    clock: clk_fast
+    data_width: 64
+    role: subordinate
+    type: axi4
+  veer_eh2_lsu:
+    clock: clk_fast
+    data_width: 64
+    role: subordinate
+    type: axi4
+  veer_el2_ifu:
+    clock: clk_slow
+    data_width: 64
+    role: subordinate
+    type: axi4
+  veer_el2_lsu:
+    clock: clk_slow
+    data_width: 64
+    role: subordinate
+    type: axi4
+version: 0
