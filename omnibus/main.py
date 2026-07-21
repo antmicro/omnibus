@@ -37,6 +37,7 @@ def main():
 
     ic.find_routing_paths()
     ic.propagate_parameters()
+    ic.insert_new_components()
 
     if args.graph:
         ic.generate_graph(filename=args.graph, view=True, color_by = args.colorby)

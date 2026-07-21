@@ -72,6 +72,7 @@ ports:
     type: APB
   axi_cpu:
     clock: clk_cpu
+    data_width: 32
     role: subordinate
     type: AXI4
   axi_dbg:

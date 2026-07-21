@@ -18,6 +18,7 @@ ports:
   axi_cpu:
     type:  AXI4
     clock: clk_cpu
+    data_width: 32
     role:  "subordinate"
   axi_dbg:
     type:  AXI4

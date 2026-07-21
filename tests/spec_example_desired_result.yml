@@ -1,16 +1,30 @@
 connections:
   interfaces:
-    sb_cpu:
-      sb_cpu_cpu: axi_cpu
-      sb_cpu_dbg: axi_dbg
-      sb_cpu_lpp:
+    cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
+      dst:
+      - sb_cpu
+      - sb_cpu_cpu
+      src: axi_cpu
+    cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
+      dst:
       - sb_lpp
       - sb_lpp_up
+    sb_cpu:
+      sb_cpu_dbg: axi_dbg
+      sb_cpu_lpp:
+      - cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp
+      - src
       sb_cpu_mem: axi_mem
     sb_lpp:
       sb_lpp_i2c: apb_i2c
       sb_lpp_uart: apb_uart
   ports:
+    cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
+      dst_clk_i: clk_bus
+      src_clk_i: clk_cpu
+    cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
+      dst_clk_i: clk_lpp
+      src_clk_i: clk_bus
     sb_cpu:
       clk_i: clk_bus
     sb_lpp:
@@ -30,6 +44,20 @@ external:
     - clk_cpu
     - clk_lpp
 ips:
+  cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
+    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    parameters:
+      AxiAddrWidth: 2
+      AxiDataWidth: 32
+      AxiIdWidth: 2
+      AxiMaxReads: 1
+  cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
+    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    parameters:
+      AxiAddrWidth: 2
+      AxiDataWidth: 32
+      AxiIdWidth: 2
+      AxiMaxReads: 1
   sb_cpu:
     file: file:./out/modules/cores/sb_cpu/module.yaml
   sb_lpp:

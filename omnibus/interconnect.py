@@ -367,21 +367,104 @@ class Interconnect:
 
         return
 
+    def insert_new_components(self):
+        #insert components from manager to subordinate components (left to right on graph view)
+        #start with highest priority, AKA the ones that should be placed first in case of any conflict
+        #current prioretization is: data width > clock > protocol
+
+        #insertion algorithm is:
+        # 1. go thru each connection, find connections between ports of different parameters
+        # 2. insert two new ports under new component, the kind of component depends on the parameter
+        #    also, note if new component kind was inserted, this info will be used during ip generation
+        # 3. 
+        #   a. for the parameter under consideration, get first's port param from source node, get second's port param from dest 
+        #   b. for all the rest parameters, get both ports' params from source port 
+        #note: source/dest are regarding edge direction, on graph view, source is on the left 
+        for param, kind in {('data_width', 'dw_conv'), ('clock', 'cdc')}:
+            newports = dict()
+
+            for portname, port in self.ports.items():
+                for edge in port.edges: 
+                    destname = edge.dest 
+                    dest = self.ports[destname]
+
+                    portattr = port.attributes[param]
+                    destattr = dest.attributes[param]
+
+                    if portattr == destattr:
+                        continue
+
+                    name_comp = f"{kind}_{portname}_{portattr}_to_{destname}_{destattr}"
+                    name1 = f"{kind}_{portname}_{portattr}"
+                    name2 = f"{kind}_{destname}_{destattr}"
+
+                    self.components[name_comp] = Component(kind, dict())
+                    self.components[name_comp].ports = [name1, name2]
+
+                    newports[name1] = Port(name_comp, copy.deepcopy(port.attributes))
+                    newports[name2] = Port(name_comp, copy.deepcopy(port.attributes))
+
+                    newports[name2].attributes[param] = destattr
+
+                    edge.dest = name1
+                    newports[name1].edges.append(Edge(name2, dict()))
+                    newports[name2].edges.append(Edge(destname, dict()))
+
+
+                    #fix manager-subordinate port organization as they are copied from left port, which is not correct
+                    #notice that the only case when both 
+                    #  1. port.parent is None
+                    #  2. outgoing edges are not empty 
+                    # is when port.role = 'subordinate' 
+                    # therefore fix is always done by swapping the port name2
+                    if port.parent is None:
+                        newports[name2].attributes['role'] = 'manager'
+                    # when port.parent is not none, then notice that outgoing connection from port name2 is correct
+                    #  as it was correct when similar connection was outgoing from src port
+                    # but, srcport is always master
+                    # therefore the fix is done by swapping port name1
+                    else:
+                        newports[name1].attributes['role'] = 'subordinate'
+
+
+
+            self.ports = self.ports | newports
+
+        #some fixup 
+        for compname, comp in self.components.items():
+            
+            if comp.kind == 'dw_conv':
+                comp.attributes['clock'] = self.ports[comp.ports[0]].attributes['clock']
+
+        return
+
     def map_components(self):
+        self.generate_dw_conv = False
+        self.generate_cdc     = False
         
         for name, component in self.components.items():
             
+            #this is mostly a placeholder for now
+            #in the future when proper mapping is implemented, this should include actual choice 
             match component.kind:
                 case "crossbar":
                     pass
+                case "pr_conv":
+                    pass
+                case "dw_conv":
+                    self.generate_dw_conv = True
+                case "cdc":
+                    self.generate_cdc     = True
                 case _:
-                    print("ERROR: invalid kind of component, currently accepted ones are: 'crossbar'")
+                    print("ERROR: invalid kind of component, currently accepted ones are: 'crossbar', 'pr_conv', 'dw_conv', 'cdc'")
                     return
 
     def generate_ip(self, outdir):
         #for now, assume that all crossbars map to AXI from pulp-platform
         #this will be changed as soon as some way of choosing objects is chosen 
         #for now, each crossbar is generated as its own IP, though this can be later reduced to generating separate IP for each n x m crossbar
+
+        #other IPs are generated manually below
 
         #it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role 
         #therefore swap them internally
@@ -390,47 +473,524 @@ class Interconnect:
         import axi_intercon_gen
  
         for name, component in self.components.items():
-            if component.kind != 'crossbar':
+            if component.kind   == 'dw_conv':
                 pass
- 
-            slaves      = dict()
-            slave_names = list()
-            masters     = dict()
- 
-            for port in component.ports:
-                if self.ports[port].attributes['role'] == 'subordinate':
-                    #TODO: find proper id_width instead of using placeholder, requires parameter propagation
-                    masters[port] = {"id_width": 2, "slaves": slave_names}
-                else:
-                    offset = 0
-                    size   = 0
+            elif component.kind   == 'cdc':
+                pass
+            elif component.kind == 'crossbar':
+                slaves      = dict()
+                slave_names = list()
+                masters     = dict()
+     
+                for port in component.ports:
+                    if self.ports[port].attributes['role'] == 'subordinate':
+                        #TODO: find proper id_width instead of using placeholder, requires parameter propagation
+                        masters[port] = {"id_width": 2, "slaves": slave_names}
+                    else:
+                        offset = 0
+                        size   = 0
 
-                    for entry in component.address_map:
-                        if entry.dest == port:
-                            offset = entry.base
-                            size   = entry.size
-                            break
+                        for entry in component.address_map:
+                            if entry.dest == port:
+                                offset = entry.base
+                                size   = entry.size
+                                break
 
-                    if size == 0:
-                        print(f"WARNING: rule of size 0 or lack of rule in crossbar {name} leading to port {port}")
-                            
-                    slaves[port] = {"offset": offset, "size": size}
-                    slave_names.append(port)
-            
-            with tempfile.NamedTemporaryFile("w") as file:
-                config = {
-                    "parameters": {
-                        "output_file": f"{outdir}/src/axi_crossbar_{name}.sv",
-                        "slaves": slaves,
-                        "masters": masters,
-                        "atop": 0,
-                    },
-                    "vlnv": f"vendor:library:axi_crossbar_{name}:1.0",
-                }
- 
-                yaml.dump(config, file)
- 
-                axi_intercon_gen.AxiIntercon(name, file.name).write()
+                        if size == 0:
+                            print(f"WARNING: rule of size 0 or lack of rule in crossbar {name} leading to port {port}")
+                                
+                        slaves[port] = {"offset": offset, "size": size}
+                        slave_names.append(port)
+                
+                with tempfile.NamedTemporaryFile("w") as file:
+                    config = {
+                        "parameters": {
+                            "output_file": f"{outdir}/src/axi_crossbar_{name}.sv",
+                            "slaves": slaves,
+                            "masters": masters,
+                            "atop": 0,
+                        },
+                        "vlnv": f"vendor:library:axi_crossbar_{name}:1.0",
+                    }
+     
+                    yaml.dump(config, file)
+     
+                    axi_intercon_gen.AxiIntercon(name, file.name).write()
+            else:
+                print(f"ERROR: cannot generate IP for component '{name}' of type '{component.kind}'")
+
+
+        # data width converter is always the same
+        if self.generate_dw_conv:
+            #NOTE: this file is currently not verified 
+            #      it seems like it is correct up to idea but topwrap prints many warnings
+            #      also it was not yet verified in whole design
+            content = """
+module axi_dw_conv_wrapper #(
+    parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
+    parameter int unsigned AxiSrcPortDataWidth = 8    , // Data width of the slv port
+    parameter int unsigned AxiOutPortDataWidth = 8    , // Data width of the mst port
+    parameter int unsigned AxiAddrWidth        = 1    , // Address width
+    parameter int unsigned AxiIdWidth          = 1      // ID width
+    ) (
+    input  logic          clk_i,
+    input  logic          rst_ni,
+
+          input  wire [AxiIdWidth   - 1 :0]         i_src_awid,
+          input  wire [AxiAddrWidth - 1 :0]         i_src_awaddr,
+          input  wire  [7:0]                        i_src_awlen,
+          input  wire  [2:0]                        i_src_awsize,
+          input  wire  [1:0]                        i_src_awburst,
+          input  wire                               i_src_awlock,
+          input  wire  [3:0]                        i_src_awcache,
+          input  wire  [2:0]                        i_src_awprot,
+          input  wire  [3:0]                        i_src_awregion,
+          input  wire  [3:0]                        i_src_awqos,
+          input  wire                               i_src_awvalid,
+          output wire                               o_src_awready,
+          input  wire [AxiIdWidth - 1   :0]         i_src_arid,
+          input  wire [AxiAddrWidth - 1 :0]         i_src_araddr,
+          input  wire  [7:0]                        i_src_arlen,
+          input  wire  [2:0]                        i_src_arsize,
+          input  wire  [1:0]                        i_src_arburst,
+          input  wire                               i_src_arlock,
+          input  wire  [3:0]                        i_src_arcache,
+          input  wire  [2:0]                        i_src_arprot,
+          input  wire  [3:0]                        i_src_arregion,
+          input  wire  [3:0]                        i_src_arqos,
+          input  wire                               i_src_arvalid,
+          output wire                               o_src_arready,
+          input  wire [AxiSrcPortDataWidth - 1:0]   i_src_wdata,
+          input  wire [AxiSrcPortDataWidth/8 - 1:0] i_src_wstrb,
+          input  wire                               i_src_wlast,
+          input  wire                               i_src_wvalid,
+          output wire                               o_src_wready,
+          output wire [AxiIdWidth - 1 :0]           o_src_bid,
+          output wire  [1:0]                        o_src_bresp,
+          output wire                               o_src_bvalid,
+          input  wire                               i_src_bready,
+          output wire [AxiIdWidth - 1 :0]           o_src_rid,
+          output wire [AxiSrcPortDataWidth - 1:0]   o_src_rdata,
+          output wire  [1:0]                        o_src_rresp,
+          output wire                               o_src_rlast,
+          output wire                               o_src_rvalid,
+          input  wire                               i_src_rready,
+
+          output wire [AxiIdWidth - 1 :0]           o_dst_awid,
+          output wire [AxiAddrWidth - 1 :0]         o_dst_awaddr,
+          output wire  [7:0]                        o_dst_awlen,
+          output wire  [2:0]                        o_dst_awsize,
+          output wire  [1:0]                        o_dst_awburst,
+          output wire                               o_dst_awlock,
+          output wire  [3:0]                        o_dst_awcache,
+          output wire  [2:0]                        o_dst_awprot,
+          output wire  [3:0]                        o_dst_awregion,
+          output wire  [3:0]                        o_dst_awqos,
+          output wire                               o_dst_awvalid,
+          input  wire                               i_dst_awready,
+          output wire [AxiIdWidth-1:0]              o_dst_arid,
+          output wire [AxiAddrWidth-1:0]            o_dst_araddr,
+          output wire  [7:0]                        o_dst_arlen,
+          output wire  [2:0]                        o_dst_arsize,
+          output wire  [1:0]                        o_dst_arburst,
+          output wire                               o_dst_arlock,
+          output wire  [3:0]                        o_dst_arcache,
+          output wire  [2:0]                        o_dst_arprot,
+          output wire  [3:0]                        o_dst_arregion,
+          output wire  [3:0]                        o_dst_arqos,
+          output wire                               o_dst_arvalid,
+          input  wire                               i_dst_arready,
+          output wire [AxiOutPortDataWidth - 1:0]   o_dst_wdata,
+          output wire [AxiOutPortDataWidth/8 - 1:0] o_dst_wstrb,
+          output wire                               o_dst_wlast,
+          output wire                               o_dst_wvalid,
+          input  wire                               i_dst_wready,
+          input  wire [AxiIdWidth - 1:0]            i_dst_bid,
+          input  wire  [1:0]                        i_dst_bresp,
+          input  wire                               i_dst_bvalid,
+          output wire                               o_dst_bready,
+          input  wire [AxiIdWidth - 1:0]            i_dst_rid,
+          input  wire [AxiOutPortDataWidth - 1:0]   i_dst_rdata,
+          input  wire  [1:0]                        i_dst_rresp,
+          input  wire                               i_dst_rlast,
+          input  wire                               i_dst_rvalid,
+          output wire                               o_dst_rready
+    );
+
+    typedef logic [AxiIdWidth-1:0]            id_t;
+    typedef logic [AxiAddrWidth-1:0]          addr_t;
+    typedef logic [AxiOutPortDataWidth-1:0]   mst_data_t;
+    typedef logic [AxiSrcPortDataWidth-1:0]   slv_data_t;
+
+
+    typedef logic [AxiStrbWidth-1:0]          strb_t;
+    typedef logic [AxiUserWidth-1:0]          user_t;
+    
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_mst_t, addr_t, id_mst_t, user_t)
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_slv_t, addr_t, id_slv_t, user_t)
+    `AXI_TYPEDEF_W_CHAN_T(mst_w_chan_t, mst_data_t, strb_t, user_t)
+    `AXI_TYPEDEF_W_CHAN_T(slv_w_chan_t, slv_data_t, strb_t, user_t)
+    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
+    
+    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_mst_t, data_t, id_mst_t, user_t)
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_slv_t, data_t, id_slv_t, user_t)
+    
+    `AXI_TYPEDEF_REQ_T(slv_req_t, aw_chan_mst_t, w_chan_t, ar_chan_mst_t)
+    `AXI_TYPEDEF_RESP_T(slv_resp_t, b_chan_mst_t, r_chan_mst_t)
+    `AXI_TYPEDEF_REQ_T(mst_req_t, aw_chan_slv_t, w_chan_t, ar_chan_slv_t)
+    `AXI_TYPEDEF_RESP_T(mst_resp_t, b_chan_slv_t, r_chan_slv_t)
+         
+    slv_req_t  dst_req;
+    slv_resp_t dst_resp;
+    mst_req_t  src_req;
+    mst_resp_t src_resp;
+
+    axi_dw_converter #(
+       .AxiMaxReads        (AxiMaxReads        ),
+       .AxiSrcPortDataWidth(AxiSrcPortDataWidth),
+       .AxiOutPortDataWidth(AxiOutPortDataWidth),
+       .AxiAddrWidth       (AxiAddrWidth       ),
+       .AxiIdWidth         (AxiIdWidth         ),
+       .aw_chan_t          (aw_chan_t          ),
+       .mst_w_chan_t       (mst_w_chan_t       ),
+       .slv_w_chan_t       (slv_w_chan_t       ),
+       .b_chan_t           (b_chan_t           ),
+       .ar_chan_t          (ar_chan_t          ),
+       .mst_r_chan_t       (r_chan_mst_t       ),
+       .slv_r_chan_t       (r_chan_slv_t       ),
+       .axi_mst_req_t      (mst_req_t          ),
+       .axi_mst_resp_t     (mst_resp_t         ),
+       .axi_slv_req_t      (slv_req_t          ),
+       .axi_slv_resp_t     (slv_resp_t         )
+     ) i_axi_dw_converter (
+       .clk_i     (clk_i     ),
+       .rst_ni    (rst_ni    ),
+
+       // Slave interface
+       .slv_req_i (slv_req ),
+       .slv_resp_o(slv_resp),
+       // Master interface
+       .mst_req_o (mst_req ),
+       .mst_resp_i(mst_resp)
+     );
+
+
+    assign dst_req.aw.id = i_dst_awid;
+    assign dst_req.aw.addr = i_dst_awaddr;
+    assign dst_req.aw.len = i_dst_awlen;
+    assign dst_req.aw.size = i_dst_awsize;
+    assign dst_req.aw.burst = i_dst_awburst;
+    assign dst_req.aw.lock = i_dst_awlock;
+    assign dst_req.aw.cache = i_dst_awcache;
+    assign dst_req.aw.prot = i_dst_awprot;
+    assign dst_req.aw.region = i_dst_awregion;
+    assign dst_req.aw.qos = i_dst_awqos;
+    assign dst_req.aw.atop = 6'd0;
+    assign dst_req.aw_valid = i_dst_awvalid;
+    assign o_dst_awready = dst_resp.aw_ready;
+    assign dst_req.ar.id = i_dst_arid;
+    assign dst_req.ar.addr = i_dst_araddr;
+    assign dst_req.ar.len = i_dst_arlen;
+    assign dst_req.ar.size = i_dst_arsize;
+    assign dst_req.ar.burst = i_dst_arburst;
+    assign dst_req.ar.lock = i_dst_arlock;
+    assign dst_req.ar.cache = i_dst_arcache;
+    assign dst_req.ar.prot = i_dst_arprot;
+    assign dst_req.ar.region = i_dst_arregion;
+    assign dst_req.ar.qos = i_dst_arqos;
+    assign dst_req.ar_valid = i_dst_arvalid;
+    assign o_dst_arready = dst_resp.ar_ready;
+    assign dst_req.w.data = i_dst_wdata;
+    assign dst_req.w.strb = i_dst_wstrb;
+    assign dst_req.w.last = i_dst_wlast;
+    assign dst_req.w_valid = i_dst_wvalid;
+    assign o_dst_wready = dst_resp.w_ready;
+    assign o_dst_bid = dst_resp.b.id;
+    assign o_dst_bresp = dst_resp.b.resp;
+    assign o_dst_bvalid = dst_resp.b_valid;
+    assign dst_req.b_ready = i_dst_bready;
+    assign o_dst_rid = dst_resp.r.id;
+    assign o_dst_rdata = dst_resp.r.data;
+    assign o_dst_rresp = dst_resp.r.resp;
+    assign o_dst_rlast = dst_resp.r.last;
+    assign o_dst_rvalid = dst_resp.r_valid;
+    assign dst_req.r_ready = i_dst_rready;
+
+    assign o_src_awid = src_req.aw.id;
+    assign o_src_awaddr = src_req.aw.addr;
+    assign o_src_awlen = src_req.aw.len;
+    assign o_src_awsize = src_req.aw.size;
+    assign o_src_awburst = src_req.aw.burst;
+    assign o_src_awlock = src_req.aw.lock;
+    assign o_src_awcache = src_req.aw.cache;
+    assign o_src_awprot = src_req.aw.prot;
+    assign o_src_awregion = src_req.aw.region;
+    assign o_src_awqos = src_req.aw.qos;
+    assign o_src_awvalid = src_req.aw_valid;
+    assign src_resp.aw_ready = i_src_awready;
+    assign o_src_arid = src_req.ar.id;
+    assign o_src_araddr = src_req.ar.addr;
+    assign o_src_arlen = src_req.ar.len;
+    assign o_src_arsize = src_req.ar.size;
+    assign o_src_arburst = src_req.ar.burst;
+    assign o_src_arlock = src_req.ar.lock;
+    assign o_src_arcache = src_req.ar.cache;
+    assign o_src_arprot = src_req.ar.prot;
+    assign o_src_arregion = src_req.ar.region;
+    assign o_src_arqos = src_req.ar.qos;
+    assign o_src_arvalid = src_req.ar_valid;
+    assign src_resp.ar_ready = i_src_arready;
+    assign o_src_wdata = src_req.w.data;
+    assign o_src_wstrb = src_req.w.strb;
+    assign o_src_wlast = src_req.w.last;
+    assign o_src_wvalid = src_req.w_valid;
+    assign src_resp.w_ready = i_src_wready;
+    assign src_resp.b.id = i_src_bid;
+    assign src_resp.b.resp = i_src_bresp;
+    assign src_resp.b_valid = i_src_bvalid;
+    assign o_src_bready = src_req.b_ready;
+    assign src_resp.r.id = i_src_rid;
+    assign src_resp.r.data = i_src_rdata;
+    assign src_resp.r.resp = i_src_rresp;
+    assign src_resp.r.last = i_src_rlast;
+    assign src_resp.r_valid = i_src_rvalid;
+    assign o_src_rready = src_req.r_ready;
+
+endmodule
+        """
+            with open(f"{outdir}/src/axi_dw_converter.sv", "w") as file:
+                file.write(content)
+
+        if self.generate_cdc:
+            #NOTE: this file is currently not verified 
+            #      it seems like it is correct up to idea but topwrap prints many warnings
+            #      also it was not yet verified in whole design
+            content = """
+module axi_cdc_wrapper #(
+    parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
+    parameter int unsigned AxiDataWidth        = 8    , // Data width of the ports
+    parameter int unsigned AxiAddrWidth        = 1    , // Address width
+    parameter int unsigned AxiIdWidth          = 1      // ID width
+    ) (
+    input  logic          src_clk_i,
+    input  logic          src_rst_ni,
+    input  logic          dst_clk_i,
+    input  logic          dst_rst_ni,
+
+          input  wire [AxiIdWidth   - 1 :0]       i_src_awid,
+          input  wire [AxiAddrWidth - 1 :0]       i_src_awaddr,
+          input  wire  [7:0]                      i_src_awlen,
+          input  wire  [2:0]                      i_src_awsize,
+          input  wire  [1:0]                      i_src_awburst,
+          input  wire                             i_src_awlock,
+          input  wire  [3:0]                      i_src_awcache,
+          input  wire  [2:0]                      i_src_awprot,
+          input  wire  [3:0]                      i_src_awregion,
+          input  wire  [3:0]                      i_src_awqos,
+          input  wire                             i_src_awvalid,
+          output wire                             o_src_awready,
+          input  wire [AxiIdWidth - 1   :0]       i_src_arid,
+          input  wire [AxiAddrWidth - 1 :0]       i_src_araddr,
+          input  wire  [7:0]                      i_src_arlen,
+          input  wire  [2:0]                      i_src_arsize,
+          input  wire  [1:0]                      i_src_arburst,
+          input  wire                             i_src_arlock,
+          input  wire  [3:0]                      i_src_arcache,
+          input  wire  [2:0]                      i_src_arprot,
+          input  wire  [3:0]                      i_src_arregion,
+          input  wire  [3:0]                      i_src_arqos,
+          input  wire                             i_src_arvalid,
+          output wire                             o_src_arready,
+          input  wire [AxiDataWidth - 1:0]        i_src_wdata,
+          input  wire [AxiDataWidth/8 - 1:0]      i_src_wstrb,
+          input  wire                             i_src_wlast,
+          input  wire                             i_src_wvalid,
+          output wire                             o_src_wready,
+          output wire [AxiIdWidth - 1 :0]         o_src_bid,
+          output wire  [1:0]                      o_src_bresp,
+          output wire                             o_src_bvalid,
+          input  wire                             i_src_bready,
+          output wire [AxiIdWidth - 1 :0]         o_src_rid,
+          output wire [AxiDataWidth - 1:0]        o_src_rdata,
+          output wire  [1:0]                      o_src_rresp,
+          output wire                             o_src_rlast,
+          output wire                             o_src_rvalid,
+          input  wire                             i_src_rready,
+
+          output wire [AxiIdWidth - 1 :0]         o_dst_awid,
+          output wire [AxiAddrWidth - 1 :0]       o_dst_awaddr,
+          output wire  [7:0]                      o_dst_awlen,
+          output wire  [2:0]                      o_dst_awsize,
+          output wire  [1:0]                      o_dst_awburst,
+          output wire                             o_dst_awlock,
+          output wire  [3:0]                      o_dst_awcache,
+          output wire  [2:0]                      o_dst_awprot,
+          output wire  [3:0]                      o_dst_awregion,
+          output wire  [3:0]                      o_dst_awqos,
+          output wire                             o_dst_awvalid,
+          input  wire                             i_dst_awready,
+          output wire [AxiIdWidth-1:0]            o_dst_arid,
+          output wire [AxiAddrWidth-1:0]          o_dst_araddr,
+          output wire  [7:0]                      o_dst_arlen,
+          output wire  [2:0]                      o_dst_arsize,
+          output wire  [1:0]                      o_dst_arburst,
+          output wire                             o_dst_arlock,
+          output wire  [3:0]                      o_dst_arcache,
+          output wire  [2:0]                      o_dst_arprot,
+          output wire  [3:0]                      o_dst_arregion,
+          output wire  [3:0]                      o_dst_arqos,
+          output wire                             o_dst_arvalid,
+          input  wire                             i_dst_arready,
+          output wire [AxiDataWidth - 1:0]        o_dst_wdata,
+          output wire [AxiDataWidth/8 - 1:0]      o_dst_wstrb,
+          output wire                             o_dst_wlast,
+          output wire                             o_dst_wvalid,
+          input  wire                             i_dst_wready,
+          input  wire [AxiIdWidth - 1:0]          i_dst_bid,
+          input  wire  [1:0]                      i_dst_bresp,
+          input  wire                             i_dst_bvalid,
+          output wire                             o_dst_bready,
+          input  wire [AxiIdWidth - 1:0]          i_dst_rid,
+          input  wire [AxiDataWidth - 1:0]        i_dst_rdata,
+          input  wire  [1:0]                      i_dst_rresp,
+          input  wire                             i_dst_rlast,
+          input  wire                             i_dst_rvalid,
+          output wire                             o_dst_rready
+    );
+
+    typedef logic [AxiIdWidth-1:0]            id_t;
+    typedef logic [AxiAddrWidth-1:0]          addr_t;
+    typedef logic [AxiDataWidth-1:0]          data_t;
+
+    typedef logic [AxiStrbWidth-1:0]          strb_t;
+    typedef logic [AxiUserWidth-1:0]          user_t;
+    
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, user_t)
+    `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, user_t)
+    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
+    
+    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
+    
+    `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
+    `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
+
+    req_t  dst_req;
+    resp_t dst_resp;
+    req_t  src_req;
+    resp_t src_resp;
+
+    axi_cdc #(
+       .aw_chan_t      (aw_chan_t          ),
+       .w_chan_t       (mst_w_chan_t       ),
+       .b_chan_t       (b_chan_t           ),
+       .ar_chan_t      (ar_chan_t          ),
+       .r_chan_t       (r_chan_slv_t       ),
+       .axi_req_t      (mst_req_t          ),
+       .axi_resp_t     (mst_resp_t         ),
+     ) i_axi_cdc_wrapper (
+       .src_clk_i      (src_clk_i     ),
+       .src_rst_ni     (src_rst_ni    ),
+
+       .dst_clk_i      (dst_clk_i     ),
+       .dst_rst_ni     (dst_rst_ni    ),
+
+       // Slave interface
+       .src_req_i (src_req ),
+       .src_resp_o(src_resp),
+       // Master interface
+       .dst_req_o (dst_req ),
+       .dst_resp_i(dst_resp)
+     );
+
+
+    assign dst_req.aw.id = i_dst_awid;
+    assign dst_req.aw.addr = i_dst_awaddr;
+    assign dst_req.aw.len = i_dst_awlen;
+    assign dst_req.aw.size = i_dst_awsize;
+    assign dst_req.aw.burst = i_dst_awburst;
+    assign dst_req.aw.lock = i_dst_awlock;
+    assign dst_req.aw.cache = i_dst_awcache;
+    assign dst_req.aw.prot = i_dst_awprot;
+    assign dst_req.aw.region = i_dst_awregion;
+    assign dst_req.aw.qos = i_dst_awqos;
+    assign dst_req.aw.atop = 6'd0;
+    assign dst_req.aw_valid = i_dst_awvalid;
+    assign o_dst_awready = dst_resp.aw_ready;
+    assign dst_req.ar.id = i_dst_arid;
+    assign dst_req.ar.addr = i_dst_araddr;
+    assign dst_req.ar.len = i_dst_arlen;
+    assign dst_req.ar.size = i_dst_arsize;
+    assign dst_req.ar.burst = i_dst_arburst;
+    assign dst_req.ar.lock = i_dst_arlock;
+    assign dst_req.ar.cache = i_dst_arcache;
+    assign dst_req.ar.prot = i_dst_arprot;
+    assign dst_req.ar.region = i_dst_arregion;
+    assign dst_req.ar.qos = i_dst_arqos;
+    assign dst_req.ar_valid = i_dst_arvalid;
+    assign o_dst_arready = dst_resp.ar_ready;
+    assign dst_req.w.data = i_dst_wdata;
+    assign dst_req.w.strb = i_dst_wstrb;
+    assign dst_req.w.last = i_dst_wlast;
+    assign dst_req.w_valid = i_dst_wvalid;
+    assign o_dst_wready = dst_resp.w_ready;
+    assign o_dst_bid = dst_resp.b.id;
+    assign o_dst_bresp = dst_resp.b.resp;
+    assign o_dst_bvalid = dst_resp.b_valid;
+    assign dst_req.b_ready = i_dst_bready;
+    assign o_dst_rid = dst_resp.r.id;
+    assign o_dst_rdata = dst_resp.r.data;
+    assign o_dst_rresp = dst_resp.r.resp;
+    assign o_dst_rlast = dst_resp.r.last;
+    assign o_dst_rvalid = dst_resp.r_valid;
+    assign dst_req.r_ready = i_dst_rready;
+
+    assign o_src_awid = src_req.aw.id;
+    assign o_src_awaddr = src_req.aw.addr;
+    assign o_src_awlen = src_req.aw.len;
+    assign o_src_awsize = src_req.aw.size;
+    assign o_src_awburst = src_req.aw.burst;
+    assign o_src_awlock = src_req.aw.lock;
+    assign o_src_awcache = src_req.aw.cache;
+    assign o_src_awprot = src_req.aw.prot;
+    assign o_src_awregion = src_req.aw.region;
+    assign o_src_awqos = src_req.aw.qos;
+    assign o_src_awvalid = src_req.aw_valid;
+    assign src_resp.aw_ready = i_src_awready;
+    assign o_src_arid = src_req.ar.id;
+    assign o_src_araddr = src_req.ar.addr;
+    assign o_src_arlen = src_req.ar.len;
+    assign o_src_arsize = src_req.ar.size;
+    assign o_src_arburst = src_req.ar.burst;
+    assign o_src_arlock = src_req.ar.lock;
+    assign o_src_arcache = src_req.ar.cache;
+    assign o_src_arprot = src_req.ar.prot;
+    assign o_src_arregion = src_req.ar.region;
+    assign o_src_arqos = src_req.ar.qos;
+    assign o_src_arvalid = src_req.ar_valid;
+    assign src_resp.ar_ready = i_src_arready;
+    assign o_src_wdata = src_req.w.data;
+    assign o_src_wstrb = src_req.w.strb;
+    assign o_src_wlast = src_req.w.last;
+    assign o_src_wvalid = src_req.w_valid;
+    assign src_resp.w_ready = i_src_wready;
+    assign src_resp.b.id = i_src_bid;
+    assign src_resp.b.resp = i_src_bresp;
+    assign src_resp.b_valid = i_src_bvalid;
+    assign o_src_bready = src_req.b_ready;
+    assign src_resp.r.id = i_src_rid;
+    assign src_resp.r.data = i_src_rdata;
+    assign src_resp.r.resp = i_src_rresp;
+    assign src_resp.r.last = i_src_rlast;
+    assign src_resp.r_valid = i_src_rvalid;
+    assign o_src_rready = src_req.r_ready;
+
+endmodule
+        """
+            with open(f"{outdir}/src/axi_cdc.sv", "w") as file:
+                file.write(content)
+
 
     def generate_hierarchy(self, outdir):
         tree = {
@@ -462,17 +1022,59 @@ class Interconnect:
             else:
                 tree_interfaces['out'].append(name)
 
-        #for now, assume that all crossbars map to AXI from pulp-platform
+        #for now, assume that all components map to AXI from pulp-platform
         for name, component in self.components.items():
-            if component.kind != 'crossbar':
-                pass
+            if component.kind == 'crossbar':
+                tree['ips'][name] = dict()
 
-            tree['ips'][name] = dict()
+                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{name}/module.yaml"
+                tree['connections']['interfaces'][name] = dict()
+                
+                tree['connections']['ports'][name] = {'clk_i': component.attributes['clock']}
+            elif component.kind == 'dw_conv':
+                tree['ips'][name] = dict()
 
-            tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{name}/module.yaml"
-            tree['connections']['interfaces'][name] = dict()
-            
-            tree['connections']['ports'][name] = {'clk_i': component.attributes['clock']}
+                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_dw_conv_wrapper/module.yaml"
+                tree['ips'][name]['parameters'] = dict()
+
+                tree['connections']['interfaces'][name] = dict()
+                
+                tree['connections']['ports'][name] = {'clk_i': component.attributes['clock']}
+
+                srcport = self.ports[component.ports[0]]
+                dstport = self.ports[component.ports[1]]
+
+                params = tree['ips'][name]['parameters']
+
+                params['AxiMaxReads'] = 1
+                params['AxiSrcPortDataWidth'] = srcport.attributes['data_width']
+                params['AxiOutPortDataWidth'] = dstport.attributes['data_width']
+                #NOTE: placeholder until addr width is properly propagated
+                params['AxiAddrWidth']        = 2
+                #NOTE: placeholder until id width is properly propagated
+                params['AxiIdWidth']          = 2
+            elif component.kind == 'cdc':
+                tree['ips'][name] = dict()
+
+                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_cdc_wrapper/module.yaml"
+                tree['ips'][name]['parameters'] = dict()
+
+                tree['connections']['interfaces'][name] = dict()
+                
+                srcport = self.ports[component.ports[0]]
+                dstport = self.ports[component.ports[1]]
+
+                tree['connections']['ports'][name] = {'src_clk_i': srcport.attributes['clock'], 'dst_clk_i': dstport.attributes['clock']}
+
+                params = tree['ips'][name]['parameters']
+
+                params['AxiMaxReads'] = 1
+                params['AxiDataWidth'] = srcport.attributes['data_width']
+                #NOTE: placeholder until addr width is properly propagated
+                params['AxiAddrWidth']        = 2
+                #NOTE: placeholder until id width is properly propagated
+                params['AxiIdWidth']          = 2
+                
 
         for portname, port in self.ports.items():
             for dest in port.edges:
@@ -483,18 +1085,35 @@ class Interconnect:
                 if port.parent == destport.parent:
                     continue
 
+                portcomp = self.components.get(port.parent)
+                destcomp = self.components.get(destport.parent)
+
                 #interfaces can only be defined from IPs 
                 #ensure we are not in external interface
+                #TODO: this is a bit ugly, find some nicer way
                 if port.parent is None:
                     ip = tree['connections']['interfaces'][destport.parent]
-                    ip[destname] = portname
+
+                    if destcomp.kind == 'crossbar':
+                        ip[destname] = portname
+                    else:
+                        ip['src'] = portname
                 elif destport.parent is None:
                     ip = tree['connections']['interfaces'][port.parent]
-                    ip[portname] = destname
+
+                    if portcomp.kind == 'crossbar':
+                        ip[portname] = destname
+                    else:
+                        ip['dst'] = destname
                 else:
                     ip = tree['connections']['interfaces'][port.parent]
 
-                    ip[portname] = [destport.parent, destname]
+                    if portcomp.kind == 'crossbar' and destcomp.kind == 'crossbar':
+                        ip[portname] = [destport.parent, destname]
+                    elif portcomp.kind == 'crossbar':
+                        ip[portname] = [destport.parent, 'src']
+                    else:
+                        ip['dst'] = [destport.parent, destname]
 
         with open(f"{outdir}/interconnect.yml", 'w') as file:
             yaml.dump(tree, file)
