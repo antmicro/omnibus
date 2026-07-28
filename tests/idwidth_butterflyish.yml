@@ -1,0 +1,119 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+name: butterflyish
+
+ports:
+  i0:
+    type:  AXI4
+    clock: clk
+    data_width: 32
+    role:  "subordinate"
+  i1:
+    type:  AXI4
+    clock: clk
+    role:  "subordinate"
+  i2:
+    type:  AXI4
+    clock: clk
+    role:  "subordinate"
+  i3:
+    type:  AXI4
+    clock: clk
+    role:  "subordinate"
+  o0:
+    type:  AXI4
+    clock: clk
+    role:  "manager"
+  o1:
+    type:  AXI4
+    clock: clk
+    role:  "manager"
+  o2:
+    type:  AXI4
+    clock: clk
+    role:  "manager"
+  o3:
+    type:  AXI4
+    clock: clk
+    role:  "manager"
+
+crossbars:
+  x0:
+    ports:
+      i0:
+        role: "subordinate"
+      i1:
+        role: "subordinate"
+      o0:
+        role: "manager"
+      o1:
+        role: "manager"
+  x1:
+    ports:
+      i0:
+        role: "subordinate"
+      i1:
+        role: "subordinate"
+      o0:
+        role: "manager"
+      o1:
+        role: "manager"
+  x2:
+    ports:
+      i0:
+        role: "subordinate"
+      i1:
+        role: "subordinate"
+      o0:
+        role: "manager"
+      o1:
+        role: "manager"
+  x3:
+    ports:
+      i0:
+        role: "subordinate"
+      i1:
+        role: "subordinate"
+      o0:
+        role: "manager"
+      o1:
+        role: "manager"
+
+connections:
+  "i0 -> x0.i0":
+  "i1 -> x0.i1":
+  
+  "i2 -> x1.i0":
+  "i3 -> x1.i1":
+  
+  "x0.o1 -> x2.i0":
+  "x1.o0 -> x2.i1":
+  
+  "x0.o0 -> x3.i0":
+  "x2.o0 -> x3.i1":
+  
+  "x3.o0 -> o0":
+  "x3.o1 -> o1":
+  "x2.o1 -> o2":
+  "x1.o1 -> o3":
+
+address_map:
+  "o0":
+    to:    o0
+    base:  0x00000000
+    size:  0x10000000
+  "o1":
+    to:    o1
+    base:  0x10000000
+    size:  0x10000000
+  "o2":
+    to:    o2
+    base:  0x20000000
+    size:  0x10000000
+  "o3":
+    to:    o3
+    base:  0x30000000
+    size:  0x10000000

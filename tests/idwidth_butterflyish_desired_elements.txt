@@ -1,0 +1,318 @@
+ERROR: interconnect is not fully connected, lack of path from i0 to o3
+### PORTS ###
+== PORT i0 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x0_i0 -
+[]
+== PORT i1 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x0_i1 -
+[]
+== PORT i2 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x1_i0 -
+[]
+== PORT i3 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x1_i1 -
+[]
+== PORT o0 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+== PORT o1 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+== PORT o2 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+== PORT o3 parent: None ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+== PORT x0_i0 parent: x0 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x0_o0 -
+[]
+- edge to x0_o1 -
+[]
+== PORT x0_i1 parent: x0 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x0_o0 -
+[]
+- edge to x0_o1 -
+[]
+== PORT x0_o0 parent: x0 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+- edge to x3_i0 -
+[]
+== PORT x0_o1 parent: x0 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+- edge to x2_i0 -
+[]
+== PORT x1_i0 parent: x1 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x1_o0 -
+[]
+- edge to x1_o1 -
+[]
+== PORT x1_i1 parent: x1 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x1_o0 -
+[]
+- edge to x1_o1 -
+[]
+== PORT x1_o0 parent: x1 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+- edge to x2_i1 -
+[]
+== PORT x1_o1 parent: x1 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+- edge to o3 -
+[('protocol', True)]
+== PORT x2_i0 parent: x2 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x2_o0 -
+[]
+- edge to x2_o1 -
+[]
+== PORT x2_i1 parent: x2 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x2_o0 -
+[]
+- edge to x2_o1 -
+[]
+== PORT x2_o0 parent: x2 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+- edge to x3_i1 -
+[]
+== PORT x2_o1 parent: x2 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+- edge to o2 -
+[('protocol', True)]
+== PORT x3_i0 parent: x3 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x3_o0 -
+[]
+- edge to x3_o1 -
+[]
+== PORT x3_i1 parent: x3 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'subordinate'), ('type', 'AXI4')]
+- edge to x3_o0 -
+[]
+- edge to x3_o1 -
+[]
+== PORT x3_o0 parent: x3 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+- edge to o0 -
+[('protocol', True)]
+== PORT x3_o1 parent: x3 ==
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+- edge to o1 -
+[('protocol', True)]
+### COMPONENTS ###
+== COMP x0 crossbar
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    role: subordinate
+    type: AXI4
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    role: subordinate
+    type: AXI4
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: manager
+    type: AXI4
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: manager
+    type: AXI4
+sub_id_width: 1
+== COMP x1 crossbar
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    role: subordinate
+    type: AXI4
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    role: subordinate
+    type: AXI4
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: manager
+    type: AXI4
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: manager
+    type: AXI4
+sub_id_width: 1
+== COMP x2 crossbar
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: subordinate
+    type: AXI4
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    role: subordinate
+    type: AXI4
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    role: manager
+    type: AXI4
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    role: manager
+    type: AXI4
+sub_id_width: 2
+== COMP x3 crossbar
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    role: subordinate
+    type: AXI4
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    role: subordinate
+    type: AXI4
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    role: manager
+    type: AXI4
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    role: manager
+    type: AXI4
+sub_id_width: 3
+### ADDR MAPS ###
+== INTERCONNECT ==
+{'o0': {'to': 'o0', 'base': 0, 'size': 268435456}, 'o1': {'to': 'o1', 'base': 268435456, 'size': 268435456}, 'o2': {'to': 'o2', 'base': 536870912, 'size': 268435456}, 'o3': {'to': 'o3', 'base': 805306368, 'size': 268435456}}
+== CROSSBAR x0==
+--
+i0 x0_o1
+0x0 0x10000000
+--
+i1 x0_o1
+0x0 0x10000000
+--
+i0 x0_o1
+0x10000000 0x10000000
+--
+i1 x0_o1
+0x10000000 0x10000000
+--
+i0 x0_o1
+0x20000000 0x10000000
+--
+i1 x0_o1
+0x20000000 0x10000000
+== CROSSBAR x1==
+--
+i2 x1_o0
+0x0 0x10000000
+--
+i3 x1_o0
+0x0 0x10000000
+--
+i2 x1_o0
+0x10000000 0x10000000
+--
+i3 x1_o0
+0x10000000 0x10000000
+--
+i2 x1_o0
+0x20000000 0x10000000
+--
+i3 x1_o0
+0x20000000 0x10000000
+== CROSSBAR x2==
+--
+i0 x2_o0
+0x0 0x10000000
+--
+i1 x2_o0
+0x0 0x10000000
+--
+i2 x2_o0
+0x0 0x10000000
+--
+i3 x2_o0
+0x0 0x10000000
+--
+i0 x2_o0
+0x10000000 0x10000000
+--
+i1 x2_o0
+0x10000000 0x10000000
+--
+i2 x2_o0
+0x10000000 0x10000000
+--
+i3 x2_o0
+0x10000000 0x10000000
+--
+i0 x2_o1
+0x20000000 0x10000000
+--
+i1 x2_o1
+0x20000000 0x10000000
+--
+i2 x2_o1
+0x20000000 0x10000000
+--
+i3 x2_o1
+0x20000000 0x10000000
+== CROSSBAR x3==
+--
+i0 x3_o0
+0x0 0x10000000
+--
+i1 x3_o0
+0x0 0x10000000
+--
+i2 x3_o0
+0x0 0x10000000
+--
+i3 x3_o0
+0x0 0x10000000
+--
+i0 x3_o1
+0x10000000 0x10000000
+--
+i1 x3_o1
+0x10000000 0x10000000
+--
+i2 x3_o1
+0x10000000 0x10000000
+--
+i3 x3_o1
+0x10000000 0x10000000

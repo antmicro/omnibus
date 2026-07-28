@@ -9,6 +9,10 @@ connections:
       dst:
       - sb_lpp
       - sb_lpp_up
+    pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB:
+      dst: apb_i2c
+    pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB:
+      dst: apb_uart
     sb_cpu:
       sb_cpu_dbg: axi_dbg
       sb_cpu_lpp:
@@ -16,8 +20,12 @@ connections:
       - src
       sb_cpu_mem: axi_mem
     sb_lpp:
-      sb_lpp_i2c: apb_i2c
-      sb_lpp_uart: apb_uart
+      sb_lpp_i2c:
+      - pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB
+      - src
+      sb_lpp_uart:
+      - pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB
+      - src
   ports:
     cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
       dst_clk_i: clk_bus
@@ -25,6 +33,10 @@ connections:
     cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
       dst_clk_i: clk_lpp
       src_clk_i: clk_bus
+    pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB:
+      clk_i: clk_lpp
+    pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB:
+      clk_i: clk_lpp
     sb_cpu:
       clk_i: clk_bus
     sb_lpp:
@@ -47,17 +59,29 @@ ips:
   cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 32
-      AxiIdWidth: 2
+      AxiIdWidth: 1
       AxiMaxReads: 1
   cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
       AxiMaxReads: 1
+  pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB:
+    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 32
+      AxiIdWidth: 2
+  pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB:
+    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 32
+      AxiIdWidth: 2
   sb_cpu:
     file: file:./out/modules/cores/sb_cpu/module.yaml
   sb_lpp:

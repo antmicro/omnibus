@@ -1,42 +1,42 @@
 ### PORTS ###
 == PORT veer_el2_ifu parent: None ==
-[('clock', 'clk_slow'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_slow'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_veer_el2_ifu -
 []
 == PORT veer_el2_lsu parent: None ==
-[('clock', 'clk_slow'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_slow'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_veer_el2_lsu -
 []
 == PORT veer_eh2_ifu parent: None ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_veer_eh2_ifu -
 []
 == PORT veer_eh2_lsu parent: None ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_veer_eh2_lsu -
 []
 == PORT fast_vdma parent: None ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma -
 []
 == PORT fast_vdma_csr parent: None ==
-[('clock', 'clk_fast'), ('data_width', 32), ('role', 'manager'), ('type', 'axi4 lite')]
+[('clock', 'clk_fast'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'axi4_lite')]
 == PORT timers_csr parent: None ==
-[('clock', 'clk_slow'), ('data_width', 64), ('role', 'manager'), ('type', 'apb3')]
+[('clock', 'clk_slow'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'apb3')]
 == PORT coral_npu_out parent: None ==
-[('clock', 'clk_fast'), ('data_width', 128), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 128), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 == PORT coral_npu_in parent: None ==
-[('clock', 'clk_fast'), ('data_width', 128), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 128), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_coral_npu_in -
 []
 == PORT i3c_controller parent: None ==
-[('clock', 'clk_slow'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_slow'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 == PORT i3c_target parent: None ==
-[('clock', 'clk_slow'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_slow'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 == PORT uart_csr parent: None ==
-[('clock', 'clk_ahb'), ('data_width', 64), ('role', 'manager'), ('type', 'ahb3')]
+[('clock', 'clk_ahb'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'ahb3')]
 == PORT main_veer_el2_ifu parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -50,7 +50,7 @@
 - edge to main_uart_csr -
 []
 == PORT main_veer_el2_lsu parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -64,7 +64,7 @@
 - edge to main_uart_csr -
 []
 == PORT main_veer_eh2_ifu parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -78,7 +78,7 @@
 - edge to main_uart_csr -
 []
 == PORT main_veer_eh2_lsu parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -92,7 +92,7 @@
 - edge to main_uart_csr -
 []
 == PORT main_fast_vdma parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -106,7 +106,7 @@
 - edge to main_uart_csr -
 []
 == PORT main_coral_npu_in parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'subordinate'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 1), ('role', 'subordinate'), ('type', 'axi4')]
 - edge to main_fast_vdma_csr -
 []
 - edge to main_timers_csr -
@@ -120,27 +120,27 @@
 - edge to main_uart_csr -
 []
 == PORT main_fast_vdma_csr parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to fast_vdma_csr -
 [('protocol', True)]
 == PORT main_timers_csr parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to timers_csr -
 [('protocol', True)]
 == PORT main_coral_npu_out parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to coral_npu_out -
 [('protocol', True)]
 == PORT main_i3c_controller parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to i3c_controller -
 [('protocol', True)]
 == PORT main_i3c_target parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to i3c_target -
 [('protocol', True)]
 == PORT main_uart_csr parent: main ==
-[('clock', 'clk_fast'), ('data_width', 64), ('role', 'manager'), ('type', 'axi4')]
+[('clock', 'clk_fast'), ('data_width', 64), ('id_width', 4), ('role', 'manager'), ('type', 'axi4')]
 - edge to uart_csr -
 [('protocol', True)]
 ### COMPONENTS ###
@@ -150,63 +150,76 @@ ports:
   coral_npu_in:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
   coral_npu_out:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   fast_vdma:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
   fast_vdma_csr:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   i3c_controller:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   i3c_target:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   timers_csr:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   uart_csr:
     clock: clk_fast
     data_width: 64
+    id_width: 4
     role: manager
     type: axi4
   veer_eh2_ifu:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
   veer_eh2_lsu:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
   veer_el2_ifu:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
   veer_el2_lsu:
     clock: clk_fast
     data_width: 64
+    id_width: 1
     role: subordinate
     type: axi4
+sub_id_width: 1
 ### ADDR MAPS ###
 == INTERCONNECT ==
 {'i3c_target_csr': {'to': 'i3c_target', 'base': 1073741824, 'size': 65535}, 'i3c_controller_csr': {'to': 'i3c_controller', 'base': 1073807360, 'size': 65535}, 'uart_csr': {'to': 'uart_csr', 'base': 1073872896, 'size': 65535}, 'timers_csr': {'to': 'timers_csr', 'base': 1073938432, 'size': 65535}, 'fastvdma_csr': {'to': 'fast_vdma_csr', 'base': 1342177280, 'size': 65535}, 'coral_npu_out': {'to': 'coral_npu_out', 'base': 1610612736, 'size': 268435455}}

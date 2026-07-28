@@ -41,7 +41,7 @@ ports:
     data_width: 64
     clock: clk_fast
   fast_vdma_csr:
-    type: axi4 lite
+    type: axi4_lite
     role: "manager"
     data_width: 32
     clock: clk_fast

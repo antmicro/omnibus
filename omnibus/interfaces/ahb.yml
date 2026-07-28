@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+id:
+  library: libdefault
+  name: AHB3
+  vendor: vendor
+signals:
+  required:
+    out:
+      ADDR: addr
+      BURST: burst
+      MASTLOCK: mastlock
+      PROT: prot
+      SIZE: size
+      TRANS: trans
+      WDATA: wdata
+      WSTRB: wstrb
+      WRITE: write
+    in:
+      RDATA: rdata
+      READY: ready
+      RESP: resp

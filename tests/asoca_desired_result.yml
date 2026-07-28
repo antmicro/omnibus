@@ -5,9 +5,13 @@ connections:
     cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow:
       dst: i3c_target
     cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow:
-      dst: timers_csr
+      dst:
+      - pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3
+      - src
     cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb:
-      dst: uart_csr
+      dst:
+      - pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3
+      - src
     cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast:
       dst:
       - main
@@ -26,7 +30,9 @@ connections:
     dw_conv_main_coral_npu_out_64_to_coral_npu_out_128:
       dst: coral_npu_out
     dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
-      dst: fast_vdma_csr
+      dst:
+      - pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite
+      - src
     main:
       main_coral_npu_out:
       - dw_conv_main_coral_npu_out_64_to_coral_npu_out_128
@@ -49,6 +55,12 @@ connections:
       - src
       main_veer_eh2_ifu: veer_eh2_ifu
       main_veer_eh2_lsu: veer_eh2_lsu
+    pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
+      dst: timers_csr
+    pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
+      dst: uart_csr
+    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+      dst: fast_vdma_csr
   ports:
     cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
       dst_clk_i: clk_slow
@@ -76,6 +88,12 @@ connections:
       clk_i: clk_fast
     main:
       clk_i: clk_fast
+    pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
+      clk_i: clk_slow
+    pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
+      clk_i: clk_ahb
+    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+      clk_i: clk_fast
 external:
   interfaces:
     in:
@@ -101,69 +119,87 @@ ips:
   cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 4
       AxiMaxReads: 1
   cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 4
       AxiMaxReads: 1
   cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 4
       AxiMaxReads: 1
   cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 4
       AxiMaxReads: 1
   cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 1
       AxiMaxReads: 1
   cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast:
     file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
+      AxiAddrWidth: 32
       AxiDataWidth: 64
-      AxiIdWidth: 2
+      AxiIdWidth: 1
       AxiMaxReads: 1
   dw_conv_coral_npu_in_128_to_main_coral_npu_in_64:
     file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
-      AxiIdWidth: 2
+      AxiAddrWidth: 32
+      AxiIdWidth: 1
       AxiMaxReads: 1
       AxiOutPortDataWidth: 64
       AxiSrcPortDataWidth: 128
   dw_conv_main_coral_npu_out_64_to_coral_npu_out_128:
     file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
-      AxiIdWidth: 2
+      AxiAddrWidth: 32
+      AxiIdWidth: 4
       AxiMaxReads: 1
       AxiOutPortDataWidth: 128
       AxiSrcPortDataWidth: 64
   dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
     file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
-      AxiAddrWidth: 2
-      AxiIdWidth: 2
+      AxiAddrWidth: 32
+      AxiIdWidth: 4
       AxiMaxReads: 1
       AxiOutPortDataWidth: 32
       AxiSrcPortDataWidth: 64
   main:
     file: file:./out/modules/cores/main/module.yaml
+  pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
+    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 64
+      AxiIdWidth: 4
+  pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
+    file: file:./out/modules/cores/axi_prconv_axi_ahb/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 64
+      AxiIdWidth: 4
+  pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+    file: file:./out/modules/cores/axi_prconv_axi_axilite/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 32
+      AxiIdWidth: 4
 name: ASoCaInt

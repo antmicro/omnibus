@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+id:
+  library: libdefault
+  name: APB3
+  vendor: vendor
+signals:
+  required:
+    out:
+      ADDR: addr
+      PROT: prot
+      NSE: nse
+      SEL: sel
+      ENABLE: enable
+      WRITE: write
+      WDATA: wdata
+      STRB: strb
+      WAKEUP: wakeup
+      AUSER: auser
+      WUSER: wuser
+    in:
+      READY: ready
+      RDATA: rdata
+      SLVERR: slverr
+      RUSER: ruser
+      BUSER: buser

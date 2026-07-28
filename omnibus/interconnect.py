@@ -1,16 +1,19 @@
-import yaml
-import graphviz
 import copy
+import math
+import shutil
 import sys
-import importlib.resources
 import tempfile
+from importlib import resources
+
+import graphviz
+import yaml
 
 
 class Path:
     def __init__(self, start):
         self.curport   = start
         self.startport = start
-        self.crossbars = dict() 
+        self.crossbars = {} 
 
 
 class Edge:
@@ -22,8 +25,8 @@ class Port:
     def __init__(self, parent, attributes):
         self.parent     = parent
         self.attributes = attributes
-        self.edges      = list()
-        self.backedges  = list()
+        self.edges      = []
+        self.backedges  = []
 
 
 class AddressMapEntry:
@@ -37,17 +40,16 @@ class Component:
     def __init__(self, kind, attributes):
         self.kind       = kind
         self.attributes = attributes
-        self.ports      = list()
+        self.sub_log2   = 0
+        self.ports      = []
 
-        self.address_map = list()
+        self.address_map = []
 
 
 class Interconnect:
-
-
     def __init__(self, filename):
-        stream = open(filename, 'r')
-        self.spec = yaml.load(stream, yaml.Loader)
+        with open(filename, 'r') as stream:
+            self.spec = yaml.load(stream, yaml.Loader)
 
         # check for mandatory top level fields before any processing
         err = False
@@ -77,15 +79,15 @@ class Interconnect:
         if self.spec.get('clocks'):
             self.clocks = self.spec['clocks']
         else:
-            self.clocks = dict([('clk', dict([('frequency', 'n/a')]))])
+            self.clocks = {'clk': {'frequency': 'n/a'}}
 
         # process mandatory top level fields
-        self.ports      = dict()
-        self.components = dict()
+        self.ports      = {}
+        self.components = {}
 
         # collects start points for later
         # also will be used for address map generation
-        self.path_start_points = list()
+        self.path_start_points = []
 
         for k, v in self.spec['ports'].items():
             self.ports[k] = Port(None, v)
@@ -100,8 +102,8 @@ class Interconnect:
 
         #if not present, generate all to all
         if not self.spec.get('crossbars'):
-            self.spec['crossbars'] = {'main': {'clock': None, 'ports': dict()}}
-            self.spec['connections'] = dict()
+            self.spec['crossbars'] = {'main': {'clock': None, 'ports': {}}}
+            self.spec['connections'] = {}
 
             xb_ports = self.spec['crossbars']['main']['ports']
             
@@ -116,8 +118,8 @@ class Interconnect:
                         
         for crossbar, cpars in self.spec['crossbars'].items():
             #store which ports are subs and which are managers, later use this info to create edges
-            subs     = list()
-            managers = list()
+            subs     = []
+            managers = []
 
             if not cpars.get('ports'):
                 print(f"ERROR: crossbar '{crossbar}' does not have 'ports' field")
@@ -149,8 +151,9 @@ class Interconnect:
                 subport = self.ports[sub]
 
                 for manager in managers:
-                    subport.edges.append(Edge(manager, dict()))
-                    self.ports[manager].backedges.append(Edge(sub, dict()))
+                    subport.edges.append(Edge(manager, {}))
+                    self.ports[manager].backedges.append(Edge(sub, {}))
+            self.components[crossbar].sub_log2 = math.ceil(math.log2(len(subs)))
 
         for conn, params in self.spec['connections'].items():
             parts = conn.split(' ')
@@ -174,7 +177,7 @@ class Interconnect:
 
             
             if params is None:
-                params = dict()
+                params = {}
 
             #by default, protocol should not be propagated from subordinates 
             if not params.get('protocol') and port2.parent is None:
@@ -186,14 +189,14 @@ class Interconnect:
         self.address_map = self.spec['address_map']
 
     def find_routing_paths(self):
-        self.paths_to_search = list()
-        self.paths_complete  = dict()
+        self.paths_to_search = []
+        self.paths_complete  = {}
+
         for port in self.path_start_points:
             self.paths_to_search.append(Path(port))
 
         while len(self.paths_to_search) > 0:
-            curpath = self.paths_to_search[0]
-            self.paths_to_search.pop(0)
+            curpath = self.paths_to_search.pop(0)
 
             curport = self.ports[curpath.curport]
 
@@ -215,8 +218,8 @@ class Interconnect:
                 self.paths_to_search.append(newpath)
         
         # generate address maps here
-        for k, v in self.address_map.items():
-            sources = v.get('from')
+        for entry in self.address_map.values():
+            sources = entry.get('from')
             if sources is None:
                 sources = self.path_start_points
 
@@ -224,18 +227,21 @@ class Interconnect:
             if type(sources) is str:
                 sources = [sources]
 
-            dest = v['to']
-            base = v['base']
-            size = v['size']
+            dest = entry['to']
+            base = entry['base']
+            size = entry['size']
 
             for source in sources:
+                if not self.paths_complete.get(source + ' -> ' + dest):
+                    print(f"ERROR: interconnect is not fully connected, lack of path from {source} to {dest}")
+                    return
                 for crossbar, port in self.paths_complete[source + ' -> ' + dest].items():
                     self.components[crossbar].address_map.append(AddressMapEntry(source, port, base, size))
 
         #now sort each address map by (source, dest port, base) in that order
         #after that, check whether one entry is followed directly by another
         #if so, merge them 
-        for comp, params in self.components.items():
+        for params in self.components.values():
             if params.kind != 'crossbar':
                 continue
 
@@ -290,6 +296,24 @@ class Interconnect:
         # 2. assign it to connected ports
         # 3. if this process leads to conflict, there exists no valid configuration
 
+        #id width is handled as fully separate case 
+        #finding it requires some degree of backtracking and rewriting already found results
+        #
+        #  assign all top level subordinate ports id to 1, add them to list 
+        #  until the list is empty:
+        #    pick any port P from the list 
+        #    remove P from the list 
+        #    for each destination port D thru crossbar N:1:
+        #      if D.id_width >= P.id_width + ceil(log2(N))
+        #         continue
+        #      else
+        #         D.id_width = P.id_width + ceil(log2(N))
+        #         add D to list 
+        #  within each crossbar, set all subs to maximum id_width among subs 
+        #  later, id_width_extender might be needed
+        #
+        #notice that some nodes WILL be overwritten 
+
         for portname, port in self.ports.items():
             for edge in port.edges:
                 destname = edge.dest
@@ -315,7 +339,7 @@ class Interconnect:
                 port.attributes['data_width'] = data_width
                 dest.attributes['data_width'] = data_width
 
-        ports_to_process = list()
+        ports_to_process = []
 
         for attr, barrier in {('clock', 'cdc'), ('type', 'protocol'), ('data_width', None)}:
 
@@ -329,8 +353,7 @@ class Interconnect:
                 continue
 
             while len(ports_to_process) > 0:
-                portname = ports_to_process[0]
-                ports_to_process.pop(0)
+                portname = ports_to_process.pop(0)
 
                 port = self.ports[portname]
 
@@ -364,13 +387,48 @@ class Interconnect:
                 if not port.attributes.get(attr):
                     print(f"ERROR: could not propagate attribute '{attr}' to port '{portname}', it is likely surrounded by barriers that stop propagation")
 
+        ports_to_process = []
 
-        return
+        for portname, port in self.ports.items():
+            if port.parent is None and port.attributes['role'] == 'subordinate':
+                port.attributes['id_width'] = 1
+                ports_to_process.append(portname)
+
+        while len(ports_to_process) > 0:
+            portname = ports_to_process.pop(0)
+            port     = self.ports[portname]
+            id_width = port.attributes['id_width']
+
+            for edge in port.edges:
+                destname = edge.dest
+                dest     = self.ports[destname]
+
+                #separate handling for crossbars 
+                if port.parent is not None and port.parent == dest.parent:
+                    crossbar = self.components[port.parent]
+
+                    if dest.attributes.get('id_width', 0) <= id_width + crossbar.sub_log2:
+                        ports_to_process.append(destname)
+                        dest.attributes['id_width'] = id_width + crossbar.sub_log2
+
+                        crossbar.attributes['sub_id_width'] = max(crossbar.attributes.get('sub_id_width', 0), id_width) 
+
+                else:
+                    if dest.attributes.get('id_width', 0) <= id_width :
+                        ports_to_process.append(destname)
+                        dest.attributes['id_width'] = id_width
+
+        for comp in self.components.values():
+            for portname in comp.ports:
+                port = self.ports[portname]
+
+                if port.attributes['role'] == 'subordinate':
+                    port.attributes['id_width'] = comp.attributes['sub_id_width']
 
     def insert_new_components(self):
         #insert components from manager to subordinate components (left to right on graph view)
         #start with highest priority, AKA the ones that should be placed first in case of any conflict
-        #current prioretization is: data width > clock > protocol
+        #current prioretization is: id width > data width > clock > protocol
 
         #insertion algorithm is:
         # 1. go thru each connection, find connections between ports of different parameters
@@ -380,13 +438,16 @@ class Interconnect:
         #   a. for the parameter under consideration, get first's port param from source node, get second's port param from dest 
         #   b. for all the rest parameters, get both ports' params from source port 
         #note: source/dest are regarding edge direction, on graph view, source is on the left 
-        for param, kind in {('data_width', 'dw_conv'), ('clock', 'cdc')}:
-            newports = dict()
+        for param, kind in [('id_width', 'iw_conv'), ('data_width', 'dw_conv'), ('clock', 'cdc'), ('type', 'pr_conv')]:
+            newports = {}
 
             for portname, port in self.ports.items():
                 for edge in port.edges: 
                     destname = edge.dest 
                     dest = self.ports[destname]
+
+                    if port.parent is not None and dest.parent == port.parent:
+                        continue
 
                     portattr = port.attributes[param]
                     destattr = dest.attributes[param]
@@ -398,7 +459,7 @@ class Interconnect:
                     name1 = f"{kind}_{portname}_{portattr}"
                     name2 = f"{kind}_{destname}_{destattr}"
 
-                    self.components[name_comp] = Component(kind, dict())
+                    self.components[name_comp] = Component(kind, {})
                     self.components[name_comp].ports = [name1, name2]
 
                     newports[name1] = Port(name_comp, copy.deepcopy(port.attributes))
@@ -407,8 +468,8 @@ class Interconnect:
                     newports[name2].attributes[param] = destattr
 
                     edge.dest = name1
-                    newports[name1].edges.append(Edge(name2, dict()))
-                    newports[name2].edges.append(Edge(destname, dict()))
+                    newports[name1].edges.append(Edge(name2, {}))
+                    newports[name2].edges.append(Edge(destname, {}))
 
 
                     #fix manager-subordinate port organization as they are copied from left port, which is not correct
@@ -431,30 +492,46 @@ class Interconnect:
             self.ports = self.ports | newports
 
         #some fixup 
-        for compname, comp in self.components.items():
-            
+        for comp in self.components.values():
             if comp.kind == 'dw_conv':
                 comp.attributes['clock'] = self.ports[comp.ports[0]].attributes['clock']
 
-        return
-
     def map_components(self):
-        self.generate_dw_conv = False
-        self.generate_cdc     = False
-        
-        for name, component in self.components.items():
-            
+        self.ip_to_gen = set()
+
+        for component in self.components.values():
             #this is mostly a placeholder for now
-            #in the future when proper mapping is implemented, this should include actual choice 
+            #TODO: in the future when proper mapping is implemented, this should include actual choice 
             match component.kind:
                 case "crossbar":
                     pass
                 case "pr_conv":
-                    pass
+                    srcattr = self.ports[component.ports[0]].attributes['type']
+                    dstattr = self.ports[component.ports[1]].attributes['type']
+                    srcattr = srcattr.lower()
+                    dstattr = dstattr.lower()
+                
+                    if srcattr not in ['axi', 'axi4']:
+                        print(f"ERROR: invalid protocol type source, found '{srcattr}' but the only valid one is 'axi4'")
+                        return
+
+                    if   dstattr in ['ahb', 'ahb3']:
+                        self.ip_to_gen.add('axi_prconv_axi_ahb')
+                        component.attributes['ip_type'] = 'axi_prconv_axi_ahb'
+                    elif dstattr in ['apb', 'apb3']:
+                        self.ip_to_gen.add('axi_prconv_axi_apb')
+                        component.attributes['ip_type'] = 'axi_prconv_axi_apb'
+                    elif dstattr in ['axi4lite', 'axilite', 'axi_lite', 'axi4_lite']:
+                        self.ip_to_gen.add('axi_prconv_axi_axilite')
+                        component.attributes['ip_type'] = 'axi_prconv_axi_axilite'
+                    else:
+                        print(f"ERROR: invalid protocol type destination, found '{component.attributes['to']}' but the only valid ones are 'ahb3', 'apb3', 'axi4_lite'")
                 case "dw_conv":
-                    self.generate_dw_conv = True
+                    self.ip_to_gen.add('axi_dwconv')
                 case "cdc":
-                    self.generate_cdc     = True
+                    self.ip_to_gen.add("axi_cdc")
+                case "iw_conv":
+                    self.ip_to_gen.add("iw_conv")
                 case _:
                     print("ERROR: invalid kind of component, currently accepted ones are: 'crossbar', 'pr_conv', 'dw_conv', 'cdc'")
                     return
@@ -468,24 +545,21 @@ class Interconnect:
 
         #it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role 
         #therefore swap them internally
-        plugin_path = importlib.resources.files("omnibus")
+        plugin_path = resources.files("omnibus")
         sys.path.append(str(plugin_path / "third_party" / "axi" / "scripts"))
         import axi_intercon_gen
  
         for name, component in self.components.items():
-            if component.kind   == 'dw_conv':
-                pass
-            elif component.kind   == 'cdc':
+            if component.kind in ['dw_conv', 'cdc', 'pr_conv', 'iw_conv']:
                 pass
             elif component.kind == 'crossbar':
-                slaves      = dict()
-                slave_names = list()
-                masters     = dict()
+                slaves      = {}
+                slave_names = []
+                masters     = {}
      
                 for port in component.ports:
                     if self.ports[port].attributes['role'] == 'subordinate':
-                        #TODO: find proper id_width instead of using placeholder, requires parameter propagation
-                        masters[port] = {"id_width": 2, "slaves": slave_names}
+                        masters[port] = {"id_width": self.ports[port].attributes['id_width'], "slaves": slave_names}
                     else:
                         offset = 0
                         size   = 0
@@ -520,485 +594,48 @@ class Interconnect:
                 print(f"ERROR: cannot generate IP for component '{name}' of type '{component.kind}'")
 
 
-        # data width converter is always the same
-        if self.generate_dw_conv:
+        pulp_platform = resources.files("omnibus") / "wrappers" / "pulp_platform"
+        interfaces    = resources.files("omnibus") / "interfaces"
+        modules       = resources.files("omnibus") / "modules"
+
+        if 'axi_dwconv' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
             #      it seems like it is correct up to idea but topwrap prints many warnings
             #      also it was not yet verified in whole design
-            content = """
-module axi_dw_conv_wrapper #(
-    parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
-    parameter int unsigned AxiSrcPortDataWidth = 8    , // Data width of the slv port
-    parameter int unsigned AxiOutPortDataWidth = 8    , // Data width of the mst port
-    parameter int unsigned AxiAddrWidth        = 1    , // Address width
-    parameter int unsigned AxiIdWidth          = 1      // ID width
-    ) (
-    input  logic          clk_i,
-    input  logic          rst_ni,
+            shutil.copyfile(pulp_platform / "axi_dw_converter.sv", f"{outdir}/src/axi_dw_converter.sv")
 
-          input  wire [AxiIdWidth   - 1 :0]         i_src_awid,
-          input  wire [AxiAddrWidth - 1 :0]         i_src_awaddr,
-          input  wire  [7:0]                        i_src_awlen,
-          input  wire  [2:0]                        i_src_awsize,
-          input  wire  [1:0]                        i_src_awburst,
-          input  wire                               i_src_awlock,
-          input  wire  [3:0]                        i_src_awcache,
-          input  wire  [2:0]                        i_src_awprot,
-          input  wire  [3:0]                        i_src_awregion,
-          input  wire  [3:0]                        i_src_awqos,
-          input  wire                               i_src_awvalid,
-          output wire                               o_src_awready,
-          input  wire [AxiIdWidth - 1   :0]         i_src_arid,
-          input  wire [AxiAddrWidth - 1 :0]         i_src_araddr,
-          input  wire  [7:0]                        i_src_arlen,
-          input  wire  [2:0]                        i_src_arsize,
-          input  wire  [1:0]                        i_src_arburst,
-          input  wire                               i_src_arlock,
-          input  wire  [3:0]                        i_src_arcache,
-          input  wire  [2:0]                        i_src_arprot,
-          input  wire  [3:0]                        i_src_arregion,
-          input  wire  [3:0]                        i_src_arqos,
-          input  wire                               i_src_arvalid,
-          output wire                               o_src_arready,
-          input  wire [AxiSrcPortDataWidth - 1:0]   i_src_wdata,
-          input  wire [AxiSrcPortDataWidth/8 - 1:0] i_src_wstrb,
-          input  wire                               i_src_wlast,
-          input  wire                               i_src_wvalid,
-          output wire                               o_src_wready,
-          output wire [AxiIdWidth - 1 :0]           o_src_bid,
-          output wire  [1:0]                        o_src_bresp,
-          output wire                               o_src_bvalid,
-          input  wire                               i_src_bready,
-          output wire [AxiIdWidth - 1 :0]           o_src_rid,
-          output wire [AxiSrcPortDataWidth - 1:0]   o_src_rdata,
-          output wire  [1:0]                        o_src_rresp,
-          output wire                               o_src_rlast,
-          output wire                               o_src_rvalid,
-          input  wire                               i_src_rready,
-
-          output wire [AxiIdWidth - 1 :0]           o_dst_awid,
-          output wire [AxiAddrWidth - 1 :0]         o_dst_awaddr,
-          output wire  [7:0]                        o_dst_awlen,
-          output wire  [2:0]                        o_dst_awsize,
-          output wire  [1:0]                        o_dst_awburst,
-          output wire                               o_dst_awlock,
-          output wire  [3:0]                        o_dst_awcache,
-          output wire  [2:0]                        o_dst_awprot,
-          output wire  [3:0]                        o_dst_awregion,
-          output wire  [3:0]                        o_dst_awqos,
-          output wire                               o_dst_awvalid,
-          input  wire                               i_dst_awready,
-          output wire [AxiIdWidth-1:0]              o_dst_arid,
-          output wire [AxiAddrWidth-1:0]            o_dst_araddr,
-          output wire  [7:0]                        o_dst_arlen,
-          output wire  [2:0]                        o_dst_arsize,
-          output wire  [1:0]                        o_dst_arburst,
-          output wire                               o_dst_arlock,
-          output wire  [3:0]                        o_dst_arcache,
-          output wire  [2:0]                        o_dst_arprot,
-          output wire  [3:0]                        o_dst_arregion,
-          output wire  [3:0]                        o_dst_arqos,
-          output wire                               o_dst_arvalid,
-          input  wire                               i_dst_arready,
-          output wire [AxiOutPortDataWidth - 1:0]   o_dst_wdata,
-          output wire [AxiOutPortDataWidth/8 - 1:0] o_dst_wstrb,
-          output wire                               o_dst_wlast,
-          output wire                               o_dst_wvalid,
-          input  wire                               i_dst_wready,
-          input  wire [AxiIdWidth - 1:0]            i_dst_bid,
-          input  wire  [1:0]                        i_dst_bresp,
-          input  wire                               i_dst_bvalid,
-          output wire                               o_dst_bready,
-          input  wire [AxiIdWidth - 1:0]            i_dst_rid,
-          input  wire [AxiOutPortDataWidth - 1:0]   i_dst_rdata,
-          input  wire  [1:0]                        i_dst_rresp,
-          input  wire                               i_dst_rlast,
-          input  wire                               i_dst_rvalid,
-          output wire                               o_dst_rready
-    );
-
-    typedef logic [AxiIdWidth-1:0]            id_t;
-    typedef logic [AxiAddrWidth-1:0]          addr_t;
-    typedef logic [AxiOutPortDataWidth-1:0]   mst_data_t;
-    typedef logic [AxiSrcPortDataWidth-1:0]   slv_data_t;
-
-
-    typedef logic [AxiStrbWidth-1:0]          strb_t;
-    typedef logic [AxiUserWidth-1:0]          user_t;
-    
-    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_mst_t, addr_t, id_mst_t, user_t)
-    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_slv_t, addr_t, id_slv_t, user_t)
-    `AXI_TYPEDEF_W_CHAN_T(mst_w_chan_t, mst_data_t, strb_t, user_t)
-    `AXI_TYPEDEF_W_CHAN_T(slv_w_chan_t, slv_data_t, strb_t, user_t)
-    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
-    
-    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
-    `AXI_TYPEDEF_R_CHAN_T(r_chan_mst_t, data_t, id_mst_t, user_t)
-    `AXI_TYPEDEF_R_CHAN_T(r_chan_slv_t, data_t, id_slv_t, user_t)
-    
-    `AXI_TYPEDEF_REQ_T(slv_req_t, aw_chan_mst_t, w_chan_t, ar_chan_mst_t)
-    `AXI_TYPEDEF_RESP_T(slv_resp_t, b_chan_mst_t, r_chan_mst_t)
-    `AXI_TYPEDEF_REQ_T(mst_req_t, aw_chan_slv_t, w_chan_t, ar_chan_slv_t)
-    `AXI_TYPEDEF_RESP_T(mst_resp_t, b_chan_slv_t, r_chan_slv_t)
-         
-    slv_req_t  dst_req;
-    slv_resp_t dst_resp;
-    mst_req_t  src_req;
-    mst_resp_t src_resp;
-
-    axi_dw_converter #(
-       .AxiMaxReads        (AxiMaxReads        ),
-       .AxiSrcPortDataWidth(AxiSrcPortDataWidth),
-       .AxiOutPortDataWidth(AxiOutPortDataWidth),
-       .AxiAddrWidth       (AxiAddrWidth       ),
-       .AxiIdWidth         (AxiIdWidth         ),
-       .aw_chan_t          (aw_chan_t          ),
-       .mst_w_chan_t       (mst_w_chan_t       ),
-       .slv_w_chan_t       (slv_w_chan_t       ),
-       .b_chan_t           (b_chan_t           ),
-       .ar_chan_t          (ar_chan_t          ),
-       .mst_r_chan_t       (r_chan_mst_t       ),
-       .slv_r_chan_t       (r_chan_slv_t       ),
-       .axi_mst_req_t      (mst_req_t          ),
-       .axi_mst_resp_t     (mst_resp_t         ),
-       .axi_slv_req_t      (slv_req_t          ),
-       .axi_slv_resp_t     (slv_resp_t         )
-     ) i_axi_dw_converter (
-       .clk_i     (clk_i     ),
-       .rst_ni    (rst_ni    ),
-
-       // Slave interface
-       .slv_req_i (slv_req ),
-       .slv_resp_o(slv_resp),
-       // Master interface
-       .mst_req_o (mst_req ),
-       .mst_resp_i(mst_resp)
-     );
-
-
-    assign dst_req.aw.id = i_dst_awid;
-    assign dst_req.aw.addr = i_dst_awaddr;
-    assign dst_req.aw.len = i_dst_awlen;
-    assign dst_req.aw.size = i_dst_awsize;
-    assign dst_req.aw.burst = i_dst_awburst;
-    assign dst_req.aw.lock = i_dst_awlock;
-    assign dst_req.aw.cache = i_dst_awcache;
-    assign dst_req.aw.prot = i_dst_awprot;
-    assign dst_req.aw.region = i_dst_awregion;
-    assign dst_req.aw.qos = i_dst_awqos;
-    assign dst_req.aw.atop = 6'd0;
-    assign dst_req.aw_valid = i_dst_awvalid;
-    assign o_dst_awready = dst_resp.aw_ready;
-    assign dst_req.ar.id = i_dst_arid;
-    assign dst_req.ar.addr = i_dst_araddr;
-    assign dst_req.ar.len = i_dst_arlen;
-    assign dst_req.ar.size = i_dst_arsize;
-    assign dst_req.ar.burst = i_dst_arburst;
-    assign dst_req.ar.lock = i_dst_arlock;
-    assign dst_req.ar.cache = i_dst_arcache;
-    assign dst_req.ar.prot = i_dst_arprot;
-    assign dst_req.ar.region = i_dst_arregion;
-    assign dst_req.ar.qos = i_dst_arqos;
-    assign dst_req.ar_valid = i_dst_arvalid;
-    assign o_dst_arready = dst_resp.ar_ready;
-    assign dst_req.w.data = i_dst_wdata;
-    assign dst_req.w.strb = i_dst_wstrb;
-    assign dst_req.w.last = i_dst_wlast;
-    assign dst_req.w_valid = i_dst_wvalid;
-    assign o_dst_wready = dst_resp.w_ready;
-    assign o_dst_bid = dst_resp.b.id;
-    assign o_dst_bresp = dst_resp.b.resp;
-    assign o_dst_bvalid = dst_resp.b_valid;
-    assign dst_req.b_ready = i_dst_bready;
-    assign o_dst_rid = dst_resp.r.id;
-    assign o_dst_rdata = dst_resp.r.data;
-    assign o_dst_rresp = dst_resp.r.resp;
-    assign o_dst_rlast = dst_resp.r.last;
-    assign o_dst_rvalid = dst_resp.r_valid;
-    assign dst_req.r_ready = i_dst_rready;
-
-    assign o_src_awid = src_req.aw.id;
-    assign o_src_awaddr = src_req.aw.addr;
-    assign o_src_awlen = src_req.aw.len;
-    assign o_src_awsize = src_req.aw.size;
-    assign o_src_awburst = src_req.aw.burst;
-    assign o_src_awlock = src_req.aw.lock;
-    assign o_src_awcache = src_req.aw.cache;
-    assign o_src_awprot = src_req.aw.prot;
-    assign o_src_awregion = src_req.aw.region;
-    assign o_src_awqos = src_req.aw.qos;
-    assign o_src_awvalid = src_req.aw_valid;
-    assign src_resp.aw_ready = i_src_awready;
-    assign o_src_arid = src_req.ar.id;
-    assign o_src_araddr = src_req.ar.addr;
-    assign o_src_arlen = src_req.ar.len;
-    assign o_src_arsize = src_req.ar.size;
-    assign o_src_arburst = src_req.ar.burst;
-    assign o_src_arlock = src_req.ar.lock;
-    assign o_src_arcache = src_req.ar.cache;
-    assign o_src_arprot = src_req.ar.prot;
-    assign o_src_arregion = src_req.ar.region;
-    assign o_src_arqos = src_req.ar.qos;
-    assign o_src_arvalid = src_req.ar_valid;
-    assign src_resp.ar_ready = i_src_arready;
-    assign o_src_wdata = src_req.w.data;
-    assign o_src_wstrb = src_req.w.strb;
-    assign o_src_wlast = src_req.w.last;
-    assign o_src_wvalid = src_req.w_valid;
-    assign src_resp.w_ready = i_src_wready;
-    assign src_resp.b.id = i_src_bid;
-    assign src_resp.b.resp = i_src_bresp;
-    assign src_resp.b_valid = i_src_bvalid;
-    assign o_src_bready = src_req.b_ready;
-    assign src_resp.r.id = i_src_rid;
-    assign src_resp.r.data = i_src_rdata;
-    assign src_resp.r.resp = i_src_rresp;
-    assign src_resp.r.last = i_src_rlast;
-    assign src_resp.r_valid = i_src_rvalid;
-    assign o_src_rready = src_req.r_ready;
-
-endmodule
-        """
-            with open(f"{outdir}/src/axi_dw_converter.sv", "w") as file:
-                file.write(content)
-
-        if self.generate_cdc:
+        if 'axi_cdc' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
             #      it seems like it is correct up to idea but topwrap prints many warnings
             #      also it was not yet verified in whole design
-            content = """
-module axi_cdc_wrapper #(
-    parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
-    parameter int unsigned AxiDataWidth        = 8    , // Data width of the ports
-    parameter int unsigned AxiAddrWidth        = 1    , // Address width
-    parameter int unsigned AxiIdWidth          = 1      // ID width
-    ) (
-    input  logic          src_clk_i,
-    input  logic          src_rst_ni,
-    input  logic          dst_clk_i,
-    input  logic          dst_rst_ni,
+            shutil.copyfile(pulp_platform / "axi_cdc.sv", f"{outdir}/src/axi_cdc.sv")
 
-          input  wire [AxiIdWidth   - 1 :0]       i_src_awid,
-          input  wire [AxiAddrWidth - 1 :0]       i_src_awaddr,
-          input  wire  [7:0]                      i_src_awlen,
-          input  wire  [2:0]                      i_src_awsize,
-          input  wire  [1:0]                      i_src_awburst,
-          input  wire                             i_src_awlock,
-          input  wire  [3:0]                      i_src_awcache,
-          input  wire  [2:0]                      i_src_awprot,
-          input  wire  [3:0]                      i_src_awregion,
-          input  wire  [3:0]                      i_src_awqos,
-          input  wire                             i_src_awvalid,
-          output wire                             o_src_awready,
-          input  wire [AxiIdWidth - 1   :0]       i_src_arid,
-          input  wire [AxiAddrWidth - 1 :0]       i_src_araddr,
-          input  wire  [7:0]                      i_src_arlen,
-          input  wire  [2:0]                      i_src_arsize,
-          input  wire  [1:0]                      i_src_arburst,
-          input  wire                             i_src_arlock,
-          input  wire  [3:0]                      i_src_arcache,
-          input  wire  [2:0]                      i_src_arprot,
-          input  wire  [3:0]                      i_src_arregion,
-          input  wire  [3:0]                      i_src_arqos,
-          input  wire                             i_src_arvalid,
-          output wire                             o_src_arready,
-          input  wire [AxiDataWidth - 1:0]        i_src_wdata,
-          input  wire [AxiDataWidth/8 - 1:0]      i_src_wstrb,
-          input  wire                             i_src_wlast,
-          input  wire                             i_src_wvalid,
-          output wire                             o_src_wready,
-          output wire [AxiIdWidth - 1 :0]         o_src_bid,
-          output wire  [1:0]                      o_src_bresp,
-          output wire                             o_src_bvalid,
-          input  wire                             i_src_bready,
-          output wire [AxiIdWidth - 1 :0]         o_src_rid,
-          output wire [AxiDataWidth - 1:0]        o_src_rdata,
-          output wire  [1:0]                      o_src_rresp,
-          output wire                             o_src_rlast,
-          output wire                             o_src_rvalid,
-          input  wire                             i_src_rready,
+        if 'axi_prconv_axi_axilite' in self.ip_to_gen:
+            #NOTE: this file is currently only a stub 
+            shutil.copyfile(pulp_platform / "axi_pr_axi_axilite.sv", f"{outdir}/src/axi_pr_axi_axilite.sv")
 
-          output wire [AxiIdWidth - 1 :0]         o_dst_awid,
-          output wire [AxiAddrWidth - 1 :0]       o_dst_awaddr,
-          output wire  [7:0]                      o_dst_awlen,
-          output wire  [2:0]                      o_dst_awsize,
-          output wire  [1:0]                      o_dst_awburst,
-          output wire                             o_dst_awlock,
-          output wire  [3:0]                      o_dst_awcache,
-          output wire  [2:0]                      o_dst_awprot,
-          output wire  [3:0]                      o_dst_awregion,
-          output wire  [3:0]                      o_dst_awqos,
-          output wire                             o_dst_awvalid,
-          input  wire                             i_dst_awready,
-          output wire [AxiIdWidth-1:0]            o_dst_arid,
-          output wire [AxiAddrWidth-1:0]          o_dst_araddr,
-          output wire  [7:0]                      o_dst_arlen,
-          output wire  [2:0]                      o_dst_arsize,
-          output wire  [1:0]                      o_dst_arburst,
-          output wire                             o_dst_arlock,
-          output wire  [3:0]                      o_dst_arcache,
-          output wire  [2:0]                      o_dst_arprot,
-          output wire  [3:0]                      o_dst_arregion,
-          output wire  [3:0]                      o_dst_arqos,
-          output wire                             o_dst_arvalid,
-          input  wire                             i_dst_arready,
-          output wire [AxiDataWidth - 1:0]        o_dst_wdata,
-          output wire [AxiDataWidth/8 - 1:0]      o_dst_wstrb,
-          output wire                             o_dst_wlast,
-          output wire                             o_dst_wvalid,
-          input  wire                             i_dst_wready,
-          input  wire [AxiIdWidth - 1:0]          i_dst_bid,
-          input  wire  [1:0]                      i_dst_bresp,
-          input  wire                             i_dst_bvalid,
-          output wire                             o_dst_bready,
-          input  wire [AxiIdWidth - 1:0]          i_dst_rid,
-          input  wire [AxiDataWidth - 1:0]        i_dst_rdata,
-          input  wire  [1:0]                      i_dst_rresp,
-          input  wire                             i_dst_rlast,
-          input  wire                             i_dst_rvalid,
-          output wire                             o_dst_rready
-    );
+        if 'axi_prconv_axi_apb' in self.ip_to_gen:
+            #NOTE: this file is currently only a stub 
+            shutil.copyfile(pulp_platform / "axi_pr_axi_apb.sv", f"{outdir}/src/axi_pr_axi_apb.sv")
 
-    typedef logic [AxiIdWidth-1:0]            id_t;
-    typedef logic [AxiAddrWidth-1:0]          addr_t;
-    typedef logic [AxiDataWidth-1:0]          data_t;
+            shutil.copyfile(interfaces / "apb.yml", f"{outdir}/src/apb.yml")
 
-    typedef logic [AxiStrbWidth-1:0]          strb_t;
-    typedef logic [AxiUserWidth-1:0]          user_t;
-    
-    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, user_t)
-    `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, user_t)
-    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
-    
-    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
-    `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
-    
-    `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
-    `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
+        if 'axi_prconv_axi_ahb' in self.ip_to_gen:
+            #NOTE: this file is currently only a stub 
+            shutil.copyfile(pulp_platform / "axi_pr_axi_ahb.sv", f"{outdir}/src/axi_pr_axi_ahb.sv")
 
-    req_t  dst_req;
-    resp_t dst_resp;
-    req_t  src_req;
-    resp_t src_resp;
+            shutil.copyfile(interfaces / "ahb.yml", f"{outdir}/src/ahb.yml")
 
-    axi_cdc #(
-       .aw_chan_t      (aw_chan_t          ),
-       .w_chan_t       (mst_w_chan_t       ),
-       .b_chan_t       (b_chan_t           ),
-       .ar_chan_t      (ar_chan_t          ),
-       .r_chan_t       (r_chan_slv_t       ),
-       .axi_req_t      (mst_req_t          ),
-       .axi_resp_t     (mst_resp_t         ),
-     ) i_axi_cdc_wrapper (
-       .src_clk_i      (src_clk_i     ),
-       .src_rst_ni     (src_rst_ni    ),
-
-       .dst_clk_i      (dst_clk_i     ),
-       .dst_rst_ni     (dst_rst_ni    ),
-
-       // Slave interface
-       .src_req_i (src_req ),
-       .src_resp_o(src_resp),
-       // Master interface
-       .dst_req_o (dst_req ),
-       .dst_resp_i(dst_resp)
-     );
-
-
-    assign dst_req.aw.id = i_dst_awid;
-    assign dst_req.aw.addr = i_dst_awaddr;
-    assign dst_req.aw.len = i_dst_awlen;
-    assign dst_req.aw.size = i_dst_awsize;
-    assign dst_req.aw.burst = i_dst_awburst;
-    assign dst_req.aw.lock = i_dst_awlock;
-    assign dst_req.aw.cache = i_dst_awcache;
-    assign dst_req.aw.prot = i_dst_awprot;
-    assign dst_req.aw.region = i_dst_awregion;
-    assign dst_req.aw.qos = i_dst_awqos;
-    assign dst_req.aw.atop = 6'd0;
-    assign dst_req.aw_valid = i_dst_awvalid;
-    assign o_dst_awready = dst_resp.aw_ready;
-    assign dst_req.ar.id = i_dst_arid;
-    assign dst_req.ar.addr = i_dst_araddr;
-    assign dst_req.ar.len = i_dst_arlen;
-    assign dst_req.ar.size = i_dst_arsize;
-    assign dst_req.ar.burst = i_dst_arburst;
-    assign dst_req.ar.lock = i_dst_arlock;
-    assign dst_req.ar.cache = i_dst_arcache;
-    assign dst_req.ar.prot = i_dst_arprot;
-    assign dst_req.ar.region = i_dst_arregion;
-    assign dst_req.ar.qos = i_dst_arqos;
-    assign dst_req.ar_valid = i_dst_arvalid;
-    assign o_dst_arready = dst_resp.ar_ready;
-    assign dst_req.w.data = i_dst_wdata;
-    assign dst_req.w.strb = i_dst_wstrb;
-    assign dst_req.w.last = i_dst_wlast;
-    assign dst_req.w_valid = i_dst_wvalid;
-    assign o_dst_wready = dst_resp.w_ready;
-    assign o_dst_bid = dst_resp.b.id;
-    assign o_dst_bresp = dst_resp.b.resp;
-    assign o_dst_bvalid = dst_resp.b_valid;
-    assign dst_req.b_ready = i_dst_bready;
-    assign o_dst_rid = dst_resp.r.id;
-    assign o_dst_rdata = dst_resp.r.data;
-    assign o_dst_rresp = dst_resp.r.resp;
-    assign o_dst_rlast = dst_resp.r.last;
-    assign o_dst_rvalid = dst_resp.r_valid;
-    assign dst_req.r_ready = i_dst_rready;
-
-    assign o_src_awid = src_req.aw.id;
-    assign o_src_awaddr = src_req.aw.addr;
-    assign o_src_awlen = src_req.aw.len;
-    assign o_src_awsize = src_req.aw.size;
-    assign o_src_awburst = src_req.aw.burst;
-    assign o_src_awlock = src_req.aw.lock;
-    assign o_src_awcache = src_req.aw.cache;
-    assign o_src_awprot = src_req.aw.prot;
-    assign o_src_awregion = src_req.aw.region;
-    assign o_src_awqos = src_req.aw.qos;
-    assign o_src_awvalid = src_req.aw_valid;
-    assign src_resp.aw_ready = i_src_awready;
-    assign o_src_arid = src_req.ar.id;
-    assign o_src_araddr = src_req.ar.addr;
-    assign o_src_arlen = src_req.ar.len;
-    assign o_src_arsize = src_req.ar.size;
-    assign o_src_arburst = src_req.ar.burst;
-    assign o_src_arlock = src_req.ar.lock;
-    assign o_src_arcache = src_req.ar.cache;
-    assign o_src_arprot = src_req.ar.prot;
-    assign o_src_arregion = src_req.ar.region;
-    assign o_src_arqos = src_req.ar.qos;
-    assign o_src_arvalid = src_req.ar_valid;
-    assign src_resp.ar_ready = i_src_arready;
-    assign o_src_wdata = src_req.w.data;
-    assign o_src_wstrb = src_req.w.strb;
-    assign o_src_wlast = src_req.w.last;
-    assign o_src_wvalid = src_req.w_valid;
-    assign src_resp.w_ready = i_src_wready;
-    assign src_resp.b.id = i_src_bid;
-    assign src_resp.b.resp = i_src_bresp;
-    assign src_resp.b_valid = i_src_bvalid;
-    assign o_src_bready = src_req.b_ready;
-    assign src_resp.r.id = i_src_rid;
-    assign src_resp.r.data = i_src_rdata;
-    assign src_resp.r.resp = i_src_rresp;
-    assign src_resp.r.last = i_src_rlast;
-    assign src_resp.r_valid = i_src_rvalid;
-    assign o_src_rready = src_req.r_ready;
-
-endmodule
-        """
-            with open(f"{outdir}/src/axi_cdc.sv", "w") as file:
-                file.write(content)
-
+        if 'iw_conv' in self.ip_to_gen:
+            shutil.copyfile(modules / "axi_idwidth_expander.sv", f"{outdir}/src/axi_idwidth_expander.sv")
 
     def generate_hierarchy(self, outdir):
         tree = {
             'name': self.name,
-            'ips': dict(), 
+            'ips': {}, 
             'connections': {
-                'ports': dict(), 
-                'interfaces': dict()}, 
+                'ports': {}, 
+                'interfaces': {}}, 
             'external': {
                 'ports': {'in': []},
                 'interfaces': {'in': [], 'out': []}
@@ -1007,8 +644,8 @@ endmodule
 
         # external clocks
         tree_ports = tree['external']['ports']
-        for clockname, clock in self.clocks.items():
-            tree_ports['in'].append(clockname)    
+        for name in self.clocks:
+            tree_ports['in'].append(name)    
             
             
         # external ports (actually interfaces)
@@ -1023,43 +660,63 @@ endmodule
                 tree_interfaces['out'].append(name)
 
         #for now, assume that all components map to AXI from pulp-platform
+        #TODO: unify this somehow
         for name, component in self.components.items():
             if component.kind == 'crossbar':
-                tree['ips'][name] = dict()
+                tree['ips'][name] = {}
 
                 tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{name}/module.yaml"
-                tree['connections']['interfaces'][name] = dict()
+                tree['connections']['interfaces'][name] = {}
                 
-                tree['connections']['ports'][name] = {'clk_i': component.attributes['clock']}
+                port = self.ports[component.ports[0]]
+
+                tree['connections']['ports'][name] = {'clk_i': port.attributes['clock']}
             elif component.kind == 'dw_conv':
-                tree['ips'][name] = dict()
+                tree['ips'][name] = {}
 
                 tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_dw_conv_wrapper/module.yaml"
-                tree['ips'][name]['parameters'] = dict()
+                tree['ips'][name]['parameters'] = {}
 
-                tree['connections']['interfaces'][name] = dict()
+                tree['connections']['interfaces'][name] = {}
                 
-                tree['connections']['ports'][name] = {'clk_i': component.attributes['clock']}
+                port = self.ports[component.ports[0]]
+                tree['connections']['ports'][name] = {'clk_i': port.attributes['clock']}
 
                 srcport = self.ports[component.ports[0]]
                 dstport = self.ports[component.ports[1]]
 
                 params = tree['ips'][name]['parameters']
 
-                params['AxiMaxReads'] = 1
+                params['AxiMaxReads']         = 1
                 params['AxiSrcPortDataWidth'] = srcport.attributes['data_width']
                 params['AxiOutPortDataWidth'] = dstport.attributes['data_width']
-                #NOTE: placeholder until addr width is properly propagated
-                params['AxiAddrWidth']        = 2
-                #NOTE: placeholder until id width is properly propagated
-                params['AxiIdWidth']          = 2
+                params['AxiAddrWidth']        = 32
+                params['AxiIdWidth']          = srcport.attributes['id_width']
+            elif component.kind == 'pr_conv':
+                tree['ips'][name] = {}
+
+                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{component.attributes['ip_type']}/module.yaml"
+                tree['ips'][name]['parameters'] = {}
+
+                tree['connections']['interfaces'][name] = {}
+                
+                srcport = self.ports[component.ports[0]]
+                dstport = self.ports[component.ports[1]]
+
+                tree['connections']['ports'][name] = {'clk_i': srcport.attributes['clock']}
+
+                params = tree['ips'][name]['parameters']
+
+                params['AxiDataWidth'] = srcport.attributes['data_width']
+                params['AxiAddrWidth'] = 32
+                params['AxiIdWidth']   = srcport.attributes['id_width']
             elif component.kind == 'cdc':
-                tree['ips'][name] = dict()
+                tree['ips'][name] = {}
 
                 tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_cdc_wrapper/module.yaml"
-                tree['ips'][name]['parameters'] = dict()
+                tree['ips'][name]['parameters'] = {}
 
-                tree['connections']['interfaces'][name] = dict()
+                tree['connections']['interfaces'][name] = {}
                 
                 srcport = self.ports[component.ports[0]]
                 dstport = self.ports[component.ports[1]]
@@ -1070,11 +727,28 @@ endmodule
 
                 params['AxiMaxReads'] = 1
                 params['AxiDataWidth'] = srcport.attributes['data_width']
-                #NOTE: placeholder until addr width is properly propagated
-                params['AxiAddrWidth']        = 2
-                #NOTE: placeholder until id width is properly propagated
-                params['AxiIdWidth']          = 2
+                params['AxiAddrWidth'] = 32
+                params['AxiIdWidth']   = srcport.attributes['id_width']
+            elif component.kind == 'iw_conv':
+                tree['ips'][name] = {}
+
+                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_idwidth_expander/module.yaml"
+                tree['ips'][name]['parameters'] = {}
+
+                tree['connections']['interfaces'][name] = {}
                 
+                srcport = self.ports[component.ports[0]]
+                dstport = self.ports[component.ports[1]]
+
+                tree['connections']['ports'][name] = {'clk_i': srcport.attributes['clock']}
+
+                params = tree['ips'][name]['parameters']
+
+                params['AxiMaxReads']  = 1
+                params['AxiDataWidth'] = srcport.attributes['data_width']
+                params['AxiAddrWidth'] = 32
+                params['AxiSrcIdWidth'] = srcport.attributes['id_width']
+                params['AxiDstIdWidth'] = srcport.attributes['id_width']
 
         for portname, port in self.ports.items():
             for dest in port.edges:
@@ -1112,8 +786,10 @@ endmodule
                         ip[portname] = [destport.parent, destname]
                     elif portcomp.kind == 'crossbar':
                         ip[portname] = [destport.parent, 'src']
-                    else:
+                    elif destcomp.kind == 'crossbar':
                         ip['dst'] = [destport.parent, destname]
+                    else:
+                        ip['dst'] = [destport.parent, 'src']
 
         with open(f"{outdir}/interconnect.yml", 'w') as file:
             yaml.dump(tree, file)
@@ -1157,11 +833,11 @@ endmodule
         g.attr(rankdir='LR')
 
         #max color id determined by paired12 colorscheme
-        param_to_color_id = dict()
+        param_to_color_id = {}
         color_nxt_id = 1
         color_max_id = 11
 
-        crossbars = dict()
+        subgraphs = {}
 
         for port, params in self.ports.items():
             
@@ -1194,15 +870,15 @@ endmodule
                 
                 continue
 
-            cb = crossbars.get(params.parent)
-            if not cb:
+            sg = subgraphs.get(params.parent)
+            if not sg:
                 #"cluster" is necessary to generate  grouping
-                crossbars[params.parent] = graphviz.Digraph(name='cluster ' + params.parent)
-                cb = crossbars[params.parent]
-                cb.attr(label=params.parent)
-                cb.attr(style='dashed', color='lightgrey')
+                subgraphs[params.parent] = graphviz.Digraph(name='cluster ' + params.parent)
+                sg = subgraphs[params.parent]
+                sg.attr(label=params.parent)
+                sg.attr(style='dashed', color='lightgrey')
 
-            cb.node(port, fillcolor=color)
+            sg.node(port, fillcolor=color)
 
             for edge in params.edges:
                 dest = edge.dest
@@ -1211,7 +887,7 @@ endmodule
                 if self.ports[dest].parent != self.ports[port].parent:
                     g.edge(port, dest)
                 else:
-                    cb.edge(port, dest)
+                    sg.edge(port, dest)
                 
 
         # create a legend
@@ -1230,14 +906,12 @@ endmodule
             legend.node("none", fillcolor=str(color_max_id + 1))
 
             #force layout
-            g.edge(list(self.ports.keys())[0], "none", style="invis")
+            g.edge(next(iter(self.ports.keys())), "none", style="invis")
 
             g.subgraph(legend)
 
-            
-
-        for k, v in crossbars.items():
-            g.subgraph(v)
+        for sg in subgraphs.values():
+            g.subgraph(sg)
     
         if view:
             g.view()
