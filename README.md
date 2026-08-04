@@ -7,6 +7,8 @@ Currently it is used as a supplementary to Topwrap - it generates necessary wrap
 In the future Omnibus will be able to support variety of backends, including direct verilog generation.
 
 
+Documentation: https://antmicro.github.io/omnibus/
+
 ## Installation
 Install with [uv](https://docs.astral.sh/uv/), as a command line tool:
 ```sh
@@ -40,7 +42,7 @@ You can find the current usage in the methods of `omnibus/interconnect.py` or in
 ### Clock domains 
 With 
 ```sh
-omnibus tests/spec_example.yml --graph --colorby clock
+omnibus examples/spec.yml --graph --colorby clock
 ```
 You can generate the interconnect graph from example given in specification and color ports (represented by nodes) depending on the clock domain they belong to.
 

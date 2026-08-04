@@ -35,9 +35,7 @@ def main():
             ic.generate_graph(filename=f'{outdir}/interconnect.gv', view=False)
             return 0
 
-    ic.find_routing_paths()
-    ic.propagate_parameters()
-    ic.insert_new_components()
+    ic.process()
 
     if args.graph:
         ic.generate_graph(filename=args.graph, view=True, color_by = args.colorby)

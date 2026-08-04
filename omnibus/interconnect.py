@@ -1,5 +1,6 @@
 import copy
 import math
+import os
 import shutil
 import sys
 import tempfile
@@ -8,46 +9,29 @@ from importlib import resources
 import graphviz
 import yaml
 
-
-class Path:
-    def __init__(self, start):
-        self.curport   = start
-        self.startport = start
-        self.crossbars = {} 
-
-
-class Edge:
-    def __init__(self, dest, attributes):
-        self.dest       = dest
-        self.attributes = attributes
-
-class Port:
-    def __init__(self, parent, attributes):
-        self.parent     = parent
-        self.attributes = attributes
-        self.edges      = []
-        self.backedges  = []
-
-
-class AddressMapEntry:
-    def __init__(self, src, dest, base, size):
-        self.src  = src
-        self.dest = dest
-        self.base = base
-        self.size = size
-
-class Component:
-    def __init__(self, kind, attributes):
-        self.kind       = kind
-        self.attributes = attributes
-        self.sub_log2   = 0
-        self.ports      = []
-
-        self.address_map = []
+from .types import AddressMapEntry, Component, Edge, Path, Port
 
 
 class Interconnect:
-    def __init__(self, filename):
+    def __init__(self, filename=None):
+        self.name = 'interconnect'
+        self.version = '0'
+        self.clocks = {'clk': {'frequency': 'n/a'}}
+
+        self.ports       = {}
+        self.components  = {}
+        self.address_map = {}
+
+        # collects start points for later
+        # also will be used for address map generation
+        self.path_start_points = []
+
+        if filename is not None:
+            self.read_yaml(filename)
+
+
+    def read_yaml(self, filename):
+        """Read yaml and populate internal representation according to the specification.md"""
         with open(filename, 'r') as stream:
             self.spec = yaml.load(stream, yaml.Loader)
 
@@ -68,26 +52,14 @@ class Interconnect:
         # process optional top level fields
         if self.spec.get('name'):
             self.name = self.spec['name']
-        else:
-            self.name = 'interconnect'
 
         if self.spec.get('version'):
             self.version = self.spec['version']
-        else:
-            self.version = '0'
         
         if self.spec.get('clocks'):
             self.clocks = self.spec['clocks']
-        else:
-            self.clocks = {'clk': {'frequency': 'n/a'}}
 
-        # process mandatory top level fields
-        self.ports      = {}
-        self.components = {}
-
-        # collects start points for later
-        # also will be used for address map generation
-        self.path_start_points = []
+        # mandatory top level fields
 
         for k, v in self.spec['ports'].items():
             self.ports[k] = Port(None, v)
@@ -175,7 +147,6 @@ class Interconnect:
                 print(f"ERROR: entry in 'connections' '{conn}' invalid: second port does not exist")
                 return
 
-            
             if params is None:
                 params = {}
 
@@ -188,7 +159,16 @@ class Interconnect:
 
         self.address_map = self.spec['address_map']
 
+    def process(self):
+        """Shorthand for internal processing"""
+        self.find_routing_paths()
+        self.propagate_parameters()
+        self.insert_new_components()
+
     def find_routing_paths(self):
+        """
+        Finds all paths from interconnect masters to subordinates and sets up address map for each crossbar
+        """
         self.paths_to_search = []
         self.paths_complete  = {}
 
@@ -290,29 +270,37 @@ class Interconnect:
 
 
     def propagate_parameters(self):
-        #data width is a bit special in that it can be forced on connections
-        #to deal with this:
-        # 1. find all connections that have it forced 
-        # 2. assign it to connected ports
-        # 3. if this process leads to conflict, there exists no valid configuration
+        """
+        Propagate all parameters such that each port has all parameters assigned
 
-        #id width is handled as fully separate case 
-        #finding it requires some degree of backtracking and rewriting already found results
-        #
-        #  assign all top level subordinate ports id to 1, add them to list 
-        #  until the list is empty:
-        #    pick any port P from the list 
-        #    remove P from the list 
-        #    for each destination port D thru crossbar N:1:
-        #      if D.id_width >= P.id_width + ceil(log2(N))
-        #         continue
-        #      else
-        #         D.id_width = P.id_width + ceil(log2(N))
-        #         add D to list 
-        #  within each crossbar, set all subs to maximum id_width among subs 
-        #  later, id_width_extender might be needed
-        #
-        #notice that some nodes WILL be overwritten 
+        Must be called before insert_new_components()
+
+
+        Internally the tool copies parameters from one port to each of its neighbors, ignoring direction of edges
+
+        data width is special in that it can be forced on connections
+        to deal with this:
+         1. find all connections that have it forced 
+         2. assign it to connected ports
+         3. if this process leads to conflict, there exists no valid configuration
+        later handle it like most other parameters
+
+        id width is handled as fully separate case 
+        finding it requires some degree of backtracking and rewriting already found results
+
+          assign all top level subordinate ports id to 1, add them to list 
+          until the list is empty:
+            pick any port P from the list 
+            remove P from the list 
+            for each destination port D thru crossbar N:1:
+              if D.id_width >= P.id_width + ceil(log2(N))
+                 continue
+              else
+                 D.id_width = P.id_width + ceil(log2(N))
+                 add D to list 
+          within each crossbar, set all subs to maximum id_width among subs 
+          later, id_width_extender might be needed
+        """
 
         for portname, port in self.ports.items():
             for edge in port.edges:
@@ -426,18 +414,23 @@ class Interconnect:
                     port.attributes['id_width'] = comp.attributes['sub_id_width']
 
     def insert_new_components(self):
-        #insert components from manager to subordinate components (left to right on graph view)
-        #start with highest priority, AKA the ones that should be placed first in case of any conflict
-        #current prioretization is: id width > data width > clock > protocol
+        """
+        Insert components for each parameter value crossing, e.g. CDC between different clocks
+        
+        Must be called after propagate_parameters()
 
-        #insertion algorithm is:
-        # 1. go thru each connection, find connections between ports of different parameters
-        # 2. insert two new ports under new component, the kind of component depends on the parameter
-        #    also, note if new component kind was inserted, this info will be used during ip generation
-        # 3. 
-        #   a. for the parameter under consideration, get first's port param from source node, get second's port param from dest 
-        #   b. for all the rest parameters, get both ports' params from source port 
-        #note: source/dest are regarding edge direction, on graph view, source is on the left 
+        insertion start with highest priority, AKA the ones that should be placed first in case of multiple conversions on single connection
+        current prioretization is: id width > data width > clock > protocol
+
+        insertion algorithm is:
+         1. go thru each connection, find connections between ports of different parameters
+         2. insert two new ports under new component, the kind of component depends on the parameter
+            also, note if new component kind was inserted, this info will be used during ip generation
+         3. 
+           a. for the parameter under consideration, get first's port param from source node, get second's port param from dest 
+           b. for all the rest parameters, get both ports' params from source port 
+        note: source/dest are regarding edge direction, on graph view, source is on the left 
+        """
         for param, kind in [('id_width', 'iw_conv'), ('data_width', 'dw_conv'), ('clock', 'cdc'), ('type', 'pr_conv')]:
             newports = {}
 
@@ -497,6 +490,11 @@ class Interconnect:
                 comp.attributes['clock'] = self.ports[comp.ports[0]].attributes['clock']
 
     def map_components(self):
+        """
+        Map components to their corresponding IP type
+
+        Must be called after all internal processing is done
+        """
         self.ip_to_gen = set()
 
         for component in self.components.values():
@@ -537,16 +535,23 @@ class Interconnect:
                     return
 
     def generate_ip(self, outdir):
-        #for now, assume that all crossbars map to AXI from pulp-platform
-        #this will be changed as soon as some way of choosing objects is chosen 
-        #for now, each crossbar is generated as its own IP, though this can be later reduced to generating separate IP for each n x m crossbar
+        """
+        Generate actual IP for each component type needed
 
-        #other IPs are generated manually below
+        Must be called after map_components()
+
+        Currently hardcoded to use modules from pulp-platform/axi
+        this will be changed as soon as some way of choosing objects is chosen 
+
+        Each crossbar is generated as its own IP, though this can be later reduced to generating separate IP for each n x m crossbar
+
+        other IPs are generated manually below
+        """
 
         #it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role 
         #therefore swap them internally
         plugin_path = resources.files("omnibus")
-        sys.path.append(str(plugin_path / "third_party" / "axi" / "scripts"))
+        sys.path.append(os.path.join(plugin_path, "third_party", "axi", "scripts"))
         import axi_intercon_gen
  
         for name, component in self.components.items():
@@ -579,7 +584,7 @@ class Interconnect:
                 with tempfile.NamedTemporaryFile("w") as file:
                     config = {
                         "parameters": {
-                            "output_file": f"{outdir}/src/axi_crossbar_{name}.sv",
+                            "output_file": os.path.join(outdir, "src", "axi_crossbar_{name}.sv"),
                             "slaves": slaves,
                             "masters": masters,
                             "atop": 0,
@@ -594,42 +599,66 @@ class Interconnect:
                 print(f"ERROR: cannot generate IP for component '{name}' of type '{component.kind}'")
 
 
-        pulp_platform = resources.files("omnibus") / "wrappers" / "pulp_platform"
-        interfaces    = resources.files("omnibus") / "interfaces"
-        modules       = resources.files("omnibus") / "modules"
+        pulp_platform = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
+        interfaces    = os.path.join(resources.files("omnibus"), "interfaces")
+        modules       = os.path.join(resources.files("omnibus"), "modules")
 
         if 'axi_dwconv' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
             #      it seems like it is correct up to idea but topwrap prints many warnings
             #      also it was not yet verified in whole design
-            shutil.copyfile(pulp_platform / "axi_dw_converter.sv", f"{outdir}/src/axi_dw_converter.sv")
+            shutil.copyfile(
+                os.path.join(pulp_platform, "axi_dw_converter.sv"), 
+                os.path.join(outdir, "src", "axi_dw_converter.sv"))
 
         if 'axi_cdc' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
             #      it seems like it is correct up to idea but topwrap prints many warnings
             #      also it was not yet verified in whole design
-            shutil.copyfile(pulp_platform / "axi_cdc.sv", f"{outdir}/src/axi_cdc.sv")
+            shutil.copyfile(
+                os.path.join(pulp_platform, "axi_cdc.sv"), 
+                os.path.join(outdir, "src", "axi_cdc.sv"))
 
         if 'axi_prconv_axi_axilite' in self.ip_to_gen:
             #NOTE: this file is currently only a stub 
-            shutil.copyfile(pulp_platform / "axi_pr_axi_axilite.sv", f"{outdir}/src/axi_pr_axi_axilite.sv")
+            shutil.copyfile(
+                os.path.join(pulp_platform, "axi_pr_axi_axilite.sv"), 
+                os.path.join(outdir, "src", "axi_pr_axi_axilite.sv"))
 
         if 'axi_prconv_axi_apb' in self.ip_to_gen:
             #NOTE: this file is currently only a stub 
-            shutil.copyfile(pulp_platform / "axi_pr_axi_apb.sv", f"{outdir}/src/axi_pr_axi_apb.sv")
+            shutil.copyfile(
+                os.path.join(pulp_platform, "axi_pr_axi_apb.sv"), 
+                os.path.join(outdir, "src", "axi_pr_axi_apb.sv"))
 
-            shutil.copyfile(interfaces / "apb.yml", f"{outdir}/src/apb.yml")
+            shutil.copyfile(
+                os.path.join(interfaces,    "apb.yml"), 
+                os.path.join(outdir, "src", "apb.yml"))
 
         if 'axi_prconv_axi_ahb' in self.ip_to_gen:
             #NOTE: this file is currently only a stub 
-            shutil.copyfile(pulp_platform / "axi_pr_axi_ahb.sv", f"{outdir}/src/axi_pr_axi_ahb.sv")
+            shutil.copyfile(
+                os.path.join(pulp_platform, "axi_pr_axi_ahb.sv"), 
+                os.path.join(outdir, "src", "axi_pr_axi_ahb.sv"))
 
-            shutil.copyfile(interfaces / "ahb.yml", f"{outdir}/src/ahb.yml")
+            shutil.copyfile(
+                os.path.join(interfaces,    "ahb.yml"), 
+                os.path.join(outdir, "src", "ahb.yml"))
 
         if 'iw_conv' in self.ip_to_gen:
-            shutil.copyfile(modules / "axi_idwidth_expander.sv", f"{outdir}/src/axi_idwidth_expander.sv")
+            shutil.copyfile(
+                os.path.join(modules,       "axi_idwidth_expander.sv"), 
+                os.path.join(outdir, "src", "axi_idwidth_expander.sv"))
 
     def generate_hierarchy(self, outdir):
+        """
+        Generate topwrap hierarchy so the final verilog output can be generated
+
+        Must be called after generate_ip()
+
+        Currently hardcoded to use modules from pulp-platform/axi
+        """
+
         tree = {
             'name': self.name,
             'ips': {}, 
@@ -665,7 +694,7 @@ class Interconnect:
             if component.kind == 'crossbar':
                 tree['ips'][name] = {}
 
-                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{name}/module.yaml"
+                tree['ips'][name]['file'] = f"file:{os.path.join(outdir, 'modules', 'cores', name, 'module.yaml')}"
                 tree['connections']['interfaces'][name] = {}
                 
                 port = self.ports[component.ports[0]]
@@ -674,7 +703,7 @@ class Interconnect:
             elif component.kind == 'dw_conv':
                 tree['ips'][name] = {}
 
-                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_dw_conv_wrapper/module.yaml"
+                tree['ips'][name]['file'] = f"file:{os.path.join(outdir, 'modules', 'cores' , 'axi_dw_conv_wrapper', 'module.yaml')}"
                 tree['ips'][name]['parameters'] = {}
 
                 tree['connections']['interfaces'][name] = {}
@@ -695,7 +724,7 @@ class Interconnect:
             elif component.kind == 'pr_conv':
                 tree['ips'][name] = {}
 
-                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/{component.attributes['ip_type']}/module.yaml"
+                tree['ips'][name]['file'] = f"file:{os.path.join(outdir, 'modules', 'cores' , component.attributes['ip_type'], 'module.yaml')}"
                 tree['ips'][name]['parameters'] = {}
 
                 tree['connections']['interfaces'][name] = {}
@@ -713,7 +742,7 @@ class Interconnect:
             elif component.kind == 'cdc':
                 tree['ips'][name] = {}
 
-                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_cdc_wrapper/module.yaml"
+                tree['ips'][name]['file'] = f"file:{os.path.join(outdir, 'modules', 'cores' , 'axi_cdc_wrapper', 'module.yaml')}"
                 tree['ips'][name]['parameters'] = {}
 
                 tree['connections']['interfaces'][name] = {}
@@ -732,7 +761,7 @@ class Interconnect:
             elif component.kind == 'iw_conv':
                 tree['ips'][name] = {}
 
-                tree['ips'][name]['file'] = f"file:{outdir}/modules/cores/axi_idwidth_expander/module.yaml"
+                tree['ips'][name]['file'] = f"file:{os.path.join(outdir, 'modules', 'cores' , 'axi_idwidth_expander', 'module.yaml')}"
                 tree['ips'][name]['parameters'] = {}
 
                 tree['connections']['interfaces'][name] = {}
@@ -791,13 +820,15 @@ class Interconnect:
                     else:
                         ip['dst'] = [destport.parent, 'src']
 
-        with open(f"{outdir}/interconnect.yml", 'w') as file:
+        with open(os.path.join(outdir, "interconnect.yml"), 'w') as file:
             yaml.dump(tree, file)
 
     def print_spec(self):
+        """Dumps current spec to stdout"""
         yaml.dump(self.spec, sys.stdout)
 
     def print_elements(self):
+        """Dumps all internally used elements"""
         print("### PORTS ###")
         for k, v in self.ports.items():
             print(f"== PORT {k} parent: {v.parent} ==")
@@ -829,6 +860,7 @@ class Interconnect:
                 print(hex(entry.base) + ' ' + hex(entry.size))
 
     def generate_graph(self, filename='interconnect.gv', view=False, color_by=""):
+        """Generate graphviz graph, optionally color it by some parameter, and optionally display it"""
         g = graphviz.Digraph(self.name, filename=filename, node_attr={'style': 'filled', 'colorscheme': 'paired12'})
         g.attr(rankdir='LR')
 
