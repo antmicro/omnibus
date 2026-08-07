@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
 import argparse
 import os
 
@@ -17,6 +20,7 @@ def main():
 
     os.makedirs(f"{args.output}/src", exist_ok=True)
     os.makedirs(f"{args.output}/modules", exist_ok=True)
+    os.makedirs(f"{args.output}/verilator", exist_ok=True)
 
     if args.debug == "graph":
         ic = InterconnectBuilder(backend="graphviz")

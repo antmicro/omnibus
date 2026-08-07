@@ -1,0 +1,77 @@
+// Copyright (c) 2026 Antmicro
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config 
+//cannot change anyway
+lint_off -rule UNUSEDPARAM  -file "axi/src/*" 
+lint_off -rule UNUSEDSIGNAL -file "axi/src/*" 
+lint_off -rule UNUSEDPARAM  -file "common_cells/src/*" 
+lint_off -rule UNUSEDSIGNAL -file "common_cells/src/*" 
+lint_off -rule UNUSEDPARAM  -file "*beh_lib.sv*" 
+
+//cannot change anyway
+lint_off -rule CASEINCOMPLETE -file "axi/src/*"
+
+//cannot change anyway
+lint_off -rule PINCONNECTEMPTY -file "axi/src/*"
+lint_off -rule PINCONNECTEMPTY -file "common_cells/src/*" 
+
+//might be broken but it is part of VeeR and is hard to verify
+lint_off -rule UNUSEDPARAM  -file "*axi_pr_axi_ahb.sv*" 
+lint_off -rule UNUSEDSIGNAL -file "*axi_pr_axi_ahb.sv*" 
+lint_off -rule UNUSEDSIGNAL -file "*beh_lib.sv*" 
+
+//user warning about deprecated package, irrelevant
+//for whatever reason, this does not work
+//the file is modified in place instead
+lint_off -rule USERWARN -file "*common_cells/src/deprecated/cf_math_pkg.sv*" -contents "*" -match "*deprecated*"
+
+//likely only simulation problem
+//requires further care to be sure though
+lint_off -rule UNOPTFLAT -file "*common_cells/*"
+lint_off -rule UNOPTFLAT -file "*axi/*"
+//taken from VeeR
+lint_off -rule UNOPTFLAT -file "*axi_pr_axi_ahb.sv*"
+
+//constant provided by pulp platform
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_multicut.sv*" -contents "*" -match "*NoCuts*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_burst_splitter_gran.sv*" -contents "*" -match "*cnt_delta*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_err_slv.sv*" -contents "*" -match "*RespData*"
+
+//seems irrelevant
+lint_off -rule WIDTHTRUNC  -file "common_cells/src/cc_rr_arb_tree.sv" -contents "*" -match "*ASSERT*"
+
+//arlen and awlen are always 8 bits, burst_len is never less than 8 bits
+lint_off -rule WIDTHTRUNC  -file "axi/src/axi_dw*" -contents "*" -match "*burst_len*=*a??len*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_dw*" -contents "*" -match "*burst_len*=*a??len*"
+lint_off -rule WIDTHTRUNC  -file "axi/src/axi_dw*" -contents "*" -match "*a??len*=*burst_len*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_dw*" -contents "*" -match "*a??len*=*burst_len*"
+
+//size is always 3 bits, clog returns 32bits, max size is result of clog
+lint_off -rule WIDTHTRUNC  -file "axi/src/axi_dw*" -contents "*" -match "*size*=*Axi*PortMaxSize*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_dw*" -contents "*" -match "*size*=*Axi*PortMaxSize*"
+
+//size is always 3 bits, I think that 255 - x always generates integer of length 32
+//even if not, addr_t should be 32bits
+lint_off -rule WIDTHTRUNC  -file "axi/src/axi_dw*" -contents "*" -match "*ar.len*=*255*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_dw*" -contents "*" -match "*ar.len*=*255*"
+
+//anything that expects 32bits is most likely result of standard operation with integers
+lint_off -rule WIDTHTRUNC  -file "axi/src/*" -contents "*" -match "*expects 32 bits*"
+lint_off -rule WIDTHEXPAND -file "axi/src/*" -contents "*" -match "*expects 32 bits*"
+lint_off -rule WIDTHTRUNC  -file "axi/src/*" -contents "*" -match "*expects*but*generates*32*bits*"
+lint_off -rule WIDTHEXPAND -file "axi/src/*" -contents "*" -match "*expects*but*generates*32*bits*"
+
+//beat_addr expects 16bits
+lint_off -rule WIDTHTRUNC  -file "axi/src/axi_dw*" -contents "*" -match "*beat_addr*"
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_dw*" -contents "*" -match "*beat_addr*"
+
+//uses some loop
+lint_off -rule WIDTHTRUNC  -file "axi/src/*" -contents "*" -match "*== i*"
+lint_off -rule WIDTHEXPAND -file "axi/src/*" -contents "*" -match "*== i*"
+
+//cnt_len seems to be forced into 8bits<9bits
+lint_off -rule WIDTHEXPAND -file "axi/src/*" -contents "*" -match "*?_cnt_len*"
+//seems to be forced by pulp platform
+lint_off -rule WIDTHEXPAND -file "axi/src/axi_pkg.sv*" -contents "*" -match "*DIV*"
+

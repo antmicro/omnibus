@@ -145,6 +145,7 @@ class Backend:
         pulp_platform = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         interfaces    = os.path.join(resources.files("omnibus"), "interfaces")
         modules       = os.path.join(resources.files("omnibus"), "modules")
+        verilator     = os.path.join(resources.files("omnibus"), "verilator")
     
         if 'axi_dwconv' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
@@ -152,7 +153,7 @@ class Backend:
             #      also it was not yet verified in whole design
             shutil.copyfile(
                 os.path.join(pulp_platform, "axi_dw_converter.sv"), 
-                os.path.join(outdir, "src", "axi_dw_converter.sv"))
+                os.path.join(outdir, "src", "axi_dw_converter_wrapper.sv"))
     
         if 'axi_cdc' in self.ip_to_gen:
             #NOTE: this file is currently not verified 
@@ -160,7 +161,7 @@ class Backend:
             #      also it was not yet verified in whole design
             shutil.copyfile(
                 os.path.join(pulp_platform, "axi_cdc.sv"), 
-                os.path.join(outdir, "src", "axi_cdc.sv"))
+                os.path.join(outdir, "src", "axi_cdc_wrapper.sv"))
     
         if 'axi_prconv_axi_axilite' in self.ip_to_gen:
             #NOTE: this file is currently only a stub 
@@ -181,9 +182,13 @@ class Backend:
         if 'axi_prconv_axi_ahb' in self.ip_to_gen:
             #NOTE: this file is currently only a stub 
             shutil.copyfile(
-                os.path.join(pulp_platform, "axi_pr_axi_ahb.sv"), 
-                os.path.join(outdir, "src", "axi_pr_axi_ahb.sv"))
-    
+                os.path.join(modules, "axi_pr_axi_ahb.sv"), 
+                os.path.join(outdir,  "src", "axi_pr_axi_ahb.sv"))
+
+            shutil.copyfile(
+                os.path.join(modules, "beh_lib.sv"), 
+                os.path.join(outdir,  "src", "beh_lib.sv"))
+
             shutil.copyfile(
                 os.path.join(interfaces,    "ahb.yml"), 
                 os.path.join(outdir, "src", "ahb.yml"))
@@ -192,6 +197,22 @@ class Backend:
             shutil.copyfile(
                 os.path.join(modules,       "axi_idwidth_expander.sv"), 
                 os.path.join(outdir, "src", "axi_idwidth_expander.sv"))
+
+        #create waivers for verilator
+        shutil.copyfile(
+            os.path.join(verilator,             "general_config.vlt"), 
+            os.path.join(outdir,   "verilator", "general_config.vlt"))
+        shutil.copyfile(
+            os.path.join(verilator,             "pulp_platform_config.vlt"), 
+            os.path.join(outdir,   "verilator", "pulp_platform_config.vlt"))
+
+        #create filelists
+        shutil.copyfile(
+            os.path.join(verilator,             "general_filelist.vc"), 
+            os.path.join(outdir,   "verilator", "general_filelist.vc"))
+        shutil.copyfile(
+            os.path.join(verilator,             "pulp_platform_filelist.vc"), 
+            os.path.join(outdir,   "verilator", "pulp_platform_filelist.vc"))
     
     def generate_hierarchy(self, outdir):
         """
@@ -269,7 +290,7 @@ class Backend:
 
                 params['AxiMaxReads']         = axi_max_reads
                 params['AxiSrcPortDataWidth'] = srcport.attributes['data_width']
-                params['AxiOutPortDataWidth'] = dstport.attributes['data_width']
+                params['AxiDstPortDataWidth'] = dstport.attributes['data_width']
                 params['AxiAddrWidth']        = self.globals['addr_width']
                 params['AxiIdWidth']          = srcport.attributes['id_width']
             elif component.kind == 'pr_conv':
@@ -287,9 +308,13 @@ class Backend:
     
                 params = tree['ips'][name]['parameters']
     
-                params['AxiDataWidth'] = srcport.attributes['data_width']
-                params['AxiAddrWidth'] = self.globals['addr_width']
+                if dstport.attributes['type'] not in ['ahb', 'ahb3']:
+                    params['AxiDataWidth'] = srcport.attributes['data_width']
+                    params['AxiAddrWidth'] = self.globals['addr_width']
+                    #TODO: error checking
+
                 params['AxiIdWidth']   = srcport.attributes['id_width']
+
             elif component.kind == 'cdc':
                 tree['ips'][name] = {}
     
@@ -305,15 +330,6 @@ class Backend:
     
                 params = tree['ips'][name]['parameters']
     
-                axi_max_reads = srcport.attributes.get('axi_max_reads')
-
-                if axi_max_reads is None:
-                    axi_max_reads = self.globals.get('axi_max_reads')
-                if axi_max_reads is None:
-                    print("WARNING: nonexistent parameter axi_max_reads, defaulting to 1")
-                    axi_max_reads = 1
-
-                params['AxiMaxReads']  = axi_max_reads
                 params['AxiDataWidth'] = srcport.attributes['data_width']
                 params['AxiAddrWidth'] = self.globals['addr_width']
                 params['AxiIdWidth']   = srcport.attributes['id_width']

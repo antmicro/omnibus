@@ -10,18 +10,12 @@ signals:
     out:
       ADDR: addr
       PROT: prot
-      NSE: nse
       SEL: sel
       ENABLE: enable
       WRITE: write
       WDATA: wdata
       STRB: strb
-      WAKEUP: wakeup
-      AUSER: auser
-      WUSER: wuser
     in:
       READY: ready
       RDATA: rdata
       SLVERR: slverr
-      RUSER: ruser
-      BUSER: buser

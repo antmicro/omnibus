@@ -1,0 +1,8 @@
+build/ASoCaInt.sv
+out/src/axi_cdc_wrapper.sv
+out/src/axi_crossbar_main.sv
+out/src/axi_dw_converter_wrapper.sv
+out/src/axi_pr_axi_ahb.sv
+out/src/axi_pr_axi_apb.sv
+out/src/axi_pr_axi_axilite.sv
+out/src/beh_lib.sv

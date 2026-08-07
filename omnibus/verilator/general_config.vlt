@@ -1,0 +1,47 @@
+// Copyright (c) 2026 Antmicro
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config 
+//topwrap generates file without EoF NewLine
+lint_off -rule EOFNEWLINE -file "*ASoCaInt.sv*"
+
+//outports are assigned near destination rather than near source
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*output*src*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*output*dst*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*o_src*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*o_dst*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*o_main*"
+
+//reset is not yet properly dealt with
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*rst*"
+
+//I do not know what to do with these
+//lint off so they dont pollute the output
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*free_clk*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*scan_mode*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*bus_clk*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*clk_override*"
+lint_off -rule PINMISSING -file "*ASoCaInt.sv*" -contents "*" -match "*force_halt*"
+
+//unlikely to cause problems
+lint_off -rule SPLITVAR -file "*" -contents "*" -match "*bitwidth is 1*"
+lint_off -rule GENUNNAMED
+
+//modules many modules/interfaces in single file
+//also some cannot be changed anyway 
+lint_off -rule DECLFILENAME 
+
+//not good but should not cause problems, at least for tests
+lint_off -rule IMPORTSTAR
+
+//user warning about deprecated package, irrelevant
+//for whatever reason, this does not work
+//the file is modified in place instead
+lint_off -rule USERWARN -file "*common_cells/src/deprecated/cf_math_pkg.sv*" -contents "*" -match "*deprecated*"
+
+//likely only simulation problem
+//requires further care to be sure though
+lint_off -rule UNOPTFLAT -file "*common_cells/*"
+lint_off -rule UNOPTFLAT -file "*axi/*"
+//taken from VeeR
+lint_off -rule UNOPTFLAT -file "*axi_pr_axi_ahb.sv*"

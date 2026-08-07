@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
 import copy
 import sys
 from importlib import import_module
@@ -390,7 +393,6 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     print(sorted(edge.attributes.items()))
 
             print("### COMPONENTS ###")
-
             for k, v in self.components.items():
                 print(f"== COMP {k} {v.kind}")
                 yaml.dump(v.attributes, sys.stdout, sort_keys=True)

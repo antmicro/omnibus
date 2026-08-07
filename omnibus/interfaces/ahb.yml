@@ -8,16 +8,15 @@ id:
 signals:
   required:
     out:
-      ADDR: addr
-      BURST: burst
-      MASTLOCK: mastlock
-      PROT: prot
-      SIZE: size
-      TRANS: trans
-      WDATA: wdata
-      WSTRB: wstrb
-      WRITE: write
+      HADDR: haddr
+      HBURST: hburst
+      HMASTLOCK: hmastlock
+      HPROT: hprot
+      HSIZE: hsize
+      HTRANS: htrans
+      HWDATA: hwdata
+      HWRITE: hwrite
     in:
-      RDATA: rdata
-      READY: ready
-      RESP: resp
+      RDATA: hrdata
+      READY: hready
+      RESP: hresp

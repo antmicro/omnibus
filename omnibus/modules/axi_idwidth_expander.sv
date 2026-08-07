@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Antmicro
+// SPDX-License-Identifier: Apache-2.0
+
 module axi_idwidth_expander #(
     parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
     parameter int unsigned AxiDataWidth        = 8    , // Data width of the ports

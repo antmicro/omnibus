@@ -1,7 +1,9 @@
+// Copyright (c) 2026 Antmicro
+// SPDX-License-Identifier: Apache-2.0
+
 module axi_cdc_wrapper #(
-    parameter int unsigned AxiMaxReads         = 1    , // Number of outstanding reads
     parameter int unsigned AxiDataWidth        = 8    , // Data width of the ports
-    parameter int unsigned AxiAddrWidth        = 1    , // Address width
+    parameter int unsigned AxiAddrWidth        = 32   , // Address width
     parameter int unsigned AxiIdWidth          = 1      // ID width
     ) (
     input  logic          src_clk_i,
@@ -94,16 +96,15 @@ module axi_cdc_wrapper #(
     typedef logic [AxiAddrWidth-1:0]          addr_t;
     typedef logic [AxiDataWidth-1:0]          data_t;
 
-    typedef logic [AxiStrbWidth-1:0]          strb_t;
-    typedef logic [AxiUserWidth-1:0]          user_t;
-    
-    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, user_t)
-    `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, user_t)
-    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
-    
-    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
-    `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
-    
+    typedef logic [AxiDataWidth/8-1:0]          strb_t;
+
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, logic[0:0])
+    `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, logic[0:0])
+    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, logic[0:0])
+
+    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, logic[0:0])
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, logic[0:0])
+
     `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
     `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
 
@@ -113,19 +114,19 @@ module axi_cdc_wrapper #(
     resp_t src_resp;
 
     axi_cdc #(
-       .aw_chan_t      (aw_chan_t          ),
-       .w_chan_t       (mst_w_chan_t       ),
-       .b_chan_t       (b_chan_t           ),
-       .ar_chan_t      (ar_chan_t          ),
-       .r_chan_t       (r_chan_slv_t       ),
-       .axi_req_t      (mst_req_t          ),
-       .axi_resp_t     (mst_resp_t         ),
+       .aw_chan_t      (aw_chan_t  ),
+       .w_chan_t       (w_chan_t   ),
+       .b_chan_t       (b_chan_t   ),
+       .ar_chan_t      (ar_chan_t  ),
+       .r_chan_t       (r_chan_t   ),
+       .axi_req_t      (req_t      ),
+       .axi_resp_t     (resp_t     )
      ) i_axi_cdc_wrapper (
-       .src_clk_i      (src_clk_i     ),
-       .src_rst_ni     (src_rst_ni    ),
+       .src_clk_i      (src_clk_i  ),
+       .src_rst_ni     (src_rst_ni ),
 
-       .dst_clk_i      (dst_clk_i     ),
-       .dst_rst_ni     (dst_rst_ni    ),
+       .dst_clk_i      (dst_clk_i  ),
+       .dst_rst_ni     (dst_rst_ni ),
 
        // Slave interface
        .src_req_i (src_req ),
@@ -136,85 +137,85 @@ module axi_cdc_wrapper #(
      );
 
 
-    assign dst_req.aw.id = i_dst_awid;
-    assign dst_req.aw.addr = i_dst_awaddr;
-    assign dst_req.aw.len = i_dst_awlen;
-    assign dst_req.aw.size = i_dst_awsize;
-    assign dst_req.aw.burst = i_dst_awburst;
-    assign dst_req.aw.lock = i_dst_awlock;
-    assign dst_req.aw.cache = i_dst_awcache;
-    assign dst_req.aw.prot = i_dst_awprot;
-    assign dst_req.aw.region = i_dst_awregion;
-    assign dst_req.aw.qos = i_dst_awqos;
-    assign dst_req.aw.atop = 6'd0;
-    assign dst_req.aw_valid = i_dst_awvalid;
-    assign o_dst_awready = dst_resp.aw_ready;
-    assign dst_req.ar.id = i_dst_arid;
-    assign dst_req.ar.addr = i_dst_araddr;
-    assign dst_req.ar.len = i_dst_arlen;
-    assign dst_req.ar.size = i_dst_arsize;
-    assign dst_req.ar.burst = i_dst_arburst;
-    assign dst_req.ar.lock = i_dst_arlock;
-    assign dst_req.ar.cache = i_dst_arcache;
-    assign dst_req.ar.prot = i_dst_arprot;
-    assign dst_req.ar.region = i_dst_arregion;
-    assign dst_req.ar.qos = i_dst_arqos;
-    assign dst_req.ar_valid = i_dst_arvalid;
-    assign o_dst_arready = dst_resp.ar_ready;
-    assign dst_req.w.data = i_dst_wdata;
-    assign dst_req.w.strb = i_dst_wstrb;
-    assign dst_req.w.last = i_dst_wlast;
-    assign dst_req.w_valid = i_dst_wvalid;
-    assign o_dst_wready = dst_resp.w_ready;
-    assign o_dst_bid = dst_resp.b.id;
-    assign o_dst_bresp = dst_resp.b.resp;
-    assign o_dst_bvalid = dst_resp.b_valid;
-    assign dst_req.b_ready = i_dst_bready;
-    assign o_dst_rid = dst_resp.r.id;
-    assign o_dst_rdata = dst_resp.r.data;
-    assign o_dst_rresp = dst_resp.r.resp;
-    assign o_dst_rlast = dst_resp.r.last;
-    assign o_dst_rvalid = dst_resp.r_valid;
-    assign dst_req.r_ready = i_dst_rready;
+    assign src_req.aw.id = i_src_awid;
+    assign src_req.aw.addr = i_src_awaddr;
+    assign src_req.aw.len = i_src_awlen;
+    assign src_req.aw.size = i_src_awsize;
+    assign src_req.aw.burst = i_src_awburst;
+    assign src_req.aw.lock = i_src_awlock;
+    assign src_req.aw.cache = i_src_awcache;
+    assign src_req.aw.prot = i_src_awprot;
+    assign src_req.aw.region = i_src_awregion;
+    assign src_req.aw.qos = i_src_awqos;
+    assign src_req.aw.atop = 6'd0;
+    assign src_req.aw_valid = i_src_awvalid;
+    assign o_src_awready = src_resp.aw_ready;
+    assign src_req.ar.id = i_src_arid;
+    assign src_req.ar.addr = i_src_araddr;
+    assign src_req.ar.len = i_src_arlen;
+    assign src_req.ar.size = i_src_arsize;
+    assign src_req.ar.burst = i_src_arburst;
+    assign src_req.ar.lock = i_src_arlock;
+    assign src_req.ar.cache = i_src_arcache;
+    assign src_req.ar.prot = i_src_arprot;
+    assign src_req.ar.region = i_src_arregion;
+    assign src_req.ar.qos = i_src_arqos;
+    assign src_req.ar_valid = i_src_arvalid;
+    assign o_src_arready = src_resp.ar_ready;
+    assign src_req.w.data = i_src_wdata;
+    assign src_req.w.strb = i_src_wstrb;
+    assign src_req.w.last = i_src_wlast;
+    assign src_req.w_valid = i_src_wvalid;
+    assign o_src_wready = src_resp.w_ready;
+    assign o_src_bid = src_resp.b.id;
+    assign o_src_bresp = src_resp.b.resp;
+    assign o_src_bvalid = src_resp.b_valid;
+    assign src_req.b_ready = i_src_bready;
+    assign o_src_rid = src_resp.r.id;
+    assign o_src_rdata = src_resp.r.data;
+    assign o_src_rresp = src_resp.r.resp;
+    assign o_src_rlast = src_resp.r.last;
+    assign o_src_rvalid = src_resp.r_valid;
+    assign src_req.r_ready = i_src_rready;
 
-    assign o_src_awid = src_req.aw.id;
-    assign o_src_awaddr = src_req.aw.addr;
-    assign o_src_awlen = src_req.aw.len;
-    assign o_src_awsize = src_req.aw.size;
-    assign o_src_awburst = src_req.aw.burst;
-    assign o_src_awlock = src_req.aw.lock;
-    assign o_src_awcache = src_req.aw.cache;
-    assign o_src_awprot = src_req.aw.prot;
-    assign o_src_awregion = src_req.aw.region;
-    assign o_src_awqos = src_req.aw.qos;
-    assign o_src_awvalid = src_req.aw_valid;
-    assign src_resp.aw_ready = i_src_awready;
-    assign o_src_arid = src_req.ar.id;
-    assign o_src_araddr = src_req.ar.addr;
-    assign o_src_arlen = src_req.ar.len;
-    assign o_src_arsize = src_req.ar.size;
-    assign o_src_arburst = src_req.ar.burst;
-    assign o_src_arlock = src_req.ar.lock;
-    assign o_src_arcache = src_req.ar.cache;
-    assign o_src_arprot = src_req.ar.prot;
-    assign o_src_arregion = src_req.ar.region;
-    assign o_src_arqos = src_req.ar.qos;
-    assign o_src_arvalid = src_req.ar_valid;
-    assign src_resp.ar_ready = i_src_arready;
-    assign o_src_wdata = src_req.w.data;
-    assign o_src_wstrb = src_req.w.strb;
-    assign o_src_wlast = src_req.w.last;
-    assign o_src_wvalid = src_req.w_valid;
-    assign src_resp.w_ready = i_src_wready;
-    assign src_resp.b.id = i_src_bid;
-    assign src_resp.b.resp = i_src_bresp;
-    assign src_resp.b_valid = i_src_bvalid;
-    assign o_src_bready = src_req.b_ready;
-    assign src_resp.r.id = i_src_rid;
-    assign src_resp.r.data = i_src_rdata;
-    assign src_resp.r.resp = i_src_rresp;
-    assign src_resp.r.last = i_src_rlast;
-    assign src_resp.r_valid = i_src_rvalid;
-    assign o_src_rready = src_req.r_ready;
+    assign o_dst_awid = dst_req.aw.id;
+    assign o_dst_awaddr = dst_req.aw.addr;
+    assign o_dst_awlen = dst_req.aw.len;
+    assign o_dst_awsize = dst_req.aw.size;
+    assign o_dst_awburst = dst_req.aw.burst;
+    assign o_dst_awlock = dst_req.aw.lock;
+    assign o_dst_awcache = dst_req.aw.cache;
+    assign o_dst_awprot = dst_req.aw.prot;
+    assign o_dst_awregion = dst_req.aw.region;
+    assign o_dst_awqos = dst_req.aw.qos;
+    assign o_dst_awvalid = dst_req.aw_valid;
+    assign dst_resp.aw_ready = i_dst_awready;
+    assign o_dst_arid = dst_req.ar.id;
+    assign o_dst_araddr = dst_req.ar.addr;
+    assign o_dst_arlen = dst_req.ar.len;
+    assign o_dst_arsize = dst_req.ar.size;
+    assign o_dst_arburst = dst_req.ar.burst;
+    assign o_dst_arlock = dst_req.ar.lock;
+    assign o_dst_arcache = dst_req.ar.cache;
+    assign o_dst_arprot = dst_req.ar.prot;
+    assign o_dst_arregion = dst_req.ar.region;
+    assign o_dst_arqos = dst_req.ar.qos;
+    assign o_dst_arvalid = dst_req.ar_valid;
+    assign dst_resp.ar_ready = i_dst_arready;
+    assign o_dst_wdata = dst_req.w.data;
+    assign o_dst_wstrb = dst_req.w.strb;
+    assign o_dst_wlast = dst_req.w.last;
+    assign o_dst_wvalid = dst_req.w_valid;
+    assign dst_resp.w_ready = i_dst_wready;
+    assign dst_resp.b.id = i_dst_bid;
+    assign dst_resp.b.resp = i_dst_bresp;
+    assign dst_resp.b_valid = i_dst_bvalid;
+    assign o_dst_bready = dst_req.b_ready;
+    assign dst_resp.r.id = i_dst_rid;
+    assign dst_resp.r.data = i_dst_rdata;
+    assign dst_resp.r.resp = i_dst_rresp;
+    assign dst_resp.r.last = i_dst_rlast;
+    assign dst_resp.r_valid = i_dst_rvalid;
+    assign o_dst_rready = dst_req.r_ready;
 
 endmodule

@@ -1,14 +1,16 @@
+// Copyright (c) 2026 Antmicro
+// SPDX-License-Identifier: Apache-2.0
+
 module axi_prconv_axi_ahb #(
       /// AXI bus parameters
-      parameter int unsigned AxiAddrWidth    = 32'd0,
-      parameter int unsigned AxiDataWidth    = 32'd0,
-      parameter int unsigned AxiIdWidth      = 32'd0,
-      parameter int unsigned AxiUserWidth    = 32'd0,
+      parameter int unsigned AxiAddrWidth    = 0,
+      parameter int unsigned AxiDataWidth    = 0,
+      parameter int unsigned AxiIdWidth      = 0,
       /// Maximum number of outstanding writes.
-      parameter int unsigned AxiMaxWriteTxns = 32'd1,
+      parameter int unsigned AxiMaxWriteTxns = 1,
       /// Maximum number of outstanding reads.
-      parameter int unsigned AxiMaxReadTxns  = 32'd1,
-      parameter bit          FallThrough     = 1'b1,
+      parameter int unsigned AxiMaxReadTxns  = 1,
+      parameter bit          FallThrough     = 1,
       parameter bit          FullBW          = 0
     ) (
       input logic     clk_i,
@@ -67,7 +69,7 @@ module axi_prconv_axi_ahb #(
       output wire                               o_dst_write,
       input  wire [AxiDataWidth - 1 :0]         i_dst_rdata,
       input  wire                               i_dst_ready,
-      input  wire                               i_dst_resp,
+      input  wire                               i_dst_resp
     );
 
 endmodule
