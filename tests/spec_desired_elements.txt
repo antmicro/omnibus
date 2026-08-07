@@ -1,4 +1,6 @@
 ERROR: it is not possible yet to have address map rules that are different based on source id, rule to sb_cpu_lpp has different paths from axi_cpu and axi_dbg
+### GLOBALS ###
+addr_width = 32
 ### PORTS ###
 == PORT axi_cpu parent: None ==
 [('clock', 'clk_cpu'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]

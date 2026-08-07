@@ -33,7 +33,9 @@ clocks:
 connections:
   coral_npu_in -> main.coral_npu_in: null
   fast_vdma -> main.fast_vdma: null
-  main.coral_npu_out -> coral_npu_out: null
+  main.coral_npu_out -> coral_npu_out:
+    axi_max_reads: 3
+    protocol: true
   main.fast_vdma_csr -> fast_vdma_csr: null
   main.i3c_controller -> i3c_controller: null
   main.i3c_target -> i3c_target: null
@@ -84,6 +86,9 @@ crossbars:
         clock: clk_fast
         role: subordinate
 desc_version: 1.0
+global:
+  addr_width: 32
+  axi_max_reads: 2
 name: ASoCaInt
 ports:
   coral_npu_in:
