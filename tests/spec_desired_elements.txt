@@ -1,53 +1,57 @@
 ERROR: it is not possible yet to have address map rules that are different based on source id, rule to sb_cpu_lpp has different paths from axi_cpu and axi_dbg
 ### GLOBALS ###
 addr_width = 32
+### DEFAULTS ###
+data_width = 32
+protocol = AXI4
+clock = clk_bus
 ### PORTS ###
 == PORT axi_cpu parent: None ==
-[('clock', 'clk_cpu'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk_cpu'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to sb_cpu_cpu -
 []
 == PORT axi_dbg parent: None ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to sb_cpu_dbg -
 []
 == PORT axi_mem parent: None ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 == PORT apb_uart parent: None ==
-[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'APB')]
+[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('protocol', 'APB'), ('role', 'manager')]
 == PORT apb_i2c parent: None ==
-[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'APB')]
+[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('protocol', 'APB'), ('role', 'manager')]
 == PORT sb_cpu_cpu parent: sb_cpu ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to sb_cpu_mem -
 []
 - edge to sb_cpu_lpp -
 []
 == PORT sb_cpu_dbg parent: sb_cpu ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to sb_cpu_mem -
 []
 - edge to sb_cpu_lpp -
 []
 == PORT sb_cpu_mem parent: sb_cpu ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to axi_mem -
 [('protocol', True), ('registers', 1)]
 == PORT sb_cpu_lpp parent: sb_cpu ==
-[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk_bus'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to sb_lpp_up -
 []
 == PORT sb_lpp_up parent: sb_lpp ==
-[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to sb_lpp_uart -
 []
 - edge to sb_lpp_i2c -
 []
 == PORT sb_lpp_uart parent: sb_lpp ==
-[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to apb_uart -
 [('protocol', True)]
 == PORT sb_lpp_i2c parent: sb_lpp ==
-[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk_lpp'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to apb_i2c -
 [('protocol', True)]
 ### COMPONENTS ###
@@ -58,26 +62,26 @@ ports:
     clock: clk_bus
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   dbg:
     clock: clk_bus
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   lpp:
     clock: clk_bus
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
   mem:
     clock: clk_bus
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
 sub_id_width: 1
 == COMP sb_lpp crossbar
 clock: clk_lpp
@@ -86,20 +90,20 @@ ports:
     clock: clk_lpp
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
   uart:
     clock: clk_lpp
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
   up:
     clock: clk_lpp
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: subordinate
-    type: AXI4
 sub_id_width: 2
 ### ADDR MAPS ###
 == INTERCONNECT ==

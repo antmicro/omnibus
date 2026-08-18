@@ -85,70 +85,74 @@ crossbars:
       veer_el2_lsu:
         clock: clk_fast
         role: subordinate
+default:
+  axi_max_reads: 2
+  clock: clk_fast
+  data_width: 64
+  protocol: axi4
 desc_version: 1.0
 global:
   addr_width: 32
-  axi_max_reads: 2
 name: ASoCaInt
 ports:
   coral_npu_in:
     clock: clk_fast
     data_width: 128
+    protocol: axi4
     role: subordinate
-    type: axi4
   coral_npu_out:
     clock: clk_fast
     data_width: 128
+    protocol: axi4
     role: manager
-    type: axi4
   fast_vdma:
     clock: clk_fast
     data_width: 64
+    protocol: axi4
     role: subordinate
-    type: axi4
   fast_vdma_csr:
     clock: clk_fast
     data_width: 32
+    protocol: axi4_lite
     role: manager
-    type: axi4_lite
   i3c_controller:
     clock: clk_slow
     data_width: 64
+    protocol: axi4
     role: manager
-    type: axi4
   i3c_target:
     clock: clk_slow
     data_width: 64
+    protocol: axi4
     role: manager
-    type: axi4
   timers_csr:
     clock: clk_slow
     data_width: 64
+    protocol: apb3
     role: manager
-    type: apb3
   uart_csr:
     clock: clk_ahb
     data_width: 64
+    protocol: ahb3
     role: manager
-    type: ahb3
   veer_eh2_ifu:
     clock: clk_fast
     data_width: 64
+    protocol: axi4
     role: subordinate
-    type: axi4
   veer_eh2_lsu:
     clock: clk_fast
     data_width: 64
+    protocol: axi4
     role: subordinate
-    type: axi4
   veer_el2_ifu:
     clock: clk_slow
     data_width: 64
+    protocol: axi4
     role: subordinate
-    type: axi4
   veer_el2_lsu:
     clock: clk_slow
     data_width: 64
+    protocol: axi4
     role: subordinate
-    type: axi4
 version: 0

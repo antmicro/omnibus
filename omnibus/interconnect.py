@@ -32,7 +32,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             self.name = 'interconnect'
             self.version = '0'
             self.clocks = {'clk': {'frequency': 'n/a'}}
-            self.globals = {'addr_width': 32}
+            self.globals  = {'addr_width': 32}
+            self.defaults = {}
 
             self.ports       = {}
             self.components  = {}
@@ -218,7 +219,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
             ports_to_process = []
 
-            for attr, barrier in {('clock', 'cdc'), ('type', 'protocol'), ('data_width', None)}:
+            for attr, barrier in {('clock', 'cdc'), ('protocol', 'protocol'), ('data_width', None)}:
 
                 for portname, port in self.ports.items():
                     if port.attributes.get(attr):
@@ -249,7 +250,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                             ports_to_process.append(destname)
                             continue
 
-                        #all ports in crossbars must share the same parameter type
+                        #all ports in crossbars must share the same parameter protocol
                         #NOTE: this probably should be done smarter, include some metric for picking best attribute for crossbar
                         #      metrics can include: majority, throughput, latency, etc
                         parent = dest.parent
@@ -296,11 +297,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                             dest.attributes['id_width'] = id_width
 
             for comp in self.components.values():
-                for portname in comp.ports:
-                    port = self.ports[portname]
-
-                    if port.attributes['role'] == 'subordinate':
-                        port.attributes['id_width'] = comp.attributes['sub_id_width']
+                for portname in comp.srcports:
+                    self.ports[portname].attributes['id_width'] = comp.attributes['sub_id_width']
 
         def insert_new_components(self):
             """
@@ -320,7 +318,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                b. for all the rest parameters, get both ports' params from source port 
             note: source/dest are regarding edge direction, on graph view, source is on the left 
             """
-            for param, kind in [('id_width', 'iw_conv'), ('data_width', 'dw_conv'), ('clock', 'cdc'), ('type', 'pr_conv')]:
+            for param, kind in [('id_width', 'iw_conv'), ('data_width', 'dw_conv'), ('clock', 'cdc'), ('protocol', 'pr_conv')]:
                 newports = {}
 
                 for portname, port in self.ports.items():
@@ -342,7 +340,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                         name2 = f"{kind}_{destname}_{destattr}"
 
                         self.components[name_comp] = Component(kind, {})
-                        self.components[name_comp].ports = [name1, name2]
+                        self.components[name_comp].srcports = [name1]
+                        self.components[name_comp].dstports = [name2]
 
                         newports[name1] = Port(name_comp, copy.deepcopy(port.attributes))
                         newports[name2] = Port(name_comp, copy.deepcopy(port.attributes))
@@ -374,13 +373,17 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             #some fixup 
             for comp in self.components.values():
                 if comp.kind == 'dw_conv':
-                    comp.attributes['clock'] = self.ports[comp.ports[0]].attributes['clock']
+                    comp.attributes['clock'] = self.ports[comp.srcports[0]].attributes['clock']
 
         def print_elements(self):
             """Dumps all internally used elements"""
 
             print("### GLOBALS ###")
             for k, v in self.globals.items():
+                print(f"{k} = {v}")
+
+            print("### DEFAULTS ###")
+            for k, v in self.defaults.items():
                 print(f"{k} = {v}")
 
             print("### PORTS ###")

@@ -59,28 +59,36 @@ crossbars:
       up:
         clock: clk_lpp
         role: subordinate
+default:
+  clock: clk_bus
+  data_width: 32
+  protocol: AXI4
 desc_version: 1.0
 name: MyInterconnect
 ports:
   apb_i2c:
     clock: clk_lpp
+    data_width: 32
+    protocol: APB
     role: manager
-    type: APB
   apb_uart:
     clock: clk_lpp
+    data_width: 32
+    protocol: APB
     role: manager
-    type: APB
   axi_cpu:
     clock: clk_cpu
     data_width: 32
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   axi_dbg:
     clock: clk_bus
+    data_width: 32
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   axi_mem:
     clock: clk_bus
+    data_width: 32
+    protocol: AXI4
     role: manager
-    type: AXI4
 version: 0.85a

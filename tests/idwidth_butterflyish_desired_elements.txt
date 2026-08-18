@@ -1,219 +1,227 @@
 ERROR: interconnect is not fully connected, lack of path from i0 to o3
 ### GLOBALS ###
 addr_width = 32
+### DEFAULTS ###
+protocol = AXI4
+clock = clk
+data_width = 32
 ### PORTS ###
 == PORT i0 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x0_i0 -
 []
 == PORT i1 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x0_i1 -
 []
 == PORT i2 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x1_i0 -
 []
 == PORT i3 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x1_i1 -
 []
 == PORT o0 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('protocol', 'AXI4'), ('role', 'manager')]
 == PORT o1 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('protocol', 'AXI4'), ('role', 'manager')]
 == PORT o2 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('protocol', 'AXI4'), ('role', 'manager')]
 == PORT o3 parent: None ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 == PORT x0_i0 parent: x0 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x0_o0 -
 []
 - edge to x0_o1 -
 []
 == PORT x0_i1 parent: x0 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x0_o0 -
 []
 - edge to x0_o1 -
 []
 == PORT x0_o0 parent: x0 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to x3_i0 -
 []
 == PORT x0_o1 parent: x0 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to x2_i0 -
 []
 == PORT x1_i0 parent: x1 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x1_o0 -
 []
 - edge to x1_o1 -
 []
 == PORT x1_i1 parent: x1 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 1), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x1_o0 -
 []
 - edge to x1_o1 -
 []
 == PORT x1_o0 parent: x1 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to x2_i1 -
 []
 == PORT x1_o1 parent: x1 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to o3 -
 [('protocol', True)]
 == PORT x2_i0 parent: x2 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x2_o0 -
 []
 - edge to x2_o1 -
 []
 == PORT x2_i1 parent: x2 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 2), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x2_o0 -
 []
 - edge to x2_o1 -
 []
 == PORT x2_o0 parent: x2 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to x3_i1 -
 []
 == PORT x2_o1 parent: x2 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to o2 -
 [('protocol', True)]
 == PORT x3_i0 parent: x3 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x3_o0 -
 []
 - edge to x3_o1 -
 []
 == PORT x3_i1 parent: x3 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('role', 'subordinate'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 3), ('protocol', 'AXI4'), ('role', 'subordinate')]
 - edge to x3_o0 -
 []
 - edge to x3_o1 -
 []
 == PORT x3_o0 parent: x3 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to o0 -
 [('protocol', True)]
 == PORT x3_o1 parent: x3 ==
-[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('role', 'manager'), ('type', 'AXI4')]
+[('clock', 'clk'), ('data_width', 32), ('id_width', 4), ('protocol', 'AXI4'), ('role', 'manager')]
 - edge to o1 -
 [('protocol', True)]
 ### COMPONENTS ###
 == COMP x0 crossbar
+clock: clk
 ports:
   i0:
     clock: clk
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   i1:
     clock: clk
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   o0:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
   o1:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
 sub_id_width: 1
 == COMP x1 crossbar
+clock: clk
 ports:
   i0:
     clock: clk
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   i1:
     clock: clk
     data_width: 32
     id_width: 1
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   o0:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
   o1:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: manager
-    type: AXI4
 sub_id_width: 1
 == COMP x2 crossbar
+clock: clk
 ports:
   i0:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   i1:
     clock: clk
     data_width: 32
     id_width: 2
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   o0:
     clock: clk
     data_width: 32
     id_width: 3
+    protocol: AXI4
     role: manager
-    type: AXI4
   o1:
     clock: clk
     data_width: 32
     id_width: 3
+    protocol: AXI4
     role: manager
-    type: AXI4
 sub_id_width: 2
 == COMP x3 crossbar
+clock: clk
 ports:
   i0:
     clock: clk
     data_width: 32
     id_width: 3
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   i1:
     clock: clk
     data_width: 32
     id_width: 3
+    protocol: AXI4
     role: subordinate
-    type: AXI4
   o0:
     clock: clk
     data_width: 32
     id_width: 4
+    protocol: AXI4
     role: manager
-    type: AXI4
   o1:
     clock: clk
     data_width: 32
     id_width: 4
+    protocol: AXI4
     role: manager
-    type: AXI4
 sub_id_width: 3
 ### ADDR MAPS ###
 == INTERCONNECT ==

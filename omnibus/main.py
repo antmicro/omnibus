@@ -14,7 +14,7 @@ def main():
     argsparser.add_argument('--graph', nargs='?', const='interconnect.gv', default=None, help="show graph, takes optional filename as argument, otherwise assumes 'interconnect.gv'") 
     argsparser.add_argument('-g', '--graphview', nargs='?', const='interconnect.gv', default=None, help="like --graph but automatically displays the result in browser") 
     argsparser.add_argument('-d', '--debug', help="specify at what stage to stop execution and output debug info", choices=['parse', 'elements', 'graph']) 
-    argsparser.add_argument('-c', '--colorby', default="", help="specify what parameter to color by in a graph", choices=['clock','type','role','data_width', 'id_width']) 
+    argsparser.add_argument('-c', '--colorby', default="", help="specify what parameter to color by in a graph", choices=['clock','protocol','role','data_width', 'id_width']) 
 
     args = argsparser.parse_args()
 

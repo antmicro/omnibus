@@ -5,39 +5,27 @@ desc_version: 1.0
 
 name: butterflyish
 
+default:
+  protocol: AXI4
+  clock: clk
+  data_width: 32
+
 ports:
   i0:
-    type:  AXI4
-    clock: clk
-    data_width: 32
     role:  "subordinate"
   i1:
-    type:  AXI4
-    clock: clk
     role:  "subordinate"
   i2:
-    type:  AXI4
-    clock: clk
     role:  "subordinate"
   i3:
-    type:  AXI4
-    clock: clk
     role:  "subordinate"
   o0:
-    type:  AXI4
-    clock: clk
     role:  "manager"
   o1:
-    type:  AXI4
-    clock: clk
     role:  "manager"
   o2:
-    type:  AXI4
-    clock: clk
     role:  "manager"
   o3:
-    type:  AXI4
-    clock: clk
     role:  "manager"
 
 crossbars:

@@ -178,6 +178,7 @@ ips:
       AxiSrcPortDataWidth: 64
   main:
     file: file:./out/modules/cores/main/module.yaml
+    parameters: {}
   pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
     file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:

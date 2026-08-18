@@ -82,6 +82,8 @@ ips:
       AxiIdWidth: 2
   sb_cpu:
     file: file:./out/modules/cores/sb_cpu/module.yaml
+    parameters: {}
   sb_lpp:
     file: file:./out/modules/cores/sb_lpp/module.yaml
+    parameters: {}
 name: MyInterconnect

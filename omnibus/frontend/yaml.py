@@ -43,19 +43,26 @@ class Frontend:
 
         if self.spec.get('version'):
             self.version = self.spec['version']
-        
+
+        #loops because they must overrwrite default values but also must not remove non overwritten ones
+        for name, val in self.spec.get('global', {}).items():
+            self.globals[name] = val
+
+        for name, val in self.spec.get('default', {}).items():
+            self.defaults[name] = val
+                
+
         if self.spec.get('clocks'):
             self.clocks = self.spec['clocks']
 
-        if self.spec.get('global'):
-            #loop because it must overrwrite default parameters but also must not remove non overwritten defaults
-            for name, val in self.spec['global'].items():
-                self.globals[name] = val
-                
-            self.name = self.spec['name']
+            if self.defaults.get('frequency'):
+                for clk in self.clocks:
+                    if clk.get('frequency') is not None:
+                        continue
+
+                    clk['frequency'] = self.defaults['frequency']
 
         # mandatory top level fields
-
         for k, v in self.spec['ports'].items():
             self.ports[k] = Port(None, v)
 
@@ -66,6 +73,13 @@ class Frontend:
             else:
                 print(f"ERROR: entry '{k}' in ports has wrong role, should be either 'manager' or 'subordinate'")
                 return
+
+            for param in ['clock', 'protocol', 'data_width']:
+                if not v.get(param):
+                    v[param] = self.defaults.get(param)
+
+                    if v[param] is None:
+                        print(f"ERROR: port {k} does not have {param} and no default {param} is specified")
 
         #if not present, generate all to all
         if not self.spec.get('crossbars'):
@@ -84,10 +98,6 @@ class Frontend:
                     self.spec['connections'][f"main.{portname} -> {portname}"] = {}
                         
         for crossbar, cpars in self.spec['crossbars'].items():
-            #store which ports are subs and which are managers, later use this info to create edges
-            subs     = []
-            managers = []
-
             if not cpars.get('ports'):
                 print(f"ERROR: crossbar '{crossbar}' does not have 'ports' field")
                 return 
@@ -96,31 +106,35 @@ class Frontend:
 
             clock = cpars.get('clock')
 
+            if not clock:
+                clock = self.defaults.get('clock')
+                cpars['clock'] = clock
+            #clock might still be null, in that case it is filled by propagation
+
             for k, v in cpars['ports'].items():
                 name = crossbar + '_' + k
                 self.ports[name] = Port(crossbar, v)
                 self.ports[name].attributes['clock'] = clock
 
-                self.components[crossbar].ports.append(name)
 
                 if not v.get('role'):
                     print(f"ERROR: crossbar '{crossbar}'s port '{k}' lacks field 'role'")
                     return
 
                 if v['role'] == "subordinate":
-                    subs.append(name)
+                    self.components[crossbar].srcports.append(name)
                 elif v['role'] == "manager":
-                    managers.append(name)
+                    self.components[crossbar].dstports.append(name)
                 else:
                     print(f"ERROR: crossbar '{crossbar}'s port '{k}'s field 'role' should be set either to 'master' or to 'subordinate', was instead set to '{v['role']}'")
            
-            for sub in subs: 
+            for sub in self.components[crossbar].srcports: 
                 subport = self.ports[sub]
 
-                for manager in managers:
+                for manager in self.components[crossbar].dstports:
                     subport.edges.append(Edge(manager, {}))
                     self.ports[manager].backedges.append(Edge(sub, {}))
-            self.components[crossbar].sub_log2 = math.ceil(math.log2(len(subs)))
+            self.components[crossbar].sub_log2 = math.ceil(math.log2(len(self.components[crossbar].srcports)))
 
         for conn, params in self.spec['connections'].items():
             parts = conn.split(' ')

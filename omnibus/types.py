@@ -34,6 +34,17 @@ class Component:
         self.kind       = kind
         self.attributes = attributes
         self.sub_log2   = 0
-        self.ports      = []
+        self.srcports   = []
+        self.dstports   = []
 
         self.address_map = []
+
+class MappedComponent:
+    def __init__(self, name, glbattr, defattr, address_map):
+        self.name        = name
+        self.glbattr     = glbattr
+        self.defattr     = defattr
+        self.address_map = address_map
+
+        self.srcports = {}
+        self.dstports = {}
