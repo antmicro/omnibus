@@ -456,6 +456,6 @@ class Backend:
                     else:
                         ip['dst'] = [destport.parent, 'src']
     
-        with open(os.path.join(outdir, "interconnect.yml"), 'w') as file:
+        with open(os.path.join(outdir, f"{self.name}.yml"), 'w') as file:
             yaml.dump(tree, file)
     
