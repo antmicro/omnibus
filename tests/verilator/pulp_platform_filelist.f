@@ -1,3 +1,5 @@
++incdir+axi/include/
++incdir+common_cells/include/
 axi/src/axi_pkg.sv
 common_cells/src/cc_pkg.sv
 common_cells/src/deprecated/cf_math_pkg.sv

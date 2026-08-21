@@ -20,7 +20,6 @@ def main():
 
     os.makedirs(f"{args.output}/src", exist_ok=True)
     os.makedirs(f"{args.output}/modules", exist_ok=True)
-    os.makedirs(f"{args.output}/verilator", exist_ok=True)
 
     if args.debug == "graph":
         ic = InterconnectBuilder(backend="graphviz")

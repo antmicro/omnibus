@@ -11,6 +11,7 @@ import yaml
 
 from ..types import MappedComponent
 
+filelist = []
 
 class PulpCrossbar(MappedComponent):
     def __init__(self, *args, **kwargs):
@@ -44,7 +45,7 @@ class PulpCrossbar(MappedComponent):
                 print(f"WARNING: rule of size 0 or lack of rule in crossbar {self.name} leading to port {portname}")
                     
             slaves[portname] = {"offset": offset, "size": size}
-            
+
         with tempfile.NamedTemporaryFile("w") as file:
             config = {
                 "parameters": {
@@ -62,6 +63,8 @@ class PulpCrossbar(MappedComponent):
             os.chdir(outdir)
             axi_intercon_gen.AxiIntercon(self.name, file.name).write()
             os.chdir(prevdir)
+
+        filelist.append(str(os.path.join("src", f"axi_crossbar_{self.name}.sv")))
 
     def generate_hierarchy(self, ports, params):
         port = next(iter(self.srcports.values()))
@@ -86,6 +89,8 @@ class PulpCDC(MappedComponent):
         shutil.copyfile(
             os.path.join(src, "axi_cdc.sv"), 
             os.path.join(dst, "axi_cdc_wrapper.sv"))
+
+        filelist.append(str(os.path.join("src", "axi_cdc_wrapper.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
@@ -118,6 +123,8 @@ class PulpDWConv(MappedComponent):
         shutil.copyfile(
             os.path.join(src, "axi_dw_converter.sv"), 
             os.path.join(dst, "axi_dw_converter_wrapper.sv"))
+
+        filelist.append(str(os.path.join("src", "axi_dw_converter_wrapper.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
@@ -152,6 +159,8 @@ class IWConv(MappedComponent):
         shutil.copyfile(
             os.path.join(src, "axi_idwidth_expander.sv"), 
             os.path.join(dst, "axi_idwidth_expander.sv"))
+
+        filelist.append(str(os.path.join("src", "axi_idwidth_expander.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
@@ -191,6 +200,8 @@ class PulpPrAXIAPB(MappedComponent):
             os.path.join(inf, "apb.yml"), 
             os.path.join(dst, "apb.yml"))
 
+        filelist.append(str(os.path.join("src", "axi_pr_axi_apb.sv")))
+
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
@@ -220,6 +231,8 @@ class PulpPrAXIAXILite(MappedComponent):
         shutil.copyfile(
             os.path.join(src, "axi_pr_axi_axilite.sv"), 
             os.path.join(dst, "axi_pr_axi_axilite.sv"))
+
+        filelist.append(str(os.path.join("src", "axi_pr_axi_axilite.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
@@ -259,6 +272,9 @@ class PrAXIAHB(MappedComponent):
         shutil.copyfile(
             os.path.join(inf, "ahb.yml"), 
             os.path.join(dst, "ahb.yml"))
+
+        filelist.append(str(os.path.join("src", "axi_pr_axi_ahb.sv")))
+        filelist.append(str(os.path.join("src", "beh_lib.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
@@ -347,24 +363,6 @@ class Backend:
     
         Currently hardcoded to use modules from pulp-platform/axi
         """
-
-        verilator     = os.path.join(resources.files("omnibus"), "verilator")
-
-        #create waivers for verilator
-        shutil.copyfile(
-            os.path.join(verilator,             "general_config.vlt"), 
-            os.path.join(outdir,   "verilator", "general_config.vlt"))
-        shutil.copyfile(
-            os.path.join(verilator,             "pulp_platform_config.vlt"), 
-            os.path.join(outdir,   "verilator", "pulp_platform_config.vlt"))
-
-        #create filelists
-        shutil.copyfile(
-            os.path.join(verilator,             "general_filelist.vc"), 
-            os.path.join(outdir,   "verilator", "general_filelist.vc"))
-        shutil.copyfile(
-            os.path.join(verilator,             "pulp_platform_filelist.vc"), 
-            os.path.join(outdir,   "verilator", "pulp_platform_filelist.vc"))
 
         #generate verilog files
         for comp in self.real_components:
@@ -458,4 +456,10 @@ class Backend:
     
         with open(os.path.join(outdir, f"{self.name}.yml"), 'w') as file:
             yaml.dump(tree, file)
+
+
+        with open(os.path.join(outdir, f"{self.name}.f"), "w") as fl:
+            for file in filelist:
+                fl.write(file)
+                fl.write('\n')
     
