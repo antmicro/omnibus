@@ -73,10 +73,9 @@ First, run Omnibus:
 ```
 omnibus examples/simple.yml
 ```
-This generates necessary files in `out/`.  
-Then, initialize the Topwrap project:
+This generates necessary files in `out/` and topwrap repo.  
+Then, parse the created files with Topwrap: 
 ```
-topwrap repo init repo out/modules/
 topwrap repo parse repo out/src/*sv --log-level=error
 ```
 Before generating with Topwrap, change the file structure slightly:  

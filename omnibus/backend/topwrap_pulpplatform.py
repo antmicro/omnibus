@@ -188,17 +188,18 @@ class PulpPrAXIAPB(MappedComponent):
 
         PulpDWConv.exists = True
 
-        src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
-        dst = os.path.join(outdir, "src")
-        inf = os.path.join(resources.files("omnibus"), "interfaces")
+        src    = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
+        dst    = os.path.join(outdir, "src")
+        inf    = os.path.join(resources.files("omnibus"), "interfaces")
+        dstinf = os.path.join(outdir, "modules", "interfaces")
 
         shutil.copyfile(
             os.path.join(src, "axi_pr_axi_apb.sv"), 
             os.path.join(dst, "axi_pr_axi_apb.sv"))
     
         shutil.copyfile(
-            os.path.join(inf, "apb.yml"), 
-            os.path.join(dst, "apb.yml"))
+            os.path.join(inf,    "apb.yml"), 
+            os.path.join(dstinf, "apb.yml"))
 
         filelist.append(str(os.path.join("src", "axi_pr_axi_apb.sv")))
 
@@ -257,9 +258,10 @@ class PrAXIAHB(MappedComponent):
 
         PulpDWConv.exists = True
 
-        src = os.path.join(resources.files("omnibus"), "modules")
-        dst = os.path.join(outdir, "src")
-        inf = os.path.join(resources.files("omnibus"), "interfaces")
+        src    = os.path.join(resources.files("omnibus"), "modules")
+        dst    = os.path.join(outdir, "src")
+        inf    = os.path.join(resources.files("omnibus"), "interfaces")
+        dstinf = os.path.join(outdir, "modules", "interfaces")
 
         shutil.copyfile(
             os.path.join(src, "axi_pr_axi_ahb.sv"), 
@@ -270,8 +272,8 @@ class PrAXIAHB(MappedComponent):
             os.path.join(dst, "beh_lib.sv"))
 
         shutil.copyfile(
-            os.path.join(inf, "ahb.yml"), 
-            os.path.join(dst, "ahb.yml"))
+            os.path.join(inf,    "ahb.yml"), 
+            os.path.join(dstinf, "ahb.yml"))
 
         filelist.append(str(os.path.join("src", "axi_pr_axi_ahb.sv")))
         filelist.append(str(os.path.join("src", "beh_lib.sv")))
@@ -363,6 +365,11 @@ class Backend:
     
         Currently hardcoded to use modules from pulp-platform/axi
         """
+
+        os.makedirs(os.path.join(outdir, 'modules', 'interfaces'), exist_ok=True)
+
+        with open('topwrap.yaml', 'w') as file:
+            yaml.dump({'repositories': {'repo': f"file:{os.path.join(outdir, 'modules')}"}}, file)
 
         #generate verilog files
         for comp in self.real_components:
