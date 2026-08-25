@@ -13,41 +13,60 @@ class Backend:
 
     The `generate` method can be used to set filename, set whether to display the graph, and to set whether to color it according to some parameter
     """
-    def generate(self, filename='interconnect.gv', view=False, color_by=""):
+    def generate(self, outdir, view=False, color_by="", color_scheme="paired12", display_full_name=False):
         """Generate graphviz graph, optionally color it by some parameter, and optionally display it"""
-        g = graphviz.Digraph(self.name, filename=filename, node_attr={'style': 'filled', 'colorscheme': 'paired12'})
+        g = graphviz.Digraph(self.name, filename=f"{outdir}/{self.name}.gv", node_attr={'style': 'filled', 'colorscheme': color_scheme})
         g.attr(rankdir='LR')
+        g.attr(splines='line')
     
-        #max color id determined by paired12 colorscheme
+        #max color id determined by colorscheme
+        #colorschemes are defined in https://graphviz.org/doc/info/colors.html#brewer
         param_to_color_id = {}
+
+        #each colorscheme ends in a number that defines how many colors are available
+        #unfortunately some colorscheme names include number (eg dark2)
+        #fortunately there are at most 12 colors in single colorscheme (paired12), and the lowest invalid numbers go is 13 (pastel13)
+        #and so, proper colornames scheme can be found by 
+        # 1. if there are 3 digits, ignore first one 
+        # 2. if there are 2 digits, ignore first one if last digit is above 2 
+        if len(color_scheme) < 4 or color_scheme[-1] < '0' or color_scheme[-1] > '9':
+            print("ERROR: invalid colorscheme provided; check https://graphviz.org/doc/info/colors.html#brewer for list of allowed ones")
+            return
+
+        color_max_id = 0
+        if   '0' <= color_scheme[-3] <= '9':
+            color_max_id = int(color_scheme[-2:])
+        elif '0' <= color_scheme[-2] <= '9':
+            if color_scheme[-1] > '2':
+                color_max_id = int(color_scheme[-1])
+            else:
+                color_max_id = int(color_scheme[-2:])
+        else:
+            color_max_id = int(color_scheme[-1])
         color_nxt_id = 1
-        color_max_id = 11
-    
+
+        #collect all parameters, sort them, assign colors in order
+        if color_by != "":
+            param_set = set()
+
+            for params in self.ports.values():
+                if params.attributes.get(color_by):
+                    param_set.add(params.attributes.get(color_by))
+
+            for param in sorted(param_set):
+                if color_nxt_id > color_max_id:
+                    print("ERROR: too many different parameter's values to color by")
+                    return
+  
+                param_to_color_id[param] = str(color_nxt_id)
+                color_nxt_id += 1 
+
         subgraphs = {}
     
         for port, params in self.ports.items():
             
-            color = "white"
+            color = param_to_color_id.get(params.attributes.get(color_by), "white")
     
-            if color_by != "":
-                color = None
-    
-                paramval = params.attributes.get(color_by)
-    
-                if paramval is not None:
-                    if not param_to_color_id.get(paramval):
-                        if color_nxt_id > color_max_id:
-                            print("ERROR: too many different parameter's values to color by")
-                            return
-    
-                        param_to_color_id[paramval] = str(color_nxt_id)
-                        color_nxt_id += 1 
-    
-                    color = param_to_color_id[paramval]
-    
-                if color is None:
-                    color = '12'
-            
             if params.parent is None:
                 g.node(port, fillcolor=color)
     
@@ -56,16 +75,33 @@ class Backend:
                 
                 continue
     
-            sg = subgraphs.get(params.parent)
+            sg   = subgraphs.get(params.parent)
+            kind = self.components[params.parent].kind
             if not sg:
+
                 #"cluster" is necessary to generate  grouping
                 subgraphs[params.parent] = graphviz.Digraph(name='cluster ' + params.parent)
                 sg = subgraphs[params.parent]
-                sg.attr(label=params.parent)
+
+                if display_full_name or kind == 'crossbar':
+                    sg.attr(label=f"{kind}\n{params.parent}")
+                else:
+                    sg.attr(label=f"{kind}")
+
+
                 sg.attr(style='dashed', color='lightgrey')
     
-            sg.node(port, fillcolor=color)
-    
+            if display_full_name or kind == 'crossbar':
+                sg.node(port, fillcolor=color)
+            elif kind == 'cdc':
+                sg.node(port, fillcolor=color, label=str(params.attributes['clock']))
+            elif kind == 'pr_conv':
+                sg.node(port, fillcolor=color, label=str(params.attributes['protocol']))
+            elif kind == 'iw_conv':
+                sg.node(port, fillcolor=color, label=str(params.attributes['id_width']))
+            elif kind == 'dw_conv':
+                sg.node(port, fillcolor=color, label=str(params.attributes['data_width']))
+     
             for edge in params.edges:
                 dest = edge.dest
                 #crossbar might have outgoing connection
@@ -79,20 +115,24 @@ class Backend:
         # create a legend
         if color_by != "":
             legend = graphviz.Digraph(name="cluster legend")
-            legend.attr(label="legend")
+            legend.attr(label=f"legend - {color_by}")
             legend.attr(color='lightgrey')
             legend.attr(rank="same")
             
-            for name, color in param_to_color_id.items():
-                name = str(name)
-                legend.node(name, fillcolor=color)
+            params = list(param_to_color_id.items())
+            for ii in range(len(params) - 1):
+                name = str(params[ii][0])
+                legend.node(name, fillcolor=params[ii][1])
                 #force layout
-                legend.edge(name, "none", style="invis")
-    
-            legend.node("none", fillcolor=str(color_max_id + 1))
+                legend.edge(name, str(params[ii + 1][0]), style="invis")
+
+            name = str(params[-1][0])
+            legend.node(name, fillcolor=params[-1][1])
+            legend.edge(name, "none", style="invis")
+            legend.node("none", fillcolor="white")
     
             #force layout
-            g.edge(next(iter(self.ports.keys())), "none", style="invis")
+            #g.edge(next(iter(self.ports.keys())), "none", style="invis")
     
             g.subgraph(legend)
     

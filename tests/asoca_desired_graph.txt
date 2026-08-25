@@ -1,6 +1,7 @@
 digraph ASoCaInt {
 	node [colorscheme=paired12 style=filled]
 	rankdir=LR
+	splines=line
 	veer_el2_ifu [fillcolor=white]
 	veer_el2_ifu -> main_veer_el2_ifu
 	veer_el2_lsu [fillcolor=white]
@@ -26,7 +27,8 @@ digraph ASoCaInt {
 	main_i3c_target -> i3c_target
 	main_uart_csr -> uart_csr
 	subgraph "cluster main" {
-		label=main
+		label="crossbar
+main"
 		color=lightgrey style=dashed
 		main_veer_el2_ifu [fillcolor=white]
 		main_veer_el2_ifu -> main_fast_vdma_csr
