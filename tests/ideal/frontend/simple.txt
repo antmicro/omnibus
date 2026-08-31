@@ -1,0 +1,52 @@
+address_map:
+  pout1:
+    base: 0
+    size: 2147483647
+    to: pout1
+  pout2:
+    base: 2147483648
+    size: 2147483647
+    to: pout2
+connections:
+  main.pout1 -> pout1:
+    protocol: true
+  main.pout2 -> pout2:
+    protocol: true
+  pin -> main.pin: {}
+crossbars:
+  main:
+    clock: clk
+    ports:
+      pin:
+        clock: clk
+        role: subordinate
+      pout1:
+        clock: clk
+        role: manager
+      pout2:
+        clock: clk
+        role: manager
+default:
+  clock: clk
+  data_width: 64
+  frequency: 10MHz
+  protocol: AXI4
+desc_version: 1.0
+name: simple
+ports:
+  pin:
+    clock: clk
+    data_width: 64
+    protocol: AXI4
+    role: subordinate
+  pout1:
+    clock: clk
+    data_width: 64
+    protocol: AXI4Lite
+    role: manager
+  pout2:
+    clock: clk
+    data_width: 64
+    protocol: AXI4
+    role: manager
+version: 1.0

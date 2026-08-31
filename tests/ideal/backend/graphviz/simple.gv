@@ -1,0 +1,39 @@
+digraph simple {
+	node [colorscheme=paired12 style=filled]
+	rankdir=LR
+	splines=line
+	pin [fillcolor=1]
+	pin -> main_pin
+	pout1 [fillcolor=2]
+	pout2 [fillcolor=1]
+	main_pout1 -> pr_conv_main_pout1_AXI4
+	main_pout2 -> pout2
+	pr_conv_pout1_AXI4Lite -> pout1
+	subgraph "cluster legend" {
+		label="legend - protocol"
+		color=lightgrey
+		rank=same
+		AXI4 [fillcolor=1]
+		AXI4 -> AXI4Lite [style=invis]
+		AXI4Lite [fillcolor=2]
+		AXI4Lite -> none [style=invis]
+		none [fillcolor=white]
+	}
+	subgraph "cluster main" {
+		label="crossbar
+main"
+		color=lightgrey style=dashed
+		main_pin [fillcolor=1]
+		main_pin -> main_pout1
+		main_pin -> main_pout2
+		main_pout1 [fillcolor=1]
+		main_pout2 [fillcolor=1]
+	}
+	subgraph "cluster pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite" {
+		label=pr_conv
+		color=lightgrey style=dashed
+		pr_conv_main_pout1_AXI4 [label=AXI4 fillcolor=1]
+		pr_conv_main_pout1_AXI4 -> pr_conv_pout1_AXI4Lite
+		pr_conv_pout1_AXI4Lite [label=AXI4Lite fillcolor=2]
+	}
+}

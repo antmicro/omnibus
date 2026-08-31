@@ -1,0 +1,209 @@
+digraph butterfly {
+	node [colorscheme=paired12 style=filled]
+	rankdir=LR
+	splines=line
+	i0 [fillcolor=white]
+	i0 -> x00_i0
+	i1 [fillcolor=white]
+	i1 -> x00_i1
+	i2 [fillcolor=white]
+	i2 -> x01_i0
+	i3 [fillcolor=white]
+	i3 -> x01_i1
+	i4 [fillcolor=white]
+	i4 -> x02_i0
+	i5 [fillcolor=white]
+	i5 -> x02_i1
+	i6 [fillcolor=white]
+	i6 -> x03_i0
+	i7 [fillcolor=white]
+	i7 -> x03_i1
+	o0 [fillcolor=white]
+	o1 [fillcolor=white]
+	o2 [fillcolor=white]
+	o3 [fillcolor=white]
+	o4 [fillcolor=white]
+	o5 [fillcolor=white]
+	o6 [fillcolor=white]
+	o7 [fillcolor=white]
+	x00_o0 -> x10_i0
+	x00_o1 -> x12_i0
+	x01_o0 -> x11_i0
+	x01_o1 -> x13_i0
+	x02_o0 -> x10_i1
+	x02_o1 -> x12_i1
+	x03_o0 -> x11_i1
+	x03_o1 -> x13_i1
+	x10_o0 -> x20_i0
+	x10_o1 -> x21_i0
+	x11_o0 -> x20_i1
+	x11_o1 -> x21_i1
+	x12_o0 -> x22_i0
+	x12_o1 -> x23_i0
+	x13_o0 -> x22_i1
+	x13_o1 -> x23_i1
+	x20_o0 -> o0
+	x20_o1 -> o1
+	x21_o0 -> o2
+	x21_o1 -> o3
+	x22_o0 -> o4
+	x22_o1 -> o5
+	x23_o0 -> o6
+	x23_o1 -> o7
+	subgraph "cluster x00" {
+		label="crossbar
+x00"
+		color=lightgrey style=dashed
+		x00_i0 [fillcolor=white]
+		x00_i0 -> x00_o0
+		x00_i0 -> x00_o1
+		x00_i1 [fillcolor=white]
+		x00_i1 -> x00_o0
+		x00_i1 -> x00_o1
+		x00_o0 [fillcolor=white]
+		x00_o1 [fillcolor=white]
+	}
+	subgraph "cluster x01" {
+		label="crossbar
+x01"
+		color=lightgrey style=dashed
+		x01_i0 [fillcolor=white]
+		x01_i0 -> x01_o0
+		x01_i0 -> x01_o1
+		x01_i1 [fillcolor=white]
+		x01_i1 -> x01_o0
+		x01_i1 -> x01_o1
+		x01_o0 [fillcolor=white]
+		x01_o1 [fillcolor=white]
+	}
+	subgraph "cluster x02" {
+		label="crossbar
+x02"
+		color=lightgrey style=dashed
+		x02_i0 [fillcolor=white]
+		x02_i0 -> x02_o0
+		x02_i0 -> x02_o1
+		x02_i1 [fillcolor=white]
+		x02_i1 -> x02_o0
+		x02_i1 -> x02_o1
+		x02_o0 [fillcolor=white]
+		x02_o1 [fillcolor=white]
+	}
+	subgraph "cluster x03" {
+		label="crossbar
+x03"
+		color=lightgrey style=dashed
+		x03_i0 [fillcolor=white]
+		x03_i0 -> x03_o0
+		x03_i0 -> x03_o1
+		x03_i1 [fillcolor=white]
+		x03_i1 -> x03_o0
+		x03_i1 -> x03_o1
+		x03_o0 [fillcolor=white]
+		x03_o1 [fillcolor=white]
+	}
+	subgraph "cluster x10" {
+		label="crossbar
+x10"
+		color=lightgrey style=dashed
+		x10_i0 [fillcolor=white]
+		x10_i0 -> x10_o0
+		x10_i0 -> x10_o1
+		x10_i1 [fillcolor=white]
+		x10_i1 -> x10_o0
+		x10_i1 -> x10_o1
+		x10_o0 [fillcolor=white]
+		x10_o1 [fillcolor=white]
+	}
+	subgraph "cluster x11" {
+		label="crossbar
+x11"
+		color=lightgrey style=dashed
+		x11_i0 [fillcolor=white]
+		x11_i0 -> x11_o0
+		x11_i0 -> x11_o1
+		x11_i1 [fillcolor=white]
+		x11_i1 -> x11_o0
+		x11_i1 -> x11_o1
+		x11_o0 [fillcolor=white]
+		x11_o1 [fillcolor=white]
+	}
+	subgraph "cluster x12" {
+		label="crossbar
+x12"
+		color=lightgrey style=dashed
+		x12_i0 [fillcolor=white]
+		x12_i0 -> x12_o0
+		x12_i0 -> x12_o1
+		x12_i1 [fillcolor=white]
+		x12_i1 -> x12_o0
+		x12_i1 -> x12_o1
+		x12_o0 [fillcolor=white]
+		x12_o1 [fillcolor=white]
+	}
+	subgraph "cluster x13" {
+		label="crossbar
+x13"
+		color=lightgrey style=dashed
+		x13_i0 [fillcolor=white]
+		x13_i0 -> x13_o0
+		x13_i0 -> x13_o1
+		x13_i1 [fillcolor=white]
+		x13_i1 -> x13_o0
+		x13_i1 -> x13_o1
+		x13_o0 [fillcolor=white]
+		x13_o1 [fillcolor=white]
+	}
+	subgraph "cluster x20" {
+		label="crossbar
+x20"
+		color=lightgrey style=dashed
+		x20_i0 [fillcolor=white]
+		x20_i0 -> x20_o0
+		x20_i0 -> x20_o1
+		x20_i1 [fillcolor=white]
+		x20_i1 -> x20_o0
+		x20_i1 -> x20_o1
+		x20_o0 [fillcolor=white]
+		x20_o1 [fillcolor=white]
+	}
+	subgraph "cluster x21" {
+		label="crossbar
+x21"
+		color=lightgrey style=dashed
+		x21_i0 [fillcolor=white]
+		x21_i0 -> x21_o0
+		x21_i0 -> x21_o1
+		x21_i1 [fillcolor=white]
+		x21_i1 -> x21_o0
+		x21_i1 -> x21_o1
+		x21_o0 [fillcolor=white]
+		x21_o1 [fillcolor=white]
+	}
+	subgraph "cluster x22" {
+		label="crossbar
+x22"
+		color=lightgrey style=dashed
+		x22_i0 [fillcolor=white]
+		x22_i0 -> x22_o0
+		x22_i0 -> x22_o1
+		x22_i1 [fillcolor=white]
+		x22_i1 -> x22_o0
+		x22_i1 -> x22_o1
+		x22_o0 [fillcolor=white]
+		x22_o1 [fillcolor=white]
+	}
+	subgraph "cluster x23" {
+		label="crossbar
+x23"
+		color=lightgrey style=dashed
+		x23_i0 [fillcolor=white]
+		x23_i0 -> x23_o0
+		x23_i0 -> x23_o1
+		x23_i1 [fillcolor=white]
+		x23_i1 -> x23_o0
+		x23_i1 -> x23_o1
+		x23_o0 [fillcolor=white]
+		x23_o1 [fillcolor=white]
+	}
+}

@@ -1,0 +1,882 @@
+### PORTS ###
+== PORT i0 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x00_i0 -
+{}
+== PORT i1 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x00_i1 -
+{}
+== PORT i2 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x01_i0 -
+{}
+== PORT i3 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x01_i1 -
+{}
+== PORT i4 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x02_i0 -
+{}
+== PORT i5 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x02_i1 -
+{}
+== PORT i6 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x03_i0 -
+{}
+== PORT i7 parent: None ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x03_i1 -
+{}
+== PORT o0 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o1 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o2 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o3 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o4 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o5 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o6 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT o7 parent: None ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+== PORT x00_i0 parent: x00 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x00_o0 -
+{}
+- edge to x00_o1 -
+{}
+== PORT x00_i1 parent: x00 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x00_o0 -
+{}
+- edge to x00_o1 -
+{}
+== PORT x00_o0 parent: x00 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x10_i0 -
+{}
+== PORT x00_o1 parent: x00 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x12_i0 -
+{}
+== PORT x01_i0 parent: x01 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x01_o0 -
+{}
+- edge to x01_o1 -
+{}
+== PORT x01_i1 parent: x01 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x01_o0 -
+{}
+- edge to x01_o1 -
+{}
+== PORT x01_o0 parent: x01 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x11_i0 -
+{}
+== PORT x01_o1 parent: x01 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x13_i0 -
+{}
+== PORT x02_i0 parent: x02 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x02_o0 -
+{}
+- edge to x02_o1 -
+{}
+== PORT x02_i1 parent: x02 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x02_o0 -
+{}
+- edge to x02_o1 -
+{}
+== PORT x02_o0 parent: x02 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x10_i1 -
+{}
+== PORT x02_o1 parent: x02 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x12_i1 -
+{}
+== PORT x03_i0 parent: x03 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x03_o0 -
+{}
+- edge to x03_o1 -
+{}
+== PORT x03_i1 parent: x03 ==
+clock: clk
+data_width: 32
+id_width: 1
+protocol: AXI4
+role: subordinate
+- edge to x03_o0 -
+{}
+- edge to x03_o1 -
+{}
+== PORT x03_o0 parent: x03 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x11_i1 -
+{}
+== PORT x03_o1 parent: x03 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: manager
+- edge to x13_i1 -
+{}
+== PORT x10_i0 parent: x10 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x10_o0 -
+{}
+- edge to x10_o1 -
+{}
+== PORT x10_i1 parent: x10 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x10_o0 -
+{}
+- edge to x10_o1 -
+{}
+== PORT x10_o0 parent: x10 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x20_i0 -
+{}
+== PORT x10_o1 parent: x10 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x21_i0 -
+{}
+== PORT x11_i0 parent: x11 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x11_o0 -
+{}
+- edge to x11_o1 -
+{}
+== PORT x11_i1 parent: x11 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x11_o0 -
+{}
+- edge to x11_o1 -
+{}
+== PORT x11_o0 parent: x11 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x20_i1 -
+{}
+== PORT x11_o1 parent: x11 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x21_i1 -
+{}
+== PORT x12_i0 parent: x12 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x12_o0 -
+{}
+- edge to x12_o1 -
+{}
+== PORT x12_i1 parent: x12 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x12_o0 -
+{}
+- edge to x12_o1 -
+{}
+== PORT x12_o0 parent: x12 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x22_i0 -
+{}
+== PORT x12_o1 parent: x12 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x23_i0 -
+{}
+== PORT x13_i0 parent: x13 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x13_o0 -
+{}
+- edge to x13_o1 -
+{}
+== PORT x13_i1 parent: x13 ==
+clock: clk
+data_width: 32
+id_width: 2
+protocol: AXI4
+role: subordinate
+- edge to x13_o0 -
+{}
+- edge to x13_o1 -
+{}
+== PORT x13_o0 parent: x13 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x22_i1 -
+{}
+== PORT x13_o1 parent: x13 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: manager
+- edge to x23_i1 -
+{}
+== PORT x20_i0 parent: x20 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x20_o0 -
+{}
+- edge to x20_o1 -
+{}
+== PORT x20_i1 parent: x20 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x20_o0 -
+{}
+- edge to x20_o1 -
+{}
+== PORT x20_o0 parent: x20 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o0 -
+protocol: true
+== PORT x20_o1 parent: x20 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o1 -
+protocol: true
+== PORT x21_i0 parent: x21 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x21_o0 -
+{}
+- edge to x21_o1 -
+{}
+== PORT x21_i1 parent: x21 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x21_o0 -
+{}
+- edge to x21_o1 -
+{}
+== PORT x21_o0 parent: x21 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o2 -
+protocol: true
+== PORT x21_o1 parent: x21 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o3 -
+protocol: true
+== PORT x22_i0 parent: x22 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x22_o0 -
+{}
+- edge to x22_o1 -
+{}
+== PORT x22_i1 parent: x22 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x22_o0 -
+{}
+- edge to x22_o1 -
+{}
+== PORT x22_o0 parent: x22 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o4 -
+protocol: true
+== PORT x22_o1 parent: x22 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o5 -
+protocol: true
+== PORT x23_i0 parent: x23 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x23_o0 -
+{}
+- edge to x23_o1 -
+{}
+== PORT x23_i1 parent: x23 ==
+clock: clk
+data_width: 32
+id_width: 3
+protocol: AXI4
+role: subordinate
+- edge to x23_o0 -
+{}
+- edge to x23_o1 -
+{}
+== PORT x23_o0 parent: x23 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o6 -
+protocol: true
+== PORT x23_o1 parent: x23 ==
+clock: clk
+data_width: 32
+id_width: 4
+protocol: AXI4
+role: manager
+- edge to o7 -
+protocol: true
+### COMPONENTS ###
+== COMP x00 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+sub_id_width: 1
+== COMP x01 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+sub_id_width: 1
+== COMP x02 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+sub_id_width: 1
+== COMP x03 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 1
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: manager
+sub_id_width: 1
+== COMP x10 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+sub_id_width: 2
+== COMP x11 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+sub_id_width: 2
+== COMP x12 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+sub_id_width: 2
+== COMP x13 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 2
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: manager
+sub_id_width: 2
+== COMP x20 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+sub_id_width: 3
+== COMP x21 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+sub_id_width: 3
+== COMP x22 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+sub_id_width: 3
+== COMP x23 crossbar
+clock: clk
+ports:
+  i0:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  i1:
+    clock: clk
+    data_width: 32
+    id_width: 3
+    protocol: AXI4
+    role: subordinate
+  o0:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+  o1:
+    clock: clk
+    data_width: 32
+    id_width: 4
+    protocol: AXI4
+    role: manager
+sub_id_width: 3

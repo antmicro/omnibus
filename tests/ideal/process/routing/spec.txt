@@ -1,0 +1,32 @@
+### ADDR MAPS ###
+== INTERCONNECT ==
+i2c:
+  base: 1073745920
+  from:
+  - axi_cpu
+  - axi_dbg
+  size: 4096
+  to: apb_i2c
+memory:
+  base: 0
+  size: 536870912
+  to: axi_mem
+uart:
+  base: 1073741824
+  from: axi_cpu
+  size: 4096
+  to: apb_uart
+== CROSSBAR sb_cpu==
+--
+_ sb_cpu_lpp
+0x40000000 0x2000
+--
+_ sb_cpu_mem
+0x0 0x20000000
+== CROSSBAR sb_lpp==
+--
+_ sb_lpp_i2c
+0x40001000 0x1000
+--
+_ sb_lpp_uart
+0x40000000 0x1000

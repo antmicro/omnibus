@@ -31,20 +31,24 @@ clocks:
   clk_slow:
     frequency: 300MHz
 connections:
-  coral_npu_in -> main.coral_npu_in: null
-  fast_vdma -> main.fast_vdma: null
+  coral_npu_in -> main.coral_npu_in: {}
+  fast_vdma -> main.fast_vdma: {}
   main.coral_npu_out -> coral_npu_out:
-    axi_max_reads: 3
     protocol: true
-  main.fast_vdma_csr -> fast_vdma_csr: null
-  main.i3c_controller -> i3c_controller: null
-  main.i3c_target -> i3c_target: null
-  main.timers_csr -> timers_csr: null
-  main.uart_csr -> uart_csr: null
-  veer_eh2_ifu -> main.veer_eh2_ifu: null
-  veer_eh2_lsu -> main.veer_eh2_lsu: null
-  veer_el2_ifu -> main.veer_el2_ifu: null
-  veer_el2_lsu -> main.veer_el2_lsu: null
+  main.fast_vdma_csr -> fast_vdma_csr:
+    protocol: true
+  main.i3c_controller -> i3c_controller:
+    protocol: true
+  main.i3c_target -> i3c_target:
+    protocol: true
+  main.timers_csr -> timers_csr:
+    protocol: true
+  main.uart_csr -> uart_csr:
+    protocol: true
+  veer_eh2_ifu -> main.veer_eh2_ifu: {}
+  veer_eh2_lsu -> main.veer_eh2_lsu: {}
+  veer_el2_ifu -> main.veer_el2_ifu: {}
+  veer_el2_lsu -> main.veer_el2_lsu: {}
 crossbars:
   main:
     clock: clk_fast
@@ -91,8 +95,6 @@ default:
   data_width: 64
   protocol: axi4
 desc_version: 1.0
-global:
-  addr_width: 32
 name: ASoCaInt
 ports:
   coral_npu_in:

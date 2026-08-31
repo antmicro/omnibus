@@ -23,14 +23,16 @@ clocks:
   clk_lpp:
     frequency: 25M
 connections:
-  axi_cpu -> sb_cpu.cpu: null
-  axi_dbg -> sb_cpu.dbg: null
-  sb_cpu.lpp -> sb_lpp.up: null
+  axi_cpu -> sb_cpu.cpu: {}
+  axi_dbg -> sb_cpu.dbg: {}
+  sb_cpu.lpp -> sb_lpp.up: {}
   sb_cpu.mem -> axi_mem:
     protocol: true
     registers: 1
-  sb_lpp.i2c -> apb_i2c: null
-  sb_lpp.uart -> apb_uart: null
+  sb_lpp.i2c -> apb_i2c:
+    protocol: true
+  sb_lpp.uart -> apb_uart:
+    protocol: true
 crossbars:
   sb_cpu:
     clock: clk_bus

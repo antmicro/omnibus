@@ -6,9 +6,6 @@ desc_version: 1.0
 name: ASoCaInt
 version: 0 
 
-global:
-  addr_width: 32
-
 default:
   data_width: 64
   axi_max_reads: 2
@@ -99,7 +96,6 @@ connections:
   "main.fast_vdma_csr -> fast_vdma_csr":
   "main.timers_csr -> timers_csr":
   "main.coral_npu_out -> coral_npu_out":
-    axi_max_reads: 3
   "main.i3c_controller -> i3c_controller":
   "main.i3c_target -> i3c_target":
   "main.uart_csr -> uart_csr":

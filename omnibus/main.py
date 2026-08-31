@@ -44,14 +44,14 @@ def main():
 
     if args.debug:
         if args.debug == "parse":
-            ic.print_spec()
+            ic._print_spec()
             return 0
 
         ic.find_routing_paths()
         ic.propagate_parameters()
 
         if args.debug == "elements":
-            ic.print_elements()
+            ic._print_elements()
             return 0
 
         return 0

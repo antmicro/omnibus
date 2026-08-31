@@ -1,0 +1,17 @@
+### ADDR MAPS ###
+== INTERCONNECT ==
+pout1:
+  base: 0
+  size: 2147483647
+  to: pout1
+pout2:
+  base: 2147483648
+  size: 2147483647
+  to: pout2
+== CROSSBAR main==
+--
+_ main_pout1
+0x0 0x7fffffff
+--
+_ main_pout2
+0x80000000 0x7fffffff

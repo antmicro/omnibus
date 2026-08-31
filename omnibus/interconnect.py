@@ -375,34 +375,54 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                 if comp.kind == 'dw_conv':
                     comp.attributes['clock'] = self.ports[comp.srcports[0]].attributes['clock']
 
-        def print_elements(self):
-            """Dumps all internally used elements"""
+        def _print_set_output(self, filename):
+            sys.stdout = open(filename, 'w') #noqa: SIM115
 
+        def _print_globals(self):
             print("### GLOBALS ###")
             for k, v in self.globals.items():
                 print(f"{k} = {v}")
 
+            sys.stdout.flush() 
+
+        def _print_defaults(self):
             print("### DEFAULTS ###")
             for k, v in self.defaults.items():
                 print(f"{k} = {v}")
 
+            sys.stdout.flush() 
+
+        def _print_clocks(self):
+            print("### CLOCKS ###")
+            for k, v in self.clocks.items():
+                print(f"{k} - freq {v['frequency']}")
+
+            sys.stdout.flush() 
+
+        def _print_ports(self):
             print("### PORTS ###")
             for k, v in self.ports.items():
                 print(f"== PORT {k} parent: {v.parent} ==")
-                print(sorted(v.attributes.items()))
+                yaml.dump(v.attributes, sys.stdout, sort_keys=True)
 
                 for edge in v.edges:
                     print(f"- edge to {edge.dest} -")
-                    print(sorted(edge.attributes.items()))
+                    yaml.dump(edge.attributes, sys.stdout, sort_keys=True)
 
+            sys.stdout.flush() 
+
+        def _print_components(self):
             print("### COMPONENTS ###")
             for k, v in self.components.items():
                 print(f"== COMP {k} {v.kind}")
                 yaml.dump(v.attributes, sys.stdout, sort_keys=True)
 
+            sys.stdout.flush() 
+
+        def _print_address_maps(self):
             print("### ADDR MAPS ###")
             print("== INTERCONNECT ==") 
-            print(self.address_map)
+            yaml.dump(self.address_map, sys.stdout, sort_keys=True)
 
             for comp, params in self.components.items():
                 if params.kind != 'crossbar':
@@ -414,5 +434,19 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     print('--')
                     print(entry.src + ' ' + entry.dest)
                     print(hex(entry.base) + ' ' + hex(entry.size))
+
+            sys.stdout.flush() 
+            
+        def _print_elements(self, filename = None):
+            """Dumps all internally used elements"""
+            if filename is not None:
+                self._print_set_output(filename)
+    
+            self._print_globals()
+            self._print_defaults()
+            self._print_clocks()
+            self._print_ports()
+            self._print_components()
+            self._print_address_maps()
 
     return Interconnect()

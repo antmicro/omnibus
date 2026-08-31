@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Antmicro
 # SPDX-License-Identifier: Apache-2.0
 
-docs_version: 1.0
+desc_version: 1.0
 
 name: simple
 version: 1.0

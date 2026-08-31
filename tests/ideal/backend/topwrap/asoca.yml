@@ -117,43 +117,43 @@ external:
     - clk_ahb
 ips:
   cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 4
   cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 4
   cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 4
   cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 4
   cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 1
   cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 1
   dw_conv_coral_npu_in_128_to_main_coral_npu_in_64:
-    file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 64
@@ -161,15 +161,15 @@ ips:
       AxiMaxReads: 2
       AxiSrcPortDataWidth: 128
   dw_conv_main_coral_npu_out_64_to_coral_npu_out_128:
-    file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 128
       AxiIdWidth: 4
-      AxiMaxReads: 3
+      AxiMaxReads: 2
       AxiSrcPortDataWidth: 64
   dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
-    file: file:./out/modules/cores/axi_dw_conv_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_dw_conv_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 32
@@ -177,20 +177,20 @@ ips:
       AxiMaxReads: 2
       AxiSrcPortDataWidth: 64
   main:
-    file: file:./out/modules/cores/main/module.yaml
+    file: file:tests/out/modules/cores/main/module.yaml
     parameters: {}
   pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
-    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    file: file:tests/out/modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64
       AxiIdWidth: 4
   pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
-    file: file:./out/modules/cores/axi_prconv_axi_ahb/module.yaml
+    file: file:tests/out/modules/cores/axi_prconv_axi_ahb/module.yaml
     parameters:
       AxiIdWidth: 4
   pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
-    file: file:./out/modules/cores/axi_prconv_axi_axilite/module.yaml
+    file: file:tests/out/modules/cores/axi_prconv_axi_axilite/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32

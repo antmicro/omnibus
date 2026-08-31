@@ -1,0 +1,190 @@
+digraph ASoCaInt {
+	node [colorscheme=reds3 style=filled]
+	rankdir=LR
+	splines=line
+	veer_el2_ifu [fillcolor=2]
+	veer_el2_ifu -> cdc_veer_el2_ifu_clk_slow
+	veer_el2_lsu [fillcolor=2]
+	veer_el2_lsu -> cdc_veer_el2_lsu_clk_slow
+	veer_eh2_ifu [fillcolor=2]
+	veer_eh2_ifu -> main_veer_eh2_ifu
+	veer_eh2_lsu [fillcolor=2]
+	veer_eh2_lsu -> main_veer_eh2_lsu
+	fast_vdma [fillcolor=2]
+	fast_vdma -> main_fast_vdma
+	fast_vdma_csr [fillcolor=1]
+	timers_csr [fillcolor=2]
+	coral_npu_out [fillcolor=3]
+	coral_npu_in [fillcolor=3]
+	coral_npu_in -> dw_conv_coral_npu_in_128
+	i3c_controller [fillcolor=2]
+	i3c_target [fillcolor=2]
+	uart_csr [fillcolor=2]
+	main_fast_vdma_csr -> dw_conv_main_fast_vdma_csr_64
+	main_timers_csr -> cdc_main_timers_csr_clk_fast
+	main_coral_npu_out -> dw_conv_main_coral_npu_out_64
+	main_i3c_controller -> cdc_main_i3c_controller_clk_fast
+	main_i3c_target -> cdc_main_i3c_target_clk_fast
+	main_uart_csr -> cdc_main_uart_csr_clk_fast
+	dw_conv_main_coral_npu_in_64 -> main_coral_npu_in
+	dw_conv_fast_vdma_csr_32 -> pr_conv_dw_conv_fast_vdma_csr_32_axi4
+	dw_conv_coral_npu_out_128 -> coral_npu_out
+	cdc_main_veer_el2_ifu_clk_fast -> main_veer_el2_ifu
+	cdc_main_veer_el2_lsu_clk_fast -> main_veer_el2_lsu
+	cdc_timers_csr_clk_slow -> pr_conv_cdc_timers_csr_clk_slow_axi4
+	cdc_i3c_controller_clk_slow -> i3c_controller
+	cdc_i3c_target_clk_slow -> i3c_target
+	cdc_uart_csr_clk_ahb -> pr_conv_cdc_uart_csr_clk_ahb_axi4
+	pr_conv_fast_vdma_csr_axi4_lite -> fast_vdma_csr
+	pr_conv_timers_csr_apb3 -> timers_csr
+	pr_conv_uart_csr_ahb3 -> uart_csr
+	subgraph "cluster legend" {
+		label="legend - data_width"
+		color=lightgrey
+		rank=same
+		32 [fillcolor=1]
+		32 -> 64 [style=invis]
+		64 [fillcolor=2]
+		64 -> 128 [style=invis]
+		128 [fillcolor=3]
+		128 -> none [style=invis]
+		none [fillcolor=white]
+	}
+	subgraph "cluster main" {
+		label="crossbar
+main"
+		color=lightgrey style=dashed
+		main_veer_el2_ifu [fillcolor=2]
+		main_veer_el2_ifu -> main_fast_vdma_csr
+		main_veer_el2_ifu -> main_timers_csr
+		main_veer_el2_ifu -> main_coral_npu_out
+		main_veer_el2_ifu -> main_i3c_controller
+		main_veer_el2_ifu -> main_i3c_target
+		main_veer_el2_ifu -> main_uart_csr
+		main_veer_el2_lsu [fillcolor=2]
+		main_veer_el2_lsu -> main_fast_vdma_csr
+		main_veer_el2_lsu -> main_timers_csr
+		main_veer_el2_lsu -> main_coral_npu_out
+		main_veer_el2_lsu -> main_i3c_controller
+		main_veer_el2_lsu -> main_i3c_target
+		main_veer_el2_lsu -> main_uart_csr
+		main_veer_eh2_ifu [fillcolor=2]
+		main_veer_eh2_ifu -> main_fast_vdma_csr
+		main_veer_eh2_ifu -> main_timers_csr
+		main_veer_eh2_ifu -> main_coral_npu_out
+		main_veer_eh2_ifu -> main_i3c_controller
+		main_veer_eh2_ifu -> main_i3c_target
+		main_veer_eh2_ifu -> main_uart_csr
+		main_veer_eh2_lsu [fillcolor=2]
+		main_veer_eh2_lsu -> main_fast_vdma_csr
+		main_veer_eh2_lsu -> main_timers_csr
+		main_veer_eh2_lsu -> main_coral_npu_out
+		main_veer_eh2_lsu -> main_i3c_controller
+		main_veer_eh2_lsu -> main_i3c_target
+		main_veer_eh2_lsu -> main_uart_csr
+		main_fast_vdma [fillcolor=2]
+		main_fast_vdma -> main_fast_vdma_csr
+		main_fast_vdma -> main_timers_csr
+		main_fast_vdma -> main_coral_npu_out
+		main_fast_vdma -> main_i3c_controller
+		main_fast_vdma -> main_i3c_target
+		main_fast_vdma -> main_uart_csr
+		main_coral_npu_in [fillcolor=2]
+		main_coral_npu_in -> main_fast_vdma_csr
+		main_coral_npu_in -> main_timers_csr
+		main_coral_npu_in -> main_coral_npu_out
+		main_coral_npu_in -> main_i3c_controller
+		main_coral_npu_in -> main_i3c_target
+		main_coral_npu_in -> main_uart_csr
+		main_fast_vdma_csr [fillcolor=2]
+		main_timers_csr [fillcolor=2]
+		main_coral_npu_out [fillcolor=2]
+		main_i3c_controller [fillcolor=2]
+		main_i3c_target [fillcolor=2]
+		main_uart_csr [fillcolor=2]
+	}
+	subgraph "cluster dw_conv_coral_npu_in_128_to_main_coral_npu_in_64" {
+		label=dw_conv
+		color=lightgrey style=dashed
+		dw_conv_coral_npu_in_128 [label=128 fillcolor=3]
+		dw_conv_coral_npu_in_128 -> dw_conv_main_coral_npu_in_64
+		dw_conv_main_coral_npu_in_64 [label=64 fillcolor=2]
+	}
+	subgraph "cluster dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32" {
+		label=dw_conv
+		color=lightgrey style=dashed
+		dw_conv_main_fast_vdma_csr_64 [label=64 fillcolor=2]
+		dw_conv_main_fast_vdma_csr_64 -> dw_conv_fast_vdma_csr_32
+		dw_conv_fast_vdma_csr_32 [label=32 fillcolor=1]
+	}
+	subgraph "cluster dw_conv_main_coral_npu_out_64_to_coral_npu_out_128" {
+		label=dw_conv
+		color=lightgrey style=dashed
+		dw_conv_main_coral_npu_out_64 [label=64 fillcolor=2]
+		dw_conv_main_coral_npu_out_64 -> dw_conv_coral_npu_out_128
+		dw_conv_coral_npu_out_128 [label=128 fillcolor=3]
+	}
+	subgraph "cluster cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_veer_el2_ifu_clk_slow [label=clk_slow fillcolor=2]
+		cdc_veer_el2_ifu_clk_slow -> cdc_main_veer_el2_ifu_clk_fast
+		cdc_main_veer_el2_ifu_clk_fast [label=clk_fast fillcolor=2]
+	}
+	subgraph "cluster cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_veer_el2_lsu_clk_slow [label=clk_slow fillcolor=2]
+		cdc_veer_el2_lsu_clk_slow -> cdc_main_veer_el2_lsu_clk_fast
+		cdc_main_veer_el2_lsu_clk_fast [label=clk_fast fillcolor=2]
+	}
+	subgraph "cluster cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_main_timers_csr_clk_fast [label=clk_fast fillcolor=2]
+		cdc_main_timers_csr_clk_fast -> cdc_timers_csr_clk_slow
+		cdc_timers_csr_clk_slow [label=clk_slow fillcolor=2]
+	}
+	subgraph "cluster cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_main_i3c_controller_clk_fast [label=clk_fast fillcolor=2]
+		cdc_main_i3c_controller_clk_fast -> cdc_i3c_controller_clk_slow
+		cdc_i3c_controller_clk_slow [label=clk_slow fillcolor=2]
+	}
+	subgraph "cluster cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_main_i3c_target_clk_fast [label=clk_fast fillcolor=2]
+		cdc_main_i3c_target_clk_fast -> cdc_i3c_target_clk_slow
+		cdc_i3c_target_clk_slow [label=clk_slow fillcolor=2]
+	}
+	subgraph "cluster cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb" {
+		label=cdc
+		color=lightgrey style=dashed
+		cdc_main_uart_csr_clk_fast [label=clk_fast fillcolor=2]
+		cdc_main_uart_csr_clk_fast -> cdc_uart_csr_clk_ahb
+		cdc_uart_csr_clk_ahb [label=clk_ahb fillcolor=2]
+	}
+	subgraph "cluster pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite" {
+		label=pr_conv
+		color=lightgrey style=dashed
+		pr_conv_dw_conv_fast_vdma_csr_32_axi4 [label=axi4 fillcolor=1]
+		pr_conv_dw_conv_fast_vdma_csr_32_axi4 -> pr_conv_fast_vdma_csr_axi4_lite
+		pr_conv_fast_vdma_csr_axi4_lite [label=axi4_lite fillcolor=1]
+	}
+	subgraph "cluster pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3" {
+		label=pr_conv
+		color=lightgrey style=dashed
+		pr_conv_cdc_timers_csr_clk_slow_axi4 [label=axi4 fillcolor=2]
+		pr_conv_cdc_timers_csr_clk_slow_axi4 -> pr_conv_timers_csr_apb3
+		pr_conv_timers_csr_apb3 [label=apb3 fillcolor=2]
+	}
+	subgraph "cluster pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3" {
+		label=pr_conv
+		color=lightgrey style=dashed
+		pr_conv_cdc_uart_csr_clk_ahb_axi4 [label=axi4 fillcolor=2]
+		pr_conv_cdc_uart_csr_clk_ahb_axi4 -> pr_conv_uart_csr_ahb3
+		pr_conv_uart_csr_ahb3 [label=ahb3 fillcolor=2]
+	}
+}

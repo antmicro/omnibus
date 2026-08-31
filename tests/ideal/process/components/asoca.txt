@@ -1,0 +1,534 @@
+### PORTS ###
+== PORT veer_el2_ifu parent: None ==
+clock: clk_slow
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to cdc_veer_el2_ifu_clk_slow -
+{}
+== PORT veer_el2_lsu parent: None ==
+clock: clk_slow
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to cdc_veer_el2_lsu_clk_slow -
+{}
+== PORT veer_eh2_ifu parent: None ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_veer_eh2_ifu -
+{}
+== PORT veer_eh2_lsu parent: None ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_veer_eh2_lsu -
+{}
+== PORT fast_vdma parent: None ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma -
+{}
+== PORT fast_vdma_csr parent: None ==
+clock: clk_fast
+data_width: 32
+id_width: 4
+protocol: axi4_lite
+role: manager
+== PORT timers_csr parent: None ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: apb3
+role: manager
+== PORT coral_npu_out parent: None ==
+clock: clk_fast
+data_width: 128
+id_width: 4
+protocol: axi4
+role: manager
+== PORT coral_npu_in parent: None ==
+clock: clk_fast
+data_width: 128
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to dw_conv_coral_npu_in_128 -
+{}
+== PORT i3c_controller parent: None ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+== PORT i3c_target parent: None ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+== PORT uart_csr parent: None ==
+clock: clk_ahb
+data_width: 64
+id_width: 4
+protocol: ahb3
+role: manager
+== PORT main_veer_el2_ifu parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_el2_lsu parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_eh2_ifu parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_veer_eh2_lsu parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_fast_vdma parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_coral_npu_in parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to main_fast_vdma_csr -
+{}
+- edge to main_timers_csr -
+{}
+- edge to main_coral_npu_out -
+{}
+- edge to main_i3c_controller -
+{}
+- edge to main_i3c_target -
+{}
+- edge to main_uart_csr -
+{}
+== PORT main_fast_vdma_csr parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to dw_conv_main_fast_vdma_csr_64 -
+protocol: true
+== PORT main_timers_csr parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to cdc_main_timers_csr_clk_fast -
+protocol: true
+== PORT main_coral_npu_out parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to dw_conv_main_coral_npu_out_64 -
+protocol: true
+== PORT main_i3c_controller parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to cdc_main_i3c_controller_clk_fast -
+protocol: true
+== PORT main_i3c_target parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to cdc_main_i3c_target_clk_fast -
+protocol: true
+== PORT main_uart_csr parent: main ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to cdc_main_uart_csr_clk_fast -
+protocol: true
+== PORT dw_conv_coral_npu_in_128 parent: dw_conv_coral_npu_in_128_to_main_coral_npu_in_64 ==
+clock: clk_fast
+data_width: 128
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to dw_conv_main_coral_npu_in_64 -
+{}
+== PORT dw_conv_main_coral_npu_in_64 parent: dw_conv_coral_npu_in_128_to_main_coral_npu_in_64 ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: manager
+- edge to main_coral_npu_in -
+{}
+== PORT dw_conv_main_fast_vdma_csr_64 parent: dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32 ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to dw_conv_fast_vdma_csr_32 -
+{}
+== PORT dw_conv_fast_vdma_csr_32 parent: dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32 ==
+clock: clk_fast
+data_width: 32
+id_width: 4
+protocol: axi4
+role: manager
+- edge to pr_conv_dw_conv_fast_vdma_csr_32_axi4 -
+{}
+== PORT dw_conv_main_coral_npu_out_64 parent: dw_conv_main_coral_npu_out_64_to_coral_npu_out_128 ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to dw_conv_coral_npu_out_128 -
+{}
+== PORT dw_conv_coral_npu_out_128 parent: dw_conv_main_coral_npu_out_64_to_coral_npu_out_128 ==
+clock: clk_fast
+data_width: 128
+id_width: 4
+protocol: axi4
+role: manager
+- edge to coral_npu_out -
+{}
+== PORT cdc_veer_el2_ifu_clk_slow parent: cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast ==
+clock: clk_slow
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to cdc_main_veer_el2_ifu_clk_fast -
+{}
+== PORT cdc_main_veer_el2_ifu_clk_fast parent: cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: manager
+- edge to main_veer_el2_ifu -
+{}
+== PORT cdc_veer_el2_lsu_clk_slow parent: cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast ==
+clock: clk_slow
+data_width: 64
+id_width: 1
+protocol: axi4
+role: subordinate
+- edge to cdc_main_veer_el2_lsu_clk_fast -
+{}
+== PORT cdc_main_veer_el2_lsu_clk_fast parent: cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast ==
+clock: clk_fast
+data_width: 64
+id_width: 1
+protocol: axi4
+role: manager
+- edge to main_veer_el2_lsu -
+{}
+== PORT cdc_main_timers_csr_clk_fast parent: cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to cdc_timers_csr_clk_slow -
+{}
+== PORT cdc_timers_csr_clk_slow parent: cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to pr_conv_cdc_timers_csr_clk_slow_axi4 -
+{}
+== PORT cdc_main_i3c_controller_clk_fast parent: cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to cdc_i3c_controller_clk_slow -
+{}
+== PORT cdc_i3c_controller_clk_slow parent: cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to i3c_controller -
+{}
+== PORT cdc_main_i3c_target_clk_fast parent: cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to cdc_i3c_target_clk_slow -
+{}
+== PORT cdc_i3c_target_clk_slow parent: cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to i3c_target -
+{}
+== PORT cdc_main_uart_csr_clk_fast parent: cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb ==
+clock: clk_fast
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to cdc_uart_csr_clk_ahb -
+{}
+== PORT cdc_uart_csr_clk_ahb parent: cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb ==
+clock: clk_ahb
+data_width: 64
+id_width: 4
+protocol: axi4
+role: manager
+- edge to pr_conv_cdc_uart_csr_clk_ahb_axi4 -
+{}
+== PORT pr_conv_dw_conv_fast_vdma_csr_32_axi4 parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite ==
+clock: clk_fast
+data_width: 32
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to pr_conv_fast_vdma_csr_axi4_lite -
+{}
+== PORT pr_conv_fast_vdma_csr_axi4_lite parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite ==
+clock: clk_fast
+data_width: 32
+id_width: 4
+protocol: axi4_lite
+role: manager
+- edge to fast_vdma_csr -
+{}
+== PORT pr_conv_cdc_timers_csr_clk_slow_axi4 parent: pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3 ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to pr_conv_timers_csr_apb3 -
+{}
+== PORT pr_conv_timers_csr_apb3 parent: pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3 ==
+clock: clk_slow
+data_width: 64
+id_width: 4
+protocol: apb3
+role: manager
+- edge to timers_csr -
+{}
+== PORT pr_conv_cdc_uart_csr_clk_ahb_axi4 parent: pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3 ==
+clock: clk_ahb
+data_width: 64
+id_width: 4
+protocol: axi4
+role: subordinate
+- edge to pr_conv_uart_csr_ahb3 -
+{}
+== PORT pr_conv_uart_csr_ahb3 parent: pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3 ==
+clock: clk_ahb
+data_width: 64
+id_width: 4
+protocol: ahb3
+role: manager
+- edge to uart_csr -
+{}
+### COMPONENTS ###
+== COMP main crossbar
+clock: clk_fast
+ports:
+  coral_npu_in:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+  coral_npu_out:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  fast_vdma:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+  fast_vdma_csr:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  i3c_controller:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  i3c_target:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  timers_csr:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  uart_csr:
+    clock: clk_fast
+    data_width: 64
+    id_width: 4
+    protocol: axi4
+    role: manager
+  veer_eh2_ifu:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+  veer_eh2_lsu:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+  veer_el2_ifu:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+  veer_el2_lsu:
+    clock: clk_fast
+    data_width: 64
+    id_width: 1
+    protocol: axi4
+    role: subordinate
+sub_id_width: 1
+== COMP dw_conv_coral_npu_in_128_to_main_coral_npu_in_64 dw_conv
+clock: clk_fast
+== COMP dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32 dw_conv
+clock: clk_fast
+== COMP dw_conv_main_coral_npu_out_64_to_coral_npu_out_128 dw_conv
+clock: clk_fast
+== COMP cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast cdc
+{}
+== COMP cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast cdc
+{}
+== COMP cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow cdc
+{}
+== COMP cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow cdc
+{}
+== COMP cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow cdc
+{}
+== COMP cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb cdc
+{}
+== COMP pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite pr_conv
+{}
+== COMP pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3 pr_conv
+{}
+== COMP pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3 pr_conv
+{}

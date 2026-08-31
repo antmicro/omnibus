@@ -1,0 +1,164 @@
+connections:
+  interfaces:
+    x00:
+      x00_i0: i0
+      x00_i1: i1
+      x00_o0:
+      - x10
+      - x10_i0
+      x00_o1:
+      - x12
+      - x12_i0
+    x01:
+      x01_i0: i2
+      x01_i1: i3
+      x01_o0:
+      - x11
+      - x11_i0
+      x01_o1:
+      - x13
+      - x13_i0
+    x02:
+      x02_i0: i4
+      x02_i1: i5
+      x02_o0:
+      - x10
+      - x10_i1
+      x02_o1:
+      - x12
+      - x12_i1
+    x03:
+      x03_i0: i6
+      x03_i1: i7
+      x03_o0:
+      - x11
+      - x11_i1
+      x03_o1:
+      - x13
+      - x13_i1
+    x10:
+      x10_o0:
+      - x20
+      - x20_i0
+      x10_o1:
+      - x21
+      - x21_i0
+    x11:
+      x11_o0:
+      - x20
+      - x20_i1
+      x11_o1:
+      - x21
+      - x21_i1
+    x12:
+      x12_o0:
+      - x22
+      - x22_i0
+      x12_o1:
+      - x23
+      - x23_i0
+    x13:
+      x13_o0:
+      - x22
+      - x22_i1
+      x13_o1:
+      - x23
+      - x23_i1
+    x20:
+      x20_o0: o0
+      x20_o1: o1
+    x21:
+      x21_o0: o2
+      x21_o1: o3
+    x22:
+      x22_o0: o4
+      x22_o1: o5
+    x23:
+      x23_o0: o6
+      x23_o1: o7
+  ports:
+    x00:
+      clk_i: clk
+    x01:
+      clk_i: clk
+    x02:
+      clk_i: clk
+    x03:
+      clk_i: clk
+    x10:
+      clk_i: clk
+    x11:
+      clk_i: clk
+    x12:
+      clk_i: clk
+    x13:
+      clk_i: clk
+    x20:
+      clk_i: clk
+    x21:
+      clk_i: clk
+    x22:
+      clk_i: clk
+    x23:
+      clk_i: clk
+external:
+  interfaces:
+    in:
+    - i0
+    - i1
+    - i2
+    - i3
+    - i4
+    - i5
+    - i6
+    - i7
+    out:
+    - o0
+    - o1
+    - o2
+    - o3
+    - o4
+    - o5
+    - o6
+    - o7
+  ports:
+    in:
+    - clk
+ips:
+  x00:
+    file: file:tests/out/modules/cores/x00/module.yaml
+    parameters: {}
+  x01:
+    file: file:tests/out/modules/cores/x01/module.yaml
+    parameters: {}
+  x02:
+    file: file:tests/out/modules/cores/x02/module.yaml
+    parameters: {}
+  x03:
+    file: file:tests/out/modules/cores/x03/module.yaml
+    parameters: {}
+  x10:
+    file: file:tests/out/modules/cores/x10/module.yaml
+    parameters: {}
+  x11:
+    file: file:tests/out/modules/cores/x11/module.yaml
+    parameters: {}
+  x12:
+    file: file:tests/out/modules/cores/x12/module.yaml
+    parameters: {}
+  x13:
+    file: file:tests/out/modules/cores/x13/module.yaml
+    parameters: {}
+  x20:
+    file: file:tests/out/modules/cores/x20/module.yaml
+    parameters: {}
+  x21:
+    file: file:tests/out/modules/cores/x21/module.yaml
+    parameters: {}
+  x22:
+    file: file:tests/out/modules/cores/x22/module.yaml
+    parameters: {}
+  x23:
+    file: file:tests/out/modules/cores/x23/module.yaml
+    parameters: {}
+name: butterfly

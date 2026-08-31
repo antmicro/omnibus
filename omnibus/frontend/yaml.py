@@ -157,7 +157,8 @@ class Frontend:
                 return
 
             if params is None:
-                params = {}
+                self.spec['connections'][conn] = {}
+                params = self.spec['connections'][conn]
 
             #by default, protocol should not be propagated from subordinates 
             if not params.get('protocol') and port2.parent is None:
@@ -176,6 +177,12 @@ class Frontend:
             if base + size > 2 ** int(self.globals['addr_width']):
                 print(f"ERROR: address map entry to {dest} cannot fit in {self.globals['addr_width']} bits, end address is {int(dest) + int(base) - 1}")
     
-    def print_spec(self):
-        """Dumps current spec to stdout"""
-        yaml.dump(self.spec, sys.stdout)
+    def _print_spec(self, filename = None):
+        """Dumps current spec to filename, if filename is None then dumps to stdout"""
+        if filename:
+            with open(filename, "w") as file:
+                yaml.dump(self.spec, file)
+        else:
+            yaml.dump(self.spec, sys.stdout)
+
+        sys.stdout.flush()

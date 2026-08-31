@@ -1,0 +1,45 @@
+### ADDR MAPS ###
+== INTERCONNECT ==
+coral_npu_out:
+  base: 1610612736
+  size: 268435455
+  to: coral_npu_out
+fastvdma_csr:
+  base: 1342177280
+  size: 65535
+  to: fast_vdma_csr
+i3c_controller_csr:
+  base: 1073807360
+  size: 65535
+  to: i3c_controller
+i3c_target_csr:
+  base: 1073741824
+  size: 65535
+  to: i3c_target
+timers_csr:
+  base: 1073938432
+  size: 65535
+  to: timers_csr
+uart_csr:
+  base: 1073872896
+  size: 65535
+  to: uart_csr
+== CROSSBAR main==
+--
+_ main_coral_npu_out
+0x60000000 0xfffffff
+--
+_ main_fast_vdma_csr
+0x50000000 0xffff
+--
+_ main_i3c_controller
+0x40010000 0xffff
+--
+_ main_i3c_target
+0x40000000 0xffff
+--
+_ main_timers_csr
+0x40030000 0xffff
+--
+_ main_uart_csr
+0x40020000 0xffff

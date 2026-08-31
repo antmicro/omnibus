@@ -1,0 +1,68 @@
+### GLOBALS ###
+addr_width = 32
+### DEFAULTS ###
+data_width = 64
+clock = clk
+frequency = 10MHz
+protocol = AXI4
+### CLOCKS ###
+clk - freq n/a
+### PORTS ###
+== PORT pin parent: None ==
+clock: clk
+data_width: 64
+protocol: AXI4
+role: subordinate
+- edge to main_pin -
+{}
+== PORT pout1 parent: None ==
+clock: clk
+data_width: 64
+protocol: AXI4Lite
+role: manager
+== PORT pout2 parent: None ==
+clock: clk
+data_width: 64
+protocol: AXI4
+role: manager
+== PORT main_pin parent: main ==
+clock: clk
+role: subordinate
+- edge to main_pout1 -
+{}
+- edge to main_pout2 -
+{}
+== PORT main_pout1 parent: main ==
+clock: clk
+role: manager
+- edge to pout1 -
+protocol: true
+== PORT main_pout2 parent: main ==
+clock: clk
+role: manager
+- edge to pout2 -
+protocol: true
+### COMPONENTS ###
+== COMP main crossbar
+clock: clk
+ports:
+  pin:
+    clock: clk
+    role: subordinate
+  pout1:
+    clock: clk
+    role: manager
+  pout2:
+    clock: clk
+    role: manager
+### ADDR MAPS ###
+== INTERCONNECT ==
+pout1:
+  base: 0
+  size: 2147483647
+  to: pout1
+pout2:
+  base: 2147483648
+  size: 2147483647
+  to: pout2
+== CROSSBAR main==

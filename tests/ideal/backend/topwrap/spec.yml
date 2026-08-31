@@ -57,33 +57,33 @@ external:
     - clk_lpp
 ips:
   cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 1
   cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
-    file: file:./out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB:
-    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    file: file:tests/out/modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB:
-    file: file:./out/modules/cores/axi_prconv_axi_apb/module.yaml
+    file: file:tests/out/modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   sb_cpu:
-    file: file:./out/modules/cores/sb_cpu/module.yaml
+    file: file:tests/out/modules/cores/sb_cpu/module.yaml
     parameters: {}
   sb_lpp:
-    file: file:./out/modules/cores/sb_lpp/module.yaml
+    file: file:tests/out/modules/cores/sb_lpp/module.yaml
     parameters: {}
 name: MyInterconnect

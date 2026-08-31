@@ -1,0 +1,14 @@
+#created by the tool
+__pycache__
+build/
+out/
+topwrap.yaml
+omnibus.egg-info
+#created by the tests
+tests/out/
+tests/output.txt
+
+#pulled from git to make final project
+axi/
+common_cells/
+tech_cells_generic/

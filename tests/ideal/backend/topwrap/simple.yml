@@ -1,0 +1,36 @@
+connections:
+  interfaces:
+    main:
+      main_pin: pin
+      main_pout1:
+      - pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite
+      - src
+      main_pout2: pout2
+    pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite:
+      dst: pout1
+  ports:
+    main:
+      clk_i: clk
+    pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite:
+      clk_i: clk
+external:
+  interfaces:
+    in:
+    - pin
+    out:
+    - pout1
+    - pout2
+  ports:
+    in:
+    - clk
+ips:
+  main:
+    file: file:tests/out/modules/cores/main/module.yaml
+    parameters: {}
+  pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite:
+    file: file:tests/out/modules/cores/axi_prconv_axi_axilite/module.yaml
+    parameters:
+      AxiAddrWidth: 32
+      AxiDataWidth: 64
+      AxiIdWidth: 1
+name: simple

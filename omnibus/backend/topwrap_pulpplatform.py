@@ -18,7 +18,7 @@ class PulpCrossbar(MappedComponent):
         super().__init__(*args, **kwargs)
         self.ip = self.name
 
-    def generate_verilog(self, outdir):
+    def generate_verilog(self, outdir, exists):
         #it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role 
         #therefore swap them internally
         plugin_path = resources.files("omnibus")
@@ -61,7 +61,10 @@ class PulpCrossbar(MappedComponent):
         
             prevdir = os.getcwd()
             os.chdir(outdir)
-            axi_intercon_gen.AxiIntercon(self.name, file.name).write()
+            save_stdout = sys.stdout
+            with open(os.devnull, 'w') as sys.stdout:
+                axi_intercon_gen.AxiIntercon(self.name, file.name).write()
+            sys.stdout = save_stdout
             os.chdir(prevdir)
 
         filelist.append(str(os.path.join("src", f"axi_crossbar_{self.name}.sv")))
@@ -71,17 +74,14 @@ class PulpCrossbar(MappedComponent):
         ports['clk_i'] = port.attributes['clock']
 
 class PulpCDC(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_cdc_wrapper'
 
-    def generate_verilog(self, outdir):
-        if PulpCDC.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('PulpCDC'):
             return
-
-        PulpCDC.exists = True
+        exists['PulpCDC'] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
@@ -105,17 +105,14 @@ class PulpCDC(MappedComponent):
         params['AxiAddrWidth'] = self.glbattr['addr_width']
 
 class PulpDWConv(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_dw_conv_wrapper'
 
-    def generate_verilog(self, outdir):
-        if PulpDWConv.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('PulpDWConv'):
             return
-
-        PulpDWConv.exists = True
+        exists['PulpDWConv'] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
@@ -141,17 +138,14 @@ class PulpDWConv(MappedComponent):
         params['AxiAddrWidth']        = self.glbattr['addr_width']
 
 class IWConv(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_idwidth_expander'
 
-    def generate_verilog(self, outdir):
-        if IWConv.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('IWConv'):
             return
-
-        IWConv.exists = True
+        exists['IWConv'] = True
 
         src = os.path.join(resources.files("omnibus"), "modules")
         dst = os.path.join(outdir, "src")
@@ -176,17 +170,14 @@ class IWConv(MappedComponent):
         params['AxiAddrWidth']  = self.globals['addr_width']
 
 class PulpPrAXIAPB(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_prconv_axi_apb'
 
-    def generate_verilog(self, outdir):
-        if PulpPrAXIAPB.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('PulpPrAXIAPB'):
             return
-
-        PulpDWConv.exists = True
+        exists['PulpPrAXIAPB'] = True
 
         src    = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst    = os.path.join(outdir, "src")
@@ -214,17 +205,14 @@ class PulpPrAXIAPB(MappedComponent):
         params['AxiIdWidth']   = srcattr['id_width']
 
 class PulpPrAXIAXILite(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_prconv_axi_axilite'
 
-    def generate_verilog(self, outdir):
-        if PulpPrAXIAXILite.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('PulpPrAXIAXILite'):
             return
-
-        PulpDWConv.exists = True
+        exists['PulpPrAXIAXILite'] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
@@ -246,17 +234,14 @@ class PulpPrAXIAXILite(MappedComponent):
         params['AxiIdWidth']   = srcattr['id_width']
 
 class PrAXIAHB(MappedComponent):
-    exists = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ip = 'axi_prconv_axi_ahb'
 
-    def generate_verilog(self, outdir):
-        if PrAXIAHB.exists:
+    def generate_verilog(self, outdir, exists):
+        if exists.get('PulpPrAXIAHB'):
             return
-
-        PulpDWConv.exists = True
+        exists['PulpPrAXIAHB'] = True
 
         src    = os.path.join(resources.files("omnibus"), "modules")
         dst    = os.path.join(outdir, "src")
@@ -371,9 +356,10 @@ class Backend:
         with open('topwrap.yaml', 'w') as file:
             yaml.dump({'repositories': {'repo': f"file:{os.path.join(outdir, 'modules')}"}}, file)
 
+        exists = {}
         #generate verilog files
         for comp in self.real_components:
-            comp.generate_verilog(outdir)
+            comp.generate_verilog(outdir, exists)
      
         #generate topwrap
         tree = {
