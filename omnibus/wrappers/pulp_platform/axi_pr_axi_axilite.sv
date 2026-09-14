@@ -122,7 +122,6 @@ module axi_prconv_axi_axilite #(
      ) i_axi_to_axi_lite (
        .clk_i     (clk_i     ),
        .rst_ni    (rst_ni    ),
-       .test_i    (1'b0      ),
 
        .slv_req_i (src_req ),
        .slv_resp_o(src_resp),

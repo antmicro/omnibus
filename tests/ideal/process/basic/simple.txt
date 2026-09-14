@@ -3,27 +3,27 @@ addr_width = 32
 ### DEFAULTS ###
 data_width = 64
 clock = clk
-frequency = 10MHz
-protocol = AXI4
+frequency = 10000000.0
+protocol = axi4
 ### CLOCKS ###
-clk - freq n/a
+clk - freq 10000000.0
 ### PORTS ###
 == PORT pin parent: None ==
 clock: clk
 data_width: 64
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to main_pin -
 {}
 == PORT pout1 parent: None ==
 clock: clk
 data_width: 64
-protocol: AXI4Lite
+protocol: axi4lite
 role: manager
 == PORT pout2 parent: None ==
 clock: clk
 data_width: 64
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT main_pin parent: main ==
 clock: clk
@@ -46,23 +46,25 @@ protocol: true
 == COMP main crossbar
 clock: clk
 ports:
-  pin:
-    clock: clk
-    role: subordinate
-  pout1:
-    clock: clk
-    role: manager
-  pout2:
-    clock: clk
-    role: manager
+  main_pin:
+    clock = clk
+    role = subordinate
+  main_pout1:
+    clock = clk
+    role = manager
+  main_pout2:
+    clock = clk
+    role = manager
 ### ADDR MAPS ###
 == INTERCONNECT ==
-pout1:
-  base: 0
-  size: 2147483647
-  to: pout1
-pout2:
-  base: 2147483648
-  size: 2147483647
-  to: pout2
+-- pout1 --
+['pin']
+pout1
+0
+2147483647
+-- pout2 --
+['pin']
+pout2
+2147483648
+2147483647
 == CROSSBAR main==

@@ -5,7 +5,7 @@ import copy
 import sys
 from importlib import import_module
 
-import yaml
+import ruamel.yaml
 
 from .types import AddressMapEntry, Component, Edge, Path, Port
 
@@ -29,19 +29,41 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
     class Interconnect(fe.Frontend, be.Backend):
         def __init__(self):
-            self.name = 'interconnect'
-            self.version = '0'
-            self.clocks = {'clk': {'frequency': 'n/a'}}
-            self.globals  = {'addr_width': 32}
+            be.Backend.__init__(self)
+
+            self.name     = ''
+            self.version  = 0
+            self.clocks   = {}
+            self.globals  = {}
             self.defaults = {}
 
             self.ports       = {}
             self.components  = {}
             self.address_map = {}
 
-            # collects start points for later
-            # also will be used for address map generation
-            self.path_start_points = []
+            self.srcports  = set()
+            self.dstports  = set()
+
+            self.parse_global |= {
+                "addr_width": self._parse_positive_int
+                }
+
+            self.parse_default |= {
+                "clock"     : self._parse_str,
+                "protocol"  : self._parse_protocol,
+                "frequency" : self._parse_frequency,
+                "data_width": self._parse_positive_int,
+                }
+
+            self.parse_connections |= {
+                "data_width": self._parse_positive_int,
+                "registers" : self._parse_positive_int,
+                "cdc"       : self._parse_bool,
+                "protocol"  : self._parse_bool,
+                }
+
+            self.errors = []
+            self.warns  = []
 
         def process(self):
             """Shorthand for internal processing"""
@@ -56,7 +78,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             self.paths_to_search = []
             self.paths_complete  = {}
 
-            for port in self.path_start_points:
+            for port in self.srcports:
                 self.paths_to_search.append(Path(port))
 
             while len(self.paths_to_search) > 0:
@@ -83,17 +105,10 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             
             # generate address maps here
             for entry in self.address_map.values():
-                sources = entry.get('from')
-                if sources is None:
-                    sources = self.path_start_points
-
-                #fix the case where single port is provided which is parsed as string and not array of strings
-                if type(sources) is str:
-                    sources = [sources]
-
-                dest = entry['to']
-                base = entry['base']
-                size = entry['size']
+                sources = entry.src
+                dest    = entry.dest
+                base    = entry.base
+                size    = entry.size
 
                 for source in sources:
                     if not self.paths_complete.get(source + ' -> ' + dest):
@@ -225,7 +240,6 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     if port.attributes.get(attr):
                         ports_to_process.append(portname)
 
-
                 if len(ports_to_process) == 0:
                     print(f"WARNING: parameter {attr} is never specified, propagation not possible")
                     continue
@@ -267,10 +281,9 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
             ports_to_process = []
 
-            for portname, port in self.ports.items():
-                if port.parent is None and port.attributes['role'] == 'subordinate':
-                    port.attributes['id_width'] = 1
-                    ports_to_process.append(portname)
+            for portname in self.srcports:
+                self.ports[portname].attributes['id_width'] = 1
+                ports_to_process.append(portname)
 
             while len(ports_to_process) > 0:
                 portname = ports_to_process.pop(0)
@@ -400,29 +413,46 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             sys.stdout.flush() 
 
         def _print_ports(self):
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = False
+
             print("### PORTS ###")
             for k, v in self.ports.items():
                 print(f"== PORT {k} parent: {v.parent} ==")
-                yaml.dump(v.attributes, sys.stdout, sort_keys=True)
+                yaml.dump(v.attributes, sys.stdout)
 
                 for edge in v.edges:
                     print(f"- edge to {edge.dest} -")
-                    yaml.dump(edge.attributes, sys.stdout, sort_keys=True)
+                    yaml.dump(edge.attributes, sys.stdout)
 
             sys.stdout.flush() 
 
         def _print_components(self):
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = False
+
             print("### COMPONENTS ###")
             for k, v in self.components.items():
                 print(f"== COMP {k} {v.kind}")
-                yaml.dump(v.attributes, sys.stdout, sort_keys=True)
+                yaml.dump(v.attributes, sys.stdout)
+
+                print("ports:")
+                for port in sorted(v.srcports + v.dstports):
+                    print(f"  {port}:")
+                    for attrname, attr in sorted(self.ports[port].attributes.items()):
+                        print(f"    {attrname} = {attr}")
 
             sys.stdout.flush() 
 
         def _print_address_maps(self):
             print("### ADDR MAPS ###")
             print("== INTERCONNECT ==") 
-            yaml.dump(self.address_map, sys.stdout, sort_keys=True)
+            for name, entry in self.address_map.items():
+                print(f"-- {name} --")
+                print(sorted(entry.src))
+                print(entry.dest)
+                print(entry.base)
+                print(entry.size)
 
             for comp, params in self.components.items():
                 if params.kind != 'crossbar':
@@ -432,8 +462,10 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
                 for entry in params.address_map:
                     print('--')
-                    print(entry.src + ' ' + entry.dest)
-                    print(hex(entry.base) + ' ' + hex(entry.size))
+                    print(sorted(entry.src))
+                    print(entry.dest)
+                    print(entry.base)
+                    print(entry.size)
 
             sys.stdout.flush() 
             

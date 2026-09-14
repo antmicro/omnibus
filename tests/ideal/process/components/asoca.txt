@@ -43,7 +43,7 @@ role: subordinate
 clock: clk_fast
 data_width: 32
 id_width: 4
-protocol: axi4_lite
+protocol: axi4lite
 role: manager
 == PORT timers_csr parent: None ==
 clock: clk_slow
@@ -383,19 +383,19 @@ protocol: axi4
 role: manager
 - edge to pr_conv_cdc_uart_csr_clk_ahb_axi4 -
 {}
-== PORT pr_conv_dw_conv_fast_vdma_csr_32_axi4 parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite ==
+== PORT pr_conv_dw_conv_fast_vdma_csr_32_axi4 parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite ==
 clock: clk_fast
 data_width: 32
 id_width: 4
 protocol: axi4
 role: subordinate
-- edge to pr_conv_fast_vdma_csr_axi4_lite -
+- edge to pr_conv_fast_vdma_csr_axi4lite -
 {}
-== PORT pr_conv_fast_vdma_csr_axi4_lite parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite ==
+== PORT pr_conv_fast_vdma_csr_axi4lite parent: pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite ==
 clock: clk_fast
 data_width: 32
 id_width: 4
-protocol: axi4_lite
+protocol: axi4lite
 role: manager
 - edge to fast_vdma_csr -
 {}
@@ -434,101 +434,257 @@ role: manager
 ### COMPONENTS ###
 == COMP main crossbar
 clock: clk_fast
-ports:
-  coral_npu_in:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
-  coral_npu_out:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  fast_vdma:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
-  fast_vdma_csr:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  i3c_controller:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  i3c_target:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  timers_csr:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  uart_csr:
-    clock: clk_fast
-    data_width: 64
-    id_width: 4
-    protocol: axi4
-    role: manager
-  veer_eh2_ifu:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
-  veer_eh2_lsu:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
-  veer_el2_ifu:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
-  veer_el2_lsu:
-    clock: clk_fast
-    data_width: 64
-    id_width: 1
-    protocol: axi4
-    role: subordinate
 sub_id_width: 1
+ports:
+  main_coral_npu_in:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_coral_npu_out:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_fast_vdma:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_fast_vdma_csr:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_i3c_controller:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_i3c_target:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_timers_csr:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_uart_csr:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  main_veer_eh2_ifu:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_veer_eh2_lsu:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_veer_el2_ifu:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_veer_el2_lsu:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
 == COMP dw_conv_coral_npu_in_128_to_main_coral_npu_in_64 dw_conv
 clock: clk_fast
+ports:
+  dw_conv_coral_npu_in_128:
+    clock = clk_fast
+    data_width = 128
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  dw_conv_main_coral_npu_in_64:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = manager
 == COMP dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32 dw_conv
 clock: clk_fast
+ports:
+  dw_conv_fast_vdma_csr_32:
+    clock = clk_fast
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
+  dw_conv_main_fast_vdma_csr_64:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
 == COMP dw_conv_main_coral_npu_out_64_to_coral_npu_out_128 dw_conv
 clock: clk_fast
+ports:
+  dw_conv_coral_npu_out_128:
+    clock = clk_fast
+    data_width = 128
+    id_width = 4
+    protocol = axi4
+    role = manager
+  dw_conv_main_coral_npu_out_64:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
 == COMP cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast cdc
 {}
+ports:
+  cdc_main_veer_el2_ifu_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = manager
+  cdc_veer_el2_ifu_clk_slow:
+    clock = clk_slow
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
 == COMP cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast cdc
 {}
+ports:
+  cdc_main_veer_el2_lsu_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = manager
+  cdc_veer_el2_lsu_clk_slow:
+    clock = clk_slow
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
 == COMP cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow cdc
 {}
+ports:
+  cdc_main_timers_csr_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
+  cdc_timers_csr_clk_slow:
+    clock = clk_slow
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
 == COMP cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow cdc
 {}
+ports:
+  cdc_i3c_controller_clk_slow:
+    clock = clk_slow
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  cdc_main_i3c_controller_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
 == COMP cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow cdc
 {}
+ports:
+  cdc_i3c_target_clk_slow:
+    clock = clk_slow
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+  cdc_main_i3c_target_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
 == COMP cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb cdc
 {}
-== COMP pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite pr_conv
+ports:
+  cdc_main_uart_csr_clk_fast:
+    clock = clk_fast
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
+  cdc_uart_csr_clk_ahb:
+    clock = clk_ahb
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = manager
+== COMP pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite pr_conv
 {}
+ports:
+  pr_conv_dw_conv_fast_vdma_csr_32_axi4:
+    clock = clk_fast
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = subordinate
+  pr_conv_fast_vdma_csr_axi4lite:
+    clock = clk_fast
+    data_width = 32
+    id_width = 4
+    protocol = axi4lite
+    role = manager
 == COMP pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3 pr_conv
 {}
+ports:
+  pr_conv_cdc_timers_csr_clk_slow_axi4:
+    clock = clk_slow
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
+  pr_conv_timers_csr_apb3:
+    clock = clk_slow
+    data_width = 64
+    id_width = 4
+    protocol = apb3
+    role = manager
 == COMP pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3 pr_conv
 {}
+ports:
+  pr_conv_cdc_uart_csr_clk_ahb_axi4:
+    clock = clk_ahb
+    data_width = 64
+    id_width = 4
+    protocol = axi4
+    role = subordinate
+  pr_conv_uart_csr_ahb3:
+    clock = clk_ahb
+    data_width = 64
+    id_width = 4
+    protocol = ahb3
+    role = manager

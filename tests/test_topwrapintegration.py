@@ -10,7 +10,7 @@ class TestTopwarpIntegration:
 
         #uses this file instead of 'example/asoca.yml' as temporary workaround for #100959
         assert 0 == subprocess.call(
-            "omnibus tests/asoca2.yml", shell=True)
+            "omnibus tests/spec/asoca2.yml", shell=True)
 
         assert 0 == subprocess.call(
             "topwrap repo parse repo out/src --inference-interface AXI4 --inference-interface APB3 --inference-interface AHB3 --inference-interface AXI4Lite --log-level error",

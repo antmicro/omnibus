@@ -33,4 +33,4 @@ class TestComponents:
         self._test("asoca")
 
     def test_idwidth(self):
-        self._test("idwidth_butterflyish", "tests")
+        self._test("idwidth_butterflyish", "tests/spec/")

@@ -35,7 +35,7 @@ digraph ASoCaInt {
 	cdc_i3c_controller_clk_slow -> i3c_controller
 	cdc_i3c_target_clk_slow -> i3c_target
 	cdc_uart_csr_clk_ahb -> pr_conv_cdc_uart_csr_clk_ahb_axi4
-	pr_conv_fast_vdma_csr_axi4_lite -> fast_vdma_csr
+	pr_conv_fast_vdma_csr_axi4lite -> fast_vdma_csr
 	pr_conv_timers_csr_apb3 -> timers_csr
 	pr_conv_uart_csr_ahb3 -> uart_csr
 	subgraph "cluster legend" {
@@ -166,12 +166,12 @@ main"
 		cdc_main_uart_csr_clk_fast -> cdc_uart_csr_clk_ahb
 		cdc_uart_csr_clk_ahb [label=clk_ahb fillcolor=2]
 	}
-	subgraph "cluster pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite" {
+	subgraph "cluster pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite" {
 		label=pr_conv
 		color=lightgrey style=dashed
 		pr_conv_dw_conv_fast_vdma_csr_32_axi4 [label=axi4 fillcolor=1]
-		pr_conv_dw_conv_fast_vdma_csr_32_axi4 -> pr_conv_fast_vdma_csr_axi4_lite
-		pr_conv_fast_vdma_csr_axi4_lite [label=axi4_lite fillcolor=1]
+		pr_conv_dw_conv_fast_vdma_csr_32_axi4 -> pr_conv_fast_vdma_csr_axi4lite
+		pr_conv_fast_vdma_csr_axi4lite [label=axi4lite fillcolor=1]
 	}
 	subgraph "cluster pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3" {
 		label=pr_conv

@@ -1,0 +1,51 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+default:
+  data_width: 12
+  protocol: AXI4
+  clock: clk
+  frequency: 1
+
+ports:
+  a:
+    role: "subordinate"
+  b:
+    role: "manager"
+  c:
+    role: "manager"
+  
+address_map:
+  b: 
+    to: b
+    size: 0
+    base: 0
+
+crossbars:
+  main:
+    ports:
+      a:
+        role: "subordinate"
+      b:
+        role: "manager"
+
+connections:
+  #empty 
+  "":
+  #invalid format
+  "a b":
+  #no source
+  "f -> b":
+  #no dest
+  "a -> f":
+  #flipped
+  "b -> a":
+  #invalid parameter format
+  "a -> b":
+    - 1
+    - 2
+  #unknown parameter
+  "a -> c":
+    unknown: "beep"

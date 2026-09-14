@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+default:
+  frequency: 1
+
+ports:
+  #empty
+  a:
+  #arr
+  b:
+  - 1
+  - 2
+  #int
+  c: 1
+  #missing fields
+  d:
+  #invalid fields
+  e:
+    role: "both"
+    protocol: AXI4Liter
+    clock: 12
+    data_width: "asd"
+  #unknown fields
+  f:
+    role: "manager"
+    protocol: AXI4Lite
+    clock: clk
+    data_width: 32
+    unknown_field: "13"
+  valid:
+    role: "manager"
+    protocol: AXI4Lite
+    clock: clk
+    data_width: 32
+
+address_map:
+  b: 
+    to: valid
+    size: 0
+    base: 0

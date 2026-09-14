@@ -11,12 +11,12 @@ digraph MyInterconnect {
 	apb_i2c [fillcolor=3]
 	sb_cpu_mem -> axi_mem
 	sb_cpu_lpp -> cdc_sb_cpu_lpp_clk_bus
-	sb_lpp_uart -> pr_conv_sb_lpp_uart_AXI4
-	sb_lpp_i2c -> pr_conv_sb_lpp_i2c_AXI4
+	sb_lpp_uart -> pr_conv_sb_lpp_uart_axi4
+	sb_lpp_i2c -> pr_conv_sb_lpp_i2c_axi4
 	cdc_sb_cpu_cpu_clk_bus -> sb_cpu_cpu
 	cdc_sb_lpp_up_clk_lpp -> sb_lpp_up
-	pr_conv_apb_uart_APB -> apb_uart
-	pr_conv_apb_i2c_APB -> apb_i2c
+	pr_conv_apb_uart_apb3 -> apb_uart
+	pr_conv_apb_i2c_apb3 -> apb_i2c
 	subgraph "cluster legend" {
 		label="legend - clock"
 		color=lightgrey
@@ -68,20 +68,20 @@ cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp"
 		cdc_sb_cpu_lpp_clk_bus -> cdc_sb_lpp_up_clk_lpp
 		cdc_sb_lpp_up_clk_lpp [fillcolor=3]
 	}
-	subgraph "cluster pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB" {
+	subgraph "cluster pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3" {
 		label="pr_conv
-pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB"
+pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3"
 		color=lightgrey style=dashed
-		pr_conv_sb_lpp_uart_AXI4 [fillcolor=3]
-		pr_conv_sb_lpp_uart_AXI4 -> pr_conv_apb_uart_APB
-		pr_conv_apb_uart_APB [fillcolor=3]
+		pr_conv_sb_lpp_uart_axi4 [fillcolor=3]
+		pr_conv_sb_lpp_uart_axi4 -> pr_conv_apb_uart_apb3
+		pr_conv_apb_uart_apb3 [fillcolor=3]
 	}
-	subgraph "cluster pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB" {
+	subgraph "cluster pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3" {
 		label="pr_conv
-pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB"
+pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3"
 		color=lightgrey style=dashed
-		pr_conv_sb_lpp_i2c_AXI4 [fillcolor=3]
-		pr_conv_sb_lpp_i2c_AXI4 -> pr_conv_apb_i2c_APB
-		pr_conv_apb_i2c_APB [fillcolor=3]
+		pr_conv_sb_lpp_i2c_axi4 [fillcolor=3]
+		pr_conv_sb_lpp_i2c_axi4 -> pr_conv_apb_i2c_apb3
+		pr_conv_apb_i2c_apb3 [fillcolor=3]
 	}
 }

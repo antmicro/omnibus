@@ -13,6 +13,12 @@ class Backend:
 
     The `generate` method can be used to set filename, set whether to display the graph, and to set whether to color it according to some parameter
     """
+    def __init__(self):
+        self.parse_global = {}
+        self.parse_default = {}
+        self.parse_connections = {}
+
+
     def generate(self, outdir, view=False, color_by="", color_scheme="paired12", display_full_name=False):
         """Generate graphviz graph, optionally color it by some parameter, and optionally display it"""
         g = graphviz.Digraph(self.name, filename=f"{outdir}/{self.name}.gv", node_attr={'style': 'filled', 'colorscheme': color_scheme})

@@ -7,6 +7,10 @@ import os
 from .interconnect import InterconnectBuilder
 
 
+def print_lines(l):
+    for line in l:
+        print(line)
+
 def main():
     argsparser = argparse.ArgumentParser(prog='omnibus')
     argsparser.add_argument('file') 
@@ -25,7 +29,11 @@ def main():
 
     if args.debug == "graph":
         ic = InterconnectBuilder(backend="graphviz")
-        ic.read_yaml(args.file)
+        if 0 != ic.read_yaml(args.file):
+            print_lines(ic.warns)
+            print_lines(ic.errors)
+            return 1
+
         ic.generate(outdir=args.output, view=False, display_full_name=True)
         return 0
 
@@ -34,13 +42,20 @@ def main():
 
     if args.graph:
         ic = InterconnectBuilder(backend="graphviz")
-        ic.read_yaml(args.file)
+        if 0 != ic.read_yaml(args.file):
+            print_lines(ic.warns)
+            print_lines(ic.errors)
+            return 1
+
         ic.process()
         ic.generate(outdir=args.output, view=bool(args.graphview), color_by=args.colorby, color_scheme=args.colorscheme, display_full_name=args.fulldisplay)
         return 0
         
     ic = InterconnectBuilder()
-    ic.read_yaml(args.file)
+    if 0 != ic.read_yaml(args.file):
+        print_lines(ic.warns)
+        print_lines(ic.errors)
+        return 1
 
     if args.debug:
         if args.debug == "parse":

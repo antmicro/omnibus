@@ -7,7 +7,7 @@ import sys
 import tempfile
 from importlib import resources
 
-import yaml
+import ruamel.yaml
 
 from ..types import MappedComponent
 
@@ -57,6 +57,8 @@ class PulpCrossbar(MappedComponent):
                 "vlnv": f"vendor:library:axi_crossbar_{self.name}:1.0",
             }
         
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = False
             yaml.dump(config, file)
         
             prevdir = os.getcwd()
@@ -282,6 +284,23 @@ class Backend:
         map_components     - creates mapping from internal abstract component to real modules
         generate_hierarchy - generate real modules and create final topwrap hierarchy file 
     """
+    def __init__(self):
+        self.parse_global = {}
+        self.parse_default = {
+            "axi_max_reads" : self._parse_positive_int
+        }
+
+        self.parse_connections = {
+            "axi_max_reads" : self._parse_positive_int
+        }
+
+    def _parse_axi_max_reads(self, val, where):
+        if type(val) is not int or val  < 1:
+            self.errors.append(f"ERROR: in {where}, 'axi_max_reads' takes positive int as an argument")
+            return 0 
+    
+        return val 
+
     def generate(self, outdir):
         """Convenience method for internal operation"""
         self.map_components(outdir)
@@ -354,6 +373,8 @@ class Backend:
         os.makedirs(os.path.join(outdir, 'modules', 'interfaces'), exist_ok=True)
 
         with open('topwrap.yaml', 'w') as file:
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = False
             yaml.dump({'repositories': {'repo': f"file:{os.path.join(outdir, 'modules')}"}}, file)
 
         exists = {}
@@ -448,6 +469,8 @@ class Backend:
                         ip['dst'] = [destport.parent, 'src']
     
         with open(os.path.join(outdir, f"{self.name}.yml"), 'w') as file:
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = False
             yaml.dump(tree, file)
 
 

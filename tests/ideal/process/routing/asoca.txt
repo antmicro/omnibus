@@ -1,45 +1,63 @@
 ### ADDR MAPS ###
 == INTERCONNECT ==
-coral_npu_out:
-  base: 1610612736
-  size: 268435455
-  to: coral_npu_out
-fastvdma_csr:
-  base: 1342177280
-  size: 65535
-  to: fast_vdma_csr
-i3c_controller_csr:
-  base: 1073807360
-  size: 65535
-  to: i3c_controller
-i3c_target_csr:
-  base: 1073741824
-  size: 65535
-  to: i3c_target
-timers_csr:
-  base: 1073938432
-  size: 65535
-  to: timers_csr
-uart_csr:
-  base: 1073872896
-  size: 65535
-  to: uart_csr
+-- i3c_target_csr --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+i3c_target
+1073741824
+65535
+-- i3c_controller_csr --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+i3c_controller
+1073807360
+65535
+-- uart_csr --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+uart_csr
+1073872896
+65535
+-- timers_csr --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+timers_csr
+1073938432
+65535
+-- fastvdma_csr --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+fast_vdma_csr
+1342177280
+65535
+-- coral_npu_out --
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+coral_npu_out
+1610612736
+268435455
 == CROSSBAR main==
 --
-_ main_coral_npu_out
-0x60000000 0xfffffff
+['_']
+main_coral_npu_out
+1610612736
+268435455
 --
-_ main_fast_vdma_csr
-0x50000000 0xffff
+['_']
+main_fast_vdma_csr
+1342177280
+65535
 --
-_ main_i3c_controller
-0x40010000 0xffff
+['_']
+main_i3c_controller
+1073807360
+65535
 --
-_ main_i3c_target
-0x40000000 0xffff
+['_']
+main_i3c_target
+1073741824
+65535
 --
-_ main_timers_csr
-0x40030000 0xffff
+['_']
+main_timers_csr
+1073938432
+65535
 --
-_ main_uart_csr
-0x40020000 0xffff
+['_']
+main_uart_csr
+1073872896
+65535

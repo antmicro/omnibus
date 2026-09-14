@@ -913,17 +913,17 @@ module ASoCaInt (
     .AxiSrcPortDataWidth(64)
   ) dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32 (
     .clk_i(clk_fast),
-    .i_dst_awready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_awready),
-    .i_dst_wready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_wready),
-    .i_dst_bvalid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_bvalid),
-    .i_dst_arready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_arready),
-    .i_dst_rdata(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_rdata),
-    .i_dst_rvalid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_rvalid),
-    .i_dst_bid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_bid),
-    .i_dst_bresp(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_bresp),
-    .i_dst_rid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_rid),
-    .i_dst_rresp(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_rresp),
-    .i_dst_rlast(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite.o_src_rlast),
+    .i_dst_awready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_awready),
+    .i_dst_wready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_wready),
+    .i_dst_bvalid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_bvalid),
+    .i_dst_arready(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_arready),
+    .i_dst_rdata(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_rdata),
+    .i_dst_rvalid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_rvalid),
+    .i_dst_bid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_bid),
+    .i_dst_bresp(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_bresp),
+    .i_dst_rid(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_rid),
+    .i_dst_rresp(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_rresp),
+    .i_dst_rlast(pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite.o_src_rlast),
     .i_src_awaddr(main.o_main_fast_vdma_csr_awaddr),
     .i_src_awvalid(main.o_main_fast_vdma_csr_awvalid),
     .i_src_wdata(main.o_main_fast_vdma_csr_wdata),
@@ -1308,7 +1308,7 @@ module ASoCaInt (
     .AxiAddrWidth(32),
     .AxiDataWidth(32),
     .AxiIdWidth(4)
-  ) pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite (
+  ) pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite (
     .clk_i(clk_fast),
     .i_src_awaddr(dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32.o_dst_awaddr),
     .i_src_awvalid(dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32.o_dst_awvalid),

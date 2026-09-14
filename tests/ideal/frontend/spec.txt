@@ -1,96 +1,104 @@
-address_map:
-  i2c:
-    base: 1073745920
-    from:
-    - axi_cpu
-    - axi_dbg
-    size: 4096
-    to: apb_i2c
-  memory:
-    base: 0
-    size: 536870912
-    to: axi_mem
-  uart:
-    base: 1073741824
-    from: axi_cpu
-    size: 4096
-    to: apb_uart
-clocks:
-  clk_bus:
-    frequency: 100e6
-  clk_cpu:
-    frequency: 1GHz
-  clk_lpp:
-    frequency: 25M
-connections:
-  axi_cpu -> sb_cpu.cpu: {}
-  axi_dbg -> sb_cpu.dbg: {}
-  sb_cpu.lpp -> sb_lpp.up: {}
-  sb_cpu.mem -> axi_mem:
-    protocol: true
-    registers: 1
-  sb_lpp.i2c -> apb_i2c:
-    protocol: true
-  sb_lpp.uart -> apb_uart:
-    protocol: true
-crossbars:
-  sb_cpu:
-    clock: clk_bus
-    ports:
-      cpu:
-        clock: clk_bus
-        role: subordinate
-      dbg:
-        clock: clk_bus
-        role: subordinate
-      lpp:
-        clock: clk_bus
-        role: manager
-      mem:
-        clock: clk_bus
-        role: manager
-  sb_lpp:
-    clock: clk_lpp
-    ports:
-      i2c:
-        clock: clk_lpp
-        role: manager
-      uart:
-        clock: clk_lpp
-        role: manager
-      up:
-        clock: clk_lpp
-        role: subordinate
-default:
-  clock: clk_bus
-  data_width: 32
-  protocol: AXI4
-desc_version: 1.0
 name: MyInterconnect
-ports:
-  apb_i2c:
-    clock: clk_lpp
-    data_width: 32
-    protocol: APB
-    role: manager
-  apb_uart:
-    clock: clk_lpp
-    data_width: 32
-    protocol: APB
-    role: manager
-  axi_cpu:
-    clock: clk_cpu
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  axi_dbg:
-    clock: clk_bus
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  axi_mem:
-    clock: clk_bus
-    data_width: 32
-    protocol: AXI4
-    role: manager
 version: 0.85a
+globals:
+  addr_width = 32
+defaults:
+  clock = clk_bus
+  data_width = 32
+  protocol = axi4
+clocks:
+  clk_bus = 100000000.0 Hz
+  clk_cpu = 1000000000.0 Hz
+  clk_lpp = 25000000.0 Hz
+ports:
+  apb_i2c - None
+    clock = clk_lpp
+    data_width = 32
+    protocol = apb3
+    role = manager
+  apb_uart - None
+    clock = clk_lpp
+    data_width = 32
+    protocol = apb3
+    role = manager
+  axi_cpu - None
+    clock = clk_cpu
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to sb_cpu_cpu
+  axi_dbg - None
+    clock = clk_bus
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to sb_cpu_dbg
+  axi_mem - None
+    clock = clk_bus
+    data_width = 32
+    protocol = axi4
+    role = manager
+  sb_cpu_cpu - sb_cpu
+    clock = clk_bus
+    role = subordinate
+    edge to sb_cpu_mem
+    edge to sb_cpu_lpp
+  sb_cpu_dbg - sb_cpu
+    clock = clk_bus
+    role = subordinate
+    edge to sb_cpu_mem
+    edge to sb_cpu_lpp
+  sb_cpu_lpp - sb_cpu
+    clock = clk_bus
+    role = manager
+    edge to sb_lpp_up
+  sb_cpu_mem - sb_cpu
+    clock = clk_bus
+    role = manager
+    edge to axi_mem
+      protocol = True
+      registers = 1
+  sb_lpp_i2c - sb_lpp
+    clock = clk_lpp
+    role = manager
+    edge to apb_i2c
+      protocol = True
+  sb_lpp_uart - sb_lpp
+    clock = clk_lpp
+    role = manager
+    edge to apb_uart
+      protocol = True
+  sb_lpp_up - sb_lpp
+    clock = clk_lpp
+    role = subordinate
+    edge to sb_lpp_uart
+    edge to sb_lpp_i2c
+crossbars:
+  sb_cpu
+    clock = clk_bus
+    subordinates:
+      sb_cpu_cpu
+      sb_cpu_dbg
+    managers:
+      sb_cpu_lpp
+      sb_cpu_mem
+  sb_lpp
+    clock = clk_lpp
+    subordinates:
+      sb_lpp_up
+    managers:
+      sb_lpp_i2c
+      sb_lpp_uart
+address maps:
+  ['axi_cpu', 'axi_dbg']
+  axi_mem
+  0
+  536870912
+  ['axi_cpu']
+  apb_uart
+  1073741824
+  4096
+  ['axi_cpu', 'axi_dbg']
+  apb_i2c
+  1073745920
+  4096

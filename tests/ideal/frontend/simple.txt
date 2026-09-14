@@ -1,52 +1,60 @@
-address_map:
-  pout1:
-    base: 0
-    size: 2147483647
-    to: pout1
-  pout2:
-    base: 2147483648
-    size: 2147483647
-    to: pout2
-connections:
-  main.pout1 -> pout1:
-    protocol: true
-  main.pout2 -> pout2:
-    protocol: true
-  pin -> main.pin: {}
-crossbars:
-  main:
-    clock: clk
-    ports:
-      pin:
-        clock: clk
-        role: subordinate
-      pout1:
-        clock: clk
-        role: manager
-      pout2:
-        clock: clk
-        role: manager
-default:
-  clock: clk
-  data_width: 64
-  frequency: 10MHz
-  protocol: AXI4
-desc_version: 1.0
 name: simple
-ports:
-  pin:
-    clock: clk
-    data_width: 64
-    protocol: AXI4
-    role: subordinate
-  pout1:
-    clock: clk
-    data_width: 64
-    protocol: AXI4Lite
-    role: manager
-  pout2:
-    clock: clk
-    data_width: 64
-    protocol: AXI4
-    role: manager
 version: 1.0
+globals:
+  addr_width = 32
+defaults:
+  clock = clk
+  data_width = 64
+  frequency = 10000000.0
+  protocol = axi4
+clocks:
+  clk = 10000000.0 Hz
+ports:
+  main_pin - main
+    clock = clk
+    role = subordinate
+    edge to main_pout1
+    edge to main_pout2
+  main_pout1 - main
+    clock = clk
+    role = manager
+    edge to pout1
+      protocol = True
+  main_pout2 - main
+    clock = clk
+    role = manager
+    edge to pout2
+      protocol = True
+  pin - None
+    clock = clk
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_pin
+  pout1 - None
+    clock = clk
+    data_width = 64
+    protocol = axi4lite
+    role = manager
+  pout2 - None
+    clock = clk
+    data_width = 64
+    protocol = axi4
+    role = manager
+crossbars:
+  main
+    clock = clk
+    subordinates:
+      main_pin
+    managers:
+      main_pout1
+      main_pout2
+address maps:
+  ['pin']
+  pout1
+  0
+  2147483647
+  ['pin']
+  pout2
+  2147483648
+  2147483647

@@ -3,7 +3,7 @@
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to main_pin -
 {}
@@ -11,19 +11,19 @@ role: subordinate
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4Lite
+protocol: axi4lite
 role: manager
 == PORT pout2 parent: None ==
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT main_pin parent: main ==
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to main_pout1 -
 {}
@@ -33,56 +33,69 @@ role: subordinate
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: manager
-- edge to pr_conv_main_pout1_AXI4 -
+- edge to pr_conv_main_pout1_axi4 -
 protocol: true
 == PORT main_pout2 parent: main ==
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to pout2 -
 protocol: true
-== PORT pr_conv_main_pout1_AXI4 parent: pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite ==
+== PORT pr_conv_main_pout1_axi4 parent: pr_conv_main_pout1_axi4_to_pout1_axi4lite ==
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
-- edge to pr_conv_pout1_AXI4Lite -
+- edge to pr_conv_pout1_axi4lite -
 {}
-== PORT pr_conv_pout1_AXI4Lite parent: pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite ==
+== PORT pr_conv_pout1_axi4lite parent: pr_conv_main_pout1_axi4_to_pout1_axi4lite ==
 clock: clk
 data_width: 64
 id_width: 1
-protocol: AXI4Lite
+protocol: axi4lite
 role: manager
 - edge to pout1 -
 {}
 ### COMPONENTS ###
 == COMP main crossbar
 clock: clk
-ports:
-  pin:
-    clock: clk
-    data_width: 64
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  pout1:
-    clock: clk
-    data_width: 64
-    id_width: 1
-    protocol: AXI4
-    role: manager
-  pout2:
-    clock: clk
-    data_width: 64
-    id_width: 1
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
-== COMP pr_conv_main_pout1_AXI4_to_pout1_AXI4Lite pr_conv
+ports:
+  main_pin:
+    clock = clk
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  main_pout1:
+    clock = clk
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = manager
+  main_pout2:
+    clock = clk
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = manager
+== COMP pr_conv_main_pout1_axi4_to_pout1_axi4lite pr_conv
 {}
+ports:
+  pr_conv_main_pout1_axi4:
+    clock = clk
+    data_width = 64
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  pr_conv_pout1_axi4lite:
+    clock = clk
+    data_width = 64
+    id_width = 1
+    protocol = axi4lite
+    role = manager

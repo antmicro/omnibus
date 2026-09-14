@@ -51,7 +51,7 @@ You can generate the interconnect graph from example given in specification and 
 ### Topwrap generation
 Generating a full Topwrap project takes a few more steps. You can generate one from the ASoCa specification with:
 ```sh
-omnibus tests/asoca2.yml 
+omnibus examples/asoca.yml 
 topwrap repo init repo out/modules/
 topwrap repo parse repo out/src/ 
 ```

@@ -3,7 +3,7 @@
 clock: clk_cpu
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to cdc_axi_cpu_clk_cpu -
 {}
@@ -11,7 +11,7 @@ role: subordinate
 clock: clk_bus
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_cpu_dbg -
 {}
@@ -19,25 +19,25 @@ role: subordinate
 clock: clk_bus
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT apb_uart parent: None ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: APB
+protocol: apb3
 role: manager
 == PORT apb_i2c parent: None ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: APB
+protocol: apb3
 role: manager
 == PORT sb_cpu_cpu parent: sb_cpu ==
 clock: clk_bus
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_cpu_mem -
 {}
@@ -47,7 +47,7 @@ role: subordinate
 clock: clk_bus
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_cpu_mem -
 {}
@@ -57,7 +57,7 @@ role: subordinate
 clock: clk_bus
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to axi_mem -
 protocol: true
@@ -66,7 +66,7 @@ registers: 1
 clock: clk_bus
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to cdc_sb_cpu_lpp_clk_bus -
 {}
@@ -74,7 +74,7 @@ role: manager
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_lpp_uart -
 {}
@@ -84,23 +84,23 @@ role: subordinate
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
-- edge to pr_conv_sb_lpp_uart_AXI4 -
+- edge to pr_conv_sb_lpp_uart_axi4 -
 protocol: true
 == PORT sb_lpp_i2c parent: sb_lpp ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
-- edge to pr_conv_sb_lpp_i2c_AXI4 -
+- edge to pr_conv_sb_lpp_i2c_axi4 -
 protocol: true
 == PORT cdc_axi_cpu_clk_cpu parent: cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus ==
 clock: clk_cpu
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to cdc_sb_cpu_cpu_clk_bus -
 {}
@@ -108,7 +108,7 @@ role: subordinate
 clock: clk_bus
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to sb_cpu_cpu -
 {}
@@ -116,7 +116,7 @@ role: manager
 clock: clk_bus
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to cdc_sb_lpp_up_clk_lpp -
 {}
@@ -124,98 +124,150 @@ role: subordinate
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to sb_lpp_up -
 {}
-== PORT pr_conv_sb_lpp_uart_AXI4 parent: pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB ==
+== PORT pr_conv_sb_lpp_uart_axi4 parent: pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3 ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
-- edge to pr_conv_apb_uart_APB -
+- edge to pr_conv_apb_uart_apb3 -
 {}
-== PORT pr_conv_apb_uart_APB parent: pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB ==
+== PORT pr_conv_apb_uart_apb3 parent: pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3 ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: APB
+protocol: apb3
 role: manager
 - edge to apb_uart -
 {}
-== PORT pr_conv_sb_lpp_i2c_AXI4 parent: pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB ==
+== PORT pr_conv_sb_lpp_i2c_axi4 parent: pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3 ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
-- edge to pr_conv_apb_i2c_APB -
+- edge to pr_conv_apb_i2c_apb3 -
 {}
-== PORT pr_conv_apb_i2c_APB parent: pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB ==
+== PORT pr_conv_apb_i2c_apb3 parent: pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3 ==
 clock: clk_lpp
 data_width: 32
 id_width: 2
-protocol: APB
+protocol: apb3
 role: manager
 - edge to apb_i2c -
 {}
 ### COMPONENTS ###
 == COMP sb_cpu crossbar
 clock: clk_bus
-ports:
-  cpu:
-    clock: clk_bus
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  dbg:
-    clock: clk_bus
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  lpp:
-    clock: clk_bus
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  mem:
-    clock: clk_bus
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
+ports:
+  sb_cpu_cpu:
+    clock = clk_bus
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  sb_cpu_dbg:
+    clock = clk_bus
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  sb_cpu_lpp:
+    clock = clk_bus
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  sb_cpu_mem:
+    clock = clk_bus
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
 == COMP sb_lpp crossbar
 clock: clk_lpp
-ports:
-  i2c:
-    clock: clk_lpp
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  uart:
-    clock: clk_lpp
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  up:
-    clock: clk_lpp
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
 sub_id_width: 2
+ports:
+  sb_lpp_i2c:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  sb_lpp_uart:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  sb_lpp_up:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
 == COMP cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus cdc
 {}
+ports:
+  cdc_axi_cpu_clk_cpu:
+    clock = clk_cpu
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  cdc_sb_cpu_cpu_clk_bus:
+    clock = clk_bus
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = manager
 == COMP cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp cdc
 {}
-== COMP pr_conv_sb_lpp_uart_AXI4_to_apb_uart_APB pr_conv
+ports:
+  cdc_sb_cpu_lpp_clk_bus:
+    clock = clk_bus
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  cdc_sb_lpp_up_clk_lpp:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+== COMP pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3 pr_conv
 {}
-== COMP pr_conv_sb_lpp_i2c_AXI4_to_apb_i2c_APB pr_conv
+ports:
+  pr_conv_apb_uart_apb3:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = apb3
+    role = manager
+  pr_conv_sb_lpp_uart_axi4:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+== COMP pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3 pr_conv
 {}
+ports:
+  pr_conv_apb_i2c_apb3:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = apb3
+    role = manager
+  pr_conv_sb_lpp_i2c_axi4:
+    clock = clk_lpp
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate

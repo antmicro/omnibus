@@ -8,7 +8,6 @@ class Path:
         self.startport = start
         self.crossbars = {} 
 
-
 class Edge:
     def __init__(self, dest, attributes):
         self.dest       = dest

@@ -1,7 +1,7 @@
 ### GLOBALS ###
 addr_width = 16
 ### DEFAULTS ###
-protocol = AXI4
+protocol = axi4
 clock = clk
 data_width = 32
 ### CLOCKS ###
@@ -10,98 +10,98 @@ clk - freq n/a
 == PORT i0 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_i0 -
 {}
 == PORT i1 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_i1 -
 {}
 == PORT i2 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_i0 -
 {}
 == PORT i3 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_i1 -
 {}
 == PORT i4 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_i0 -
 {}
 == PORT i5 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_i1 -
 {}
 == PORT i6 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_i0 -
 {}
 == PORT i7 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_i1 -
 {}
 == PORT o0 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o1 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o2 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o3 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o4 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o5 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o6 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o7 parent: None ==
 clock: clk
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT x00_i0 parent: x00 ==
 clock: clk
@@ -395,201 +395,205 @@ protocol: true
 == COMP x00 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x00_i0:
+    clock = clk
+    role = subordinate
+  x00_i1:
+    clock = clk
+    role = subordinate
+  x00_o0:
+    clock = clk
+    role = manager
+  x00_o1:
+    clock = clk
+    role = manager
 == COMP x01 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x01_i0:
+    clock = clk
+    role = subordinate
+  x01_i1:
+    clock = clk
+    role = subordinate
+  x01_o0:
+    clock = clk
+    role = manager
+  x01_o1:
+    clock = clk
+    role = manager
 == COMP x02 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x02_i0:
+    clock = clk
+    role = subordinate
+  x02_i1:
+    clock = clk
+    role = subordinate
+  x02_o0:
+    clock = clk
+    role = manager
+  x02_o1:
+    clock = clk
+    role = manager
 == COMP x03 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x03_i0:
+    clock = clk
+    role = subordinate
+  x03_i1:
+    clock = clk
+    role = subordinate
+  x03_o0:
+    clock = clk
+    role = manager
+  x03_o1:
+    clock = clk
+    role = manager
 == COMP x10 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x10_i0:
+    clock = clk
+    role = subordinate
+  x10_i1:
+    clock = clk
+    role = subordinate
+  x10_o0:
+    clock = clk
+    role = manager
+  x10_o1:
+    clock = clk
+    role = manager
 == COMP x11 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x11_i0:
+    clock = clk
+    role = subordinate
+  x11_i1:
+    clock = clk
+    role = subordinate
+  x11_o0:
+    clock = clk
+    role = manager
+  x11_o1:
+    clock = clk
+    role = manager
 == COMP x12 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x12_i0:
+    clock = clk
+    role = subordinate
+  x12_i1:
+    clock = clk
+    role = subordinate
+  x12_o0:
+    clock = clk
+    role = manager
+  x12_o1:
+    clock = clk
+    role = manager
 == COMP x13 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x13_i0:
+    clock = clk
+    role = subordinate
+  x13_i1:
+    clock = clk
+    role = subordinate
+  x13_o0:
+    clock = clk
+    role = manager
+  x13_o1:
+    clock = clk
+    role = manager
 == COMP x20 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x20_i0:
+    clock = clk
+    role = subordinate
+  x20_i1:
+    clock = clk
+    role = subordinate
+  x20_o0:
+    clock = clk
+    role = manager
+  x20_o1:
+    clock = clk
+    role = manager
 == COMP x21 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x21_i0:
+    clock = clk
+    role = subordinate
+  x21_i1:
+    clock = clk
+    role = subordinate
+  x21_o0:
+    clock = clk
+    role = manager
+  x21_o1:
+    clock = clk
+    role = manager
 == COMP x22 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x22_i0:
+    clock = clk
+    role = subordinate
+  x22_i1:
+    clock = clk
+    role = subordinate
+  x22_o0:
+    clock = clk
+    role = manager
+  x22_o1:
+    clock = clk
+    role = manager
 == COMP x23 crossbar
 clock: clk
 ports:
-  i0:
-    clock: clk
-    role: subordinate
-  i1:
-    clock: clk
-    role: subordinate
-  o0:
-    clock: clk
-    role: manager
-  o1:
-    clock: clk
-    role: manager
+  x23_i0:
+    clock = clk
+    role = subordinate
+  x23_i1:
+    clock = clk
+    role = subordinate
+  x23_o0:
+    clock = clk
+    role = manager
+  x23_o1:
+    clock = clk
+    role = manager
 ### ADDR MAPS ###
 == INTERCONNECT ==
-o0:
-  base: 0
-  size: 4096
-  to: o0
-o1:
-  base: 4096
-  size: 4096
-  to: o1
-o2:
-  base: 8192
-  size: 4096
-  to: o2
-o3:
-  base: 12288
-  size: 4096
-  to: o3
+-- o0 --
+['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+o0
+0
+4096
+-- o1 --
+['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+o1
+4096
+4096
+-- o2 --
+['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+o2
+8192
+4096
+-- o3 --
+['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+o3
+12288
+4096
 == CROSSBAR x00==
 == CROSSBAR x01==
 == CROSSBAR x02==

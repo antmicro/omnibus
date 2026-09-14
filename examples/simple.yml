@@ -4,7 +4,7 @@
 desc_version: 1.0
 
 name: simple
-version: 1.0
+version: "1.0"
 
 default:
   data_width: 64

@@ -1,0 +1,58 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+default:
+  data_width: 12
+  protocol: AXI4
+  clock: clk
+  frequency: 1
+
+ports:
+  a:
+    role: "subordinate"
+  b:
+    role: "manager"
+  
+address_map:
+  b: 
+    to: b
+    size: 0
+    base: 0
+
+crossbars:
+  #lack of ports field
+  a:
+  #wrong type
+  b:
+    ports:
+      - 1
+      - 2
+  #not enough + no manager
+  c:
+    ports:
+      ca:
+        role: "subordinate"
+  #not enough + no subordinate
+  d:
+    ports:
+      da:
+        role: "manager"
+  #wrong subfield
+  e:
+    ports:
+      ea:
+        role: "manager"
+      eb:
+        role: "manager"
+    thisfieldmustnotexist: 12
+  #wrong port atttributes
+  f:
+    ports:
+      fa:
+        role: "manager"
+        protocol: axi4
+      fb:
+        role: "manager"
+        clock: clk

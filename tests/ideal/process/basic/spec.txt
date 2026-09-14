@@ -2,41 +2,41 @@
 addr_width = 32
 ### DEFAULTS ###
 data_width = 32
-protocol = AXI4
+protocol = axi4
 clock = clk_bus
 ### CLOCKS ###
-clk_bus - freq 100e6
-clk_cpu - freq 1GHz
-clk_lpp - freq 25M
+clk_bus - freq 100000000.0
+clk_cpu - freq 1000000000.0
+clk_lpp - freq 25000000.0
 ### PORTS ###
 == PORT axi_cpu parent: None ==
 clock: clk_cpu
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_cpu_cpu -
 {}
 == PORT axi_dbg parent: None ==
 clock: clk_bus
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to sb_cpu_dbg -
 {}
 == PORT axi_mem parent: None ==
 clock: clk_bus
 data_width: 32
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT apb_uart parent: None ==
 clock: clk_lpp
 data_width: 32
-protocol: APB
+protocol: apb3
 role: manager
 == PORT apb_i2c parent: None ==
 clock: clk_lpp
 data_width: 32
-protocol: APB
+protocol: apb3
 role: manager
 == PORT sb_cpu_cpu parent: sb_cpu ==
 clock: clk_bus
@@ -84,47 +84,46 @@ protocol: true
 == COMP sb_cpu crossbar
 clock: clk_bus
 ports:
-  cpu:
-    clock: clk_bus
-    role: subordinate
-  dbg:
-    clock: clk_bus
-    role: subordinate
-  lpp:
-    clock: clk_bus
-    role: manager
-  mem:
-    clock: clk_bus
-    role: manager
+  sb_cpu_cpu:
+    clock = clk_bus
+    role = subordinate
+  sb_cpu_dbg:
+    clock = clk_bus
+    role = subordinate
+  sb_cpu_lpp:
+    clock = clk_bus
+    role = manager
+  sb_cpu_mem:
+    clock = clk_bus
+    role = manager
 == COMP sb_lpp crossbar
 clock: clk_lpp
 ports:
-  i2c:
-    clock: clk_lpp
-    role: manager
-  uart:
-    clock: clk_lpp
-    role: manager
-  up:
-    clock: clk_lpp
-    role: subordinate
+  sb_lpp_i2c:
+    clock = clk_lpp
+    role = manager
+  sb_lpp_uart:
+    clock = clk_lpp
+    role = manager
+  sb_lpp_up:
+    clock = clk_lpp
+    role = subordinate
 ### ADDR MAPS ###
 == INTERCONNECT ==
-i2c:
-  base: 1073745920
-  from:
-  - axi_cpu
-  - axi_dbg
-  size: 4096
-  to: apb_i2c
-memory:
-  base: 0
-  size: 536870912
-  to: axi_mem
-uart:
-  base: 1073741824
-  from: axi_cpu
-  size: 4096
-  to: apb_uart
+-- memory --
+['axi_cpu', 'axi_dbg']
+axi_mem
+0
+536870912
+-- uart --
+['axi_cpu']
+apb_uart
+1073741824
+4096
+-- i2c --
+['axi_cpu', 'axi_dbg']
+apb_i2c
+1073745920
+4096
 == CROSSBAR sb_cpu==
 == CROSSBAR sb_lpp==

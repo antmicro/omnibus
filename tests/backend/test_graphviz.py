@@ -59,7 +59,7 @@ class TestGraphviz:
     def test_idwidth(self):
         ic = InterconnectBuilder(frontend="yaml", backend="graphviz") 
 
-        ic.read_yaml("tests/idwidth_butterflyish.yml")
+        ic.read_yaml("tests/spec/idwidth_butterflyish.yml")
         ic.process()
         ic.generate(
             "tests/out/", 

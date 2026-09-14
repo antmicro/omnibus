@@ -1,0 +1,68 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+global:
+  addr_width: 4
+
+default:
+  data_width: 4
+  protocol: AXI4
+  clock: clk
+  frequency: 1
+
+ports:
+  a:
+    role: "subordinate"
+  b:
+    role: "subordinate"
+  c:
+    role: "manager"
+  
+address_map:
+  #no entries
+  a: 
+  #wrong dest
+  b:
+    to: 11
+    base: 0
+    size: 12
+  #wrong from
+  c:
+    from: 11
+    to: b
+    base: 0
+    size: 12
+  #wrong from #2
+  d:
+    from: [11, 12]
+    to: c
+    base: 0
+    size: 12
+  #wrong base
+  e:
+    to: c
+    base: "str"
+    size: 10000
+  #wrong size
+  f:
+    to: c
+    base: 0
+    size: "str"
+  #nonexistent ports in from
+  g:
+    from: [e]
+    to: c
+    base: 0
+    size: 12
+  #nonexistent port in to
+  h:
+    to: i
+    base: 0
+    size: 12
+  #size out of range
+  i:
+    to: c
+    base: 0
+    size: 1200000000

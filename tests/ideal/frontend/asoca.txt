@@ -1,160 +1,206 @@
-address_map:
-  coral_npu_out:
-    base: 1610612736
-    size: 268435455
-    to: coral_npu_out
-  fastvdma_csr:
-    base: 1342177280
-    size: 65535
-    to: fast_vdma_csr
-  i3c_controller_csr:
-    base: 1073807360
-    size: 65535
-    to: i3c_controller
-  i3c_target_csr:
-    base: 1073741824
-    size: 65535
-    to: i3c_target
-  timers_csr:
-    base: 1073938432
-    size: 65535
-    to: timers_csr
-  uart_csr:
-    base: 1073872896
-    size: 65535
-    to: uart_csr
-clocks:
-  clk_ahb:
-    frequency: 100MHz
-  clk_fast:
-    frequency: 800MHz
-  clk_slow:
-    frequency: 300MHz
-connections:
-  coral_npu_in -> main.coral_npu_in: {}
-  fast_vdma -> main.fast_vdma: {}
-  main.coral_npu_out -> coral_npu_out:
-    protocol: true
-  main.fast_vdma_csr -> fast_vdma_csr:
-    protocol: true
-  main.i3c_controller -> i3c_controller:
-    protocol: true
-  main.i3c_target -> i3c_target:
-    protocol: true
-  main.timers_csr -> timers_csr:
-    protocol: true
-  main.uart_csr -> uart_csr:
-    protocol: true
-  veer_eh2_ifu -> main.veer_eh2_ifu: {}
-  veer_eh2_lsu -> main.veer_eh2_lsu: {}
-  veer_el2_ifu -> main.veer_el2_ifu: {}
-  veer_el2_lsu -> main.veer_el2_lsu: {}
-crossbars:
-  main:
-    clock: clk_fast
-    ports:
-      coral_npu_in:
-        clock: clk_fast
-        role: subordinate
-      coral_npu_out:
-        clock: clk_fast
-        role: manager
-      fast_vdma:
-        clock: clk_fast
-        role: subordinate
-      fast_vdma_csr:
-        clock: clk_fast
-        role: manager
-      i3c_controller:
-        clock: clk_fast
-        role: manager
-      i3c_target:
-        clock: clk_fast
-        role: manager
-      timers_csr:
-        clock: clk_fast
-        role: manager
-      uart_csr:
-        clock: clk_fast
-        role: manager
-      veer_eh2_ifu:
-        clock: clk_fast
-        role: subordinate
-      veer_eh2_lsu:
-        clock: clk_fast
-        role: subordinate
-      veer_el2_ifu:
-        clock: clk_fast
-        role: subordinate
-      veer_el2_lsu:
-        clock: clk_fast
-        role: subordinate
-default:
-  axi_max_reads: 2
-  clock: clk_fast
-  data_width: 64
-  protocol: axi4
-desc_version: 1.0
 name: ASoCaInt
-ports:
-  coral_npu_in:
-    clock: clk_fast
-    data_width: 128
-    protocol: axi4
-    role: subordinate
-  coral_npu_out:
-    clock: clk_fast
-    data_width: 128
-    protocol: axi4
-    role: manager
-  fast_vdma:
-    clock: clk_fast
-    data_width: 64
-    protocol: axi4
-    role: subordinate
-  fast_vdma_csr:
-    clock: clk_fast
-    data_width: 32
-    protocol: axi4_lite
-    role: manager
-  i3c_controller:
-    clock: clk_slow
-    data_width: 64
-    protocol: axi4
-    role: manager
-  i3c_target:
-    clock: clk_slow
-    data_width: 64
-    protocol: axi4
-    role: manager
-  timers_csr:
-    clock: clk_slow
-    data_width: 64
-    protocol: apb3
-    role: manager
-  uart_csr:
-    clock: clk_ahb
-    data_width: 64
-    protocol: ahb3
-    role: manager
-  veer_eh2_ifu:
-    clock: clk_fast
-    data_width: 64
-    protocol: axi4
-    role: subordinate
-  veer_eh2_lsu:
-    clock: clk_fast
-    data_width: 64
-    protocol: axi4
-    role: subordinate
-  veer_el2_ifu:
-    clock: clk_slow
-    data_width: 64
-    protocol: axi4
-    role: subordinate
-  veer_el2_lsu:
-    clock: clk_slow
-    data_width: 64
-    protocol: axi4
-    role: subordinate
 version: 0
+globals:
+  addr_width = 32
+defaults:
+  axi_max_reads = 2
+  clock = clk_fast
+  data_width = 64
+  protocol = axi4
+clocks:
+  clk_ahb = 100000000.0 Hz
+  clk_fast = 800000000.0 Hz
+  clk_slow = 300000000.0 Hz
+ports:
+  coral_npu_in - None
+    clock = clk_fast
+    data_width = 128
+    protocol = axi4
+    role = subordinate
+    edge to main_coral_npu_in
+  coral_npu_out - None
+    clock = clk_fast
+    data_width = 128
+    protocol = axi4
+    role = manager
+  fast_vdma - None
+    clock = clk_fast
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_fast_vdma
+  fast_vdma_csr - None
+    clock = clk_fast
+    data_width = 32
+    protocol = axi4lite
+    role = manager
+  i3c_controller - None
+    clock = clk_slow
+    data_width = 64
+    protocol = axi4
+    role = manager
+  i3c_target - None
+    clock = clk_slow
+    data_width = 64
+    protocol = axi4
+    role = manager
+  main_coral_npu_in - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  main_coral_npu_out - main
+    clock = clk_fast
+    role = manager
+    edge to coral_npu_out
+      protocol = True
+  main_fast_vdma - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  main_fast_vdma_csr - main
+    clock = clk_fast
+    role = manager
+    edge to fast_vdma_csr
+      protocol = True
+  main_i3c_controller - main
+    clock = clk_fast
+    role = manager
+    edge to i3c_controller
+      protocol = True
+  main_i3c_target - main
+    clock = clk_fast
+    role = manager
+    edge to i3c_target
+      protocol = True
+  main_timers_csr - main
+    clock = clk_fast
+    role = manager
+    edge to timers_csr
+      protocol = True
+  main_uart_csr - main
+    clock = clk_fast
+    role = manager
+    edge to uart_csr
+      protocol = True
+  main_veer_eh2_ifu - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  main_veer_eh2_lsu - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  main_veer_el2_ifu - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  main_veer_el2_lsu - main
+    clock = clk_fast
+    role = subordinate
+    edge to main_fast_vdma_csr
+    edge to main_timers_csr
+    edge to main_coral_npu_out
+    edge to main_i3c_controller
+    edge to main_i3c_target
+    edge to main_uart_csr
+  timers_csr - None
+    clock = clk_slow
+    data_width = 64
+    protocol = apb3
+    role = manager
+  uart_csr - None
+    clock = clk_ahb
+    data_width = 64
+    protocol = ahb3
+    role = manager
+  veer_eh2_ifu - None
+    clock = clk_fast
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_veer_eh2_ifu
+  veer_eh2_lsu - None
+    clock = clk_fast
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_veer_eh2_lsu
+  veer_el2_ifu - None
+    clock = clk_slow
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_veer_el2_ifu
+  veer_el2_lsu - None
+    clock = clk_slow
+    data_width = 64
+    protocol = axi4
+    role = subordinate
+    edge to main_veer_el2_lsu
+crossbars:
+  main
+    clock = clk_fast
+    subordinates:
+      main_coral_npu_in
+      main_fast_vdma
+      main_veer_eh2_ifu
+      main_veer_eh2_lsu
+      main_veer_el2_ifu
+      main_veer_el2_lsu
+    managers:
+      main_coral_npu_out
+      main_fast_vdma_csr
+      main_i3c_controller
+      main_i3c_target
+      main_timers_csr
+      main_uart_csr
+address maps:
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  i3c_target
+  1073741824
+  65535
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  i3c_controller
+  1073807360
+  65535
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  uart_csr
+  1073872896
+  65535
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  timers_csr
+  1073938432
+  65535
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  fast_vdma_csr
+  1342177280
+  65535
+  ['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
+  coral_npu_out
+  1610612736
+  268435455

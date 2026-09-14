@@ -31,7 +31,7 @@ connections:
       dst: coral_npu_out
     dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
       dst:
-      - pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite
+      - pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite
       - src
     main:
       main_coral_npu_out:
@@ -59,7 +59,7 @@ connections:
       dst: timers_csr
     pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
       dst: uart_csr
-    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite:
       dst: fast_vdma_csr
   ports:
     cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
@@ -92,7 +92,7 @@ connections:
       clk_i: clk_slow
     pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
       clk_i: clk_ahb
-    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+    pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite:
       clk_i: clk_fast
 external:
   interfaces:
@@ -189,7 +189,7 @@ ips:
     file: file:tests/out/modules/cores/axi_prconv_axi_ahb/module.yaml
     parameters:
       AxiIdWidth: 4
-  pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4_lite:
+  pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite:
     file: file:tests/out/modules/cores/axi_prconv_axi_axilite/module.yaml
     parameters:
       AxiAddrWidth: 32

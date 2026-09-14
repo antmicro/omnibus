@@ -3,7 +3,7 @@
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_i0 -
 {}
@@ -11,7 +11,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_i1 -
 {}
@@ -19,7 +19,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_i0 -
 {}
@@ -27,7 +27,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_i1 -
 {}
@@ -35,7 +35,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_i0 -
 {}
@@ -43,7 +43,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_i1 -
 {}
@@ -51,7 +51,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_i0 -
 {}
@@ -59,7 +59,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_i1 -
 {}
@@ -67,55 +67,55 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o1 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o2 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o3 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o4 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o5 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o6 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT o7 parent: None ==
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 == PORT x00_i0 parent: x00 ==
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_o0 -
 {}
@@ -125,7 +125,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x00_o0 -
 {}
@@ -135,7 +135,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x10_i0 -
 {}
@@ -143,7 +143,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x12_i0 -
 {}
@@ -151,7 +151,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_o0 -
 {}
@@ -161,7 +161,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x01_o0 -
 {}
@@ -171,7 +171,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x11_i0 -
 {}
@@ -179,7 +179,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x13_i0 -
 {}
@@ -187,7 +187,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_o0 -
 {}
@@ -197,7 +197,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x02_o0 -
 {}
@@ -207,7 +207,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x10_i1 -
 {}
@@ -215,7 +215,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x12_i1 -
 {}
@@ -223,7 +223,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_o0 -
 {}
@@ -233,7 +233,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 1
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x03_o0 -
 {}
@@ -243,7 +243,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x11_i1 -
 {}
@@ -251,7 +251,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x13_i1 -
 {}
@@ -259,7 +259,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x10_o0 -
 {}
@@ -269,7 +269,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x10_o0 -
 {}
@@ -279,7 +279,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x20_i0 -
 {}
@@ -287,7 +287,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x21_i0 -
 {}
@@ -295,7 +295,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x11_o0 -
 {}
@@ -305,7 +305,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x11_o0 -
 {}
@@ -315,7 +315,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x20_i1 -
 {}
@@ -323,7 +323,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x21_i1 -
 {}
@@ -331,7 +331,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x12_o0 -
 {}
@@ -341,7 +341,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x12_o0 -
 {}
@@ -351,7 +351,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x22_i0 -
 {}
@@ -359,7 +359,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x23_i0 -
 {}
@@ -367,7 +367,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x13_o0 -
 {}
@@ -377,7 +377,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 2
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x13_o0 -
 {}
@@ -387,7 +387,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x22_i1 -
 {}
@@ -395,7 +395,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to x23_i1 -
 {}
@@ -403,7 +403,7 @@ role: manager
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x20_o0 -
 {}
@@ -413,7 +413,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x20_o0 -
 {}
@@ -423,7 +423,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o0 -
 protocol: true
@@ -431,7 +431,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o1 -
 protocol: true
@@ -439,7 +439,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x21_o0 -
 {}
@@ -449,7 +449,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x21_o0 -
 {}
@@ -459,7 +459,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o2 -
 protocol: true
@@ -467,7 +467,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o3 -
 protocol: true
@@ -475,7 +475,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x22_o0 -
 {}
@@ -485,7 +485,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x22_o0 -
 {}
@@ -495,7 +495,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o4 -
 protocol: true
@@ -503,7 +503,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o5 -
 protocol: true
@@ -511,7 +511,7 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x23_o0 -
 {}
@@ -521,7 +521,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 3
-protocol: AXI4
+protocol: axi4
 role: subordinate
 - edge to x23_o0 -
 {}
@@ -531,7 +531,7 @@ role: subordinate
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o6 -
 protocol: true
@@ -539,344 +539,344 @@ protocol: true
 clock: clk
 data_width: 32
 id_width: 4
-protocol: AXI4
+protocol: axi4
 role: manager
 - edge to o7 -
 protocol: true
 ### COMPONENTS ###
 == COMP x00 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
+ports:
+  x00_i0:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x00_i1:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x00_o0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  x00_o1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
 == COMP x01 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
+ports:
+  x01_i0:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x01_i1:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x01_o0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  x01_o1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
 == COMP x02 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
+ports:
+  x02_i0:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x02_i1:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x02_o0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  x02_o1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
 == COMP x03 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 1
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: manager
 sub_id_width: 1
+ports:
+  x03_i0:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x03_i1:
+    clock = clk
+    data_width = 32
+    id_width = 1
+    protocol = axi4
+    role = subordinate
+  x03_o0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
+  x03_o1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = manager
 == COMP x10 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
 sub_id_width: 2
+ports:
+  x10_i0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x10_i1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x10_o0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
+  x10_o1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
 == COMP x11 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
 sub_id_width: 2
+ports:
+  x11_i0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x11_i1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x11_o0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
+  x11_o1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
 == COMP x12 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
 sub_id_width: 2
+ports:
+  x12_i0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x12_i1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x12_o0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
+  x12_o1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
 == COMP x13 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 2
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: manager
 sub_id_width: 2
+ports:
+  x13_i0:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x13_i1:
+    clock = clk
+    data_width = 32
+    id_width = 2
+    protocol = axi4
+    role = subordinate
+  x13_o0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
+  x13_o1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = manager
 == COMP x20 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
 sub_id_width: 3
+ports:
+  x20_i0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x20_i1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x20_o0:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
+  x20_o1:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
 == COMP x21 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
 sub_id_width: 3
+ports:
+  x21_i0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x21_i1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x21_o0:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
+  x21_o1:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
 == COMP x22 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
 sub_id_width: 3
+ports:
+  x22_i0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x22_i1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x22_o0:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
+  x22_o1:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
 == COMP x23 crossbar
 clock: clk
-ports:
-  i0:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    id_width: 3
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    id_width: 4
-    protocol: AXI4
-    role: manager
 sub_id_width: 3
+ports:
+  x23_i0:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x23_i1:
+    clock = clk
+    data_width = 32
+    id_width = 3
+    protocol = axi4
+    role = subordinate
+  x23_o0:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager
+  x23_o1:
+    clock = clk
+    data_width = 32
+    id_width = 4
+    protocol = axi4
+    role = manager

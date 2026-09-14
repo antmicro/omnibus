@@ -1,328 +1,437 @@
-address_map:
-  o0:
-    base: 0
-    size: 4096
-    to: o0
-  o1:
-    base: 4096
-    size: 4096
-    to: o1
-  o2:
-    base: 8192
-    size: 4096
-    to: o2
-  o3:
-    base: 12288
-    size: 4096
-    to: o3
-connections:
-  i0 -> x00.i0: {}
-  i1 -> x00.i1: {}
-  i2 -> x01.i0: {}
-  i3 -> x01.i1: {}
-  i4 -> x02.i0: {}
-  i5 -> x02.i1: {}
-  i6 -> x03.i0: {}
-  i7 -> x03.i1: {}
-  x00.o0 -> x10.i0: {}
-  x00.o1 -> x12.i0: {}
-  x01.o0 -> x11.i0: {}
-  x01.o1 -> x13.i0: {}
-  x02.o0 -> x10.i1: {}
-  x02.o1 -> x12.i1: {}
-  x03.o0 -> x11.i1: {}
-  x03.o1 -> x13.i1: {}
-  x10.o0 -> x20.i0: {}
-  x10.o1 -> x21.i0: {}
-  x11.o0 -> x20.i1: {}
-  x11.o1 -> x21.i1: {}
-  x12.o0 -> x22.i0: {}
-  x12.o1 -> x23.i0: {}
-  x13.o0 -> x22.i1: {}
-  x13.o1 -> x23.i1: {}
-  x20.o0 -> o0:
-    protocol: true
-  x20.o1 -> o1:
-    protocol: true
-  x21.o0 -> o2:
-    protocol: true
-  x21.o1 -> o3:
-    protocol: true
-  x22.o0 -> o4:
-    protocol: true
-  x22.o1 -> o5:
-    protocol: true
-  x23.o0 -> o6:
-    protocol: true
-  x23.o1 -> o7:
-    protocol: true
-crossbars:
-  x00:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x01:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x02:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x03:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x10:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x11:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x12:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x13:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x20:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x21:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x22:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-  x23:
-    clock: clk
-    ports:
-      i0:
-        clock: clk
-        role: subordinate
-      i1:
-        clock: clk
-        role: subordinate
-      o0:
-        clock: clk
-        role: manager
-      o1:
-        clock: clk
-        role: manager
-default:
-  clock: clk
-  data_width: 32
-  protocol: AXI4
-desc_version: 1.0
-global:
-  addr_width: 16
 name: butterfly
+version: 0
+globals:
+  addr_width = 16
+defaults:
+  clock = clk
+  data_width = 32
+  protocol = axi4
+clocks:
+  clk = n/a Hz
 ports:
-  i0:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i1:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i2:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i3:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i4:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i5:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i6:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  i7:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: subordinate
-  o0:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o1:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o2:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o3:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o4:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o5:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o6:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
-  o7:
-    clock: clk
-    data_width: 32
-    protocol: AXI4
-    role: manager
+  i0 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x00_i0
+  i1 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x00_i1
+  i2 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x01_i0
+  i3 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x01_i1
+  i4 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x02_i0
+  i5 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x02_i1
+  i6 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x03_i0
+  i7 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = subordinate
+    edge to x03_i1
+  o0 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o1 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o2 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o3 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o4 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o5 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o6 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  o7 - None
+    clock = clk
+    data_width = 32
+    protocol = axi4
+    role = manager
+  x00_i0 - x00
+    clock = clk
+    role = subordinate
+    edge to x00_o0
+    edge to x00_o1
+  x00_i1 - x00
+    clock = clk
+    role = subordinate
+    edge to x00_o0
+    edge to x00_o1
+  x00_o0 - x00
+    clock = clk
+    role = manager
+    edge to x10_i0
+  x00_o1 - x00
+    clock = clk
+    role = manager
+    edge to x12_i0
+  x01_i0 - x01
+    clock = clk
+    role = subordinate
+    edge to x01_o0
+    edge to x01_o1
+  x01_i1 - x01
+    clock = clk
+    role = subordinate
+    edge to x01_o0
+    edge to x01_o1
+  x01_o0 - x01
+    clock = clk
+    role = manager
+    edge to x11_i0
+  x01_o1 - x01
+    clock = clk
+    role = manager
+    edge to x13_i0
+  x02_i0 - x02
+    clock = clk
+    role = subordinate
+    edge to x02_o0
+    edge to x02_o1
+  x02_i1 - x02
+    clock = clk
+    role = subordinate
+    edge to x02_o0
+    edge to x02_o1
+  x02_o0 - x02
+    clock = clk
+    role = manager
+    edge to x10_i1
+  x02_o1 - x02
+    clock = clk
+    role = manager
+    edge to x12_i1
+  x03_i0 - x03
+    clock = clk
+    role = subordinate
+    edge to x03_o0
+    edge to x03_o1
+  x03_i1 - x03
+    clock = clk
+    role = subordinate
+    edge to x03_o0
+    edge to x03_o1
+  x03_o0 - x03
+    clock = clk
+    role = manager
+    edge to x11_i1
+  x03_o1 - x03
+    clock = clk
+    role = manager
+    edge to x13_i1
+  x10_i0 - x10
+    clock = clk
+    role = subordinate
+    edge to x10_o0
+    edge to x10_o1
+  x10_i1 - x10
+    clock = clk
+    role = subordinate
+    edge to x10_o0
+    edge to x10_o1
+  x10_o0 - x10
+    clock = clk
+    role = manager
+    edge to x20_i0
+  x10_o1 - x10
+    clock = clk
+    role = manager
+    edge to x21_i0
+  x11_i0 - x11
+    clock = clk
+    role = subordinate
+    edge to x11_o0
+    edge to x11_o1
+  x11_i1 - x11
+    clock = clk
+    role = subordinate
+    edge to x11_o0
+    edge to x11_o1
+  x11_o0 - x11
+    clock = clk
+    role = manager
+    edge to x20_i1
+  x11_o1 - x11
+    clock = clk
+    role = manager
+    edge to x21_i1
+  x12_i0 - x12
+    clock = clk
+    role = subordinate
+    edge to x12_o0
+    edge to x12_o1
+  x12_i1 - x12
+    clock = clk
+    role = subordinate
+    edge to x12_o0
+    edge to x12_o1
+  x12_o0 - x12
+    clock = clk
+    role = manager
+    edge to x22_i0
+  x12_o1 - x12
+    clock = clk
+    role = manager
+    edge to x23_i0
+  x13_i0 - x13
+    clock = clk
+    role = subordinate
+    edge to x13_o0
+    edge to x13_o1
+  x13_i1 - x13
+    clock = clk
+    role = subordinate
+    edge to x13_o0
+    edge to x13_o1
+  x13_o0 - x13
+    clock = clk
+    role = manager
+    edge to x22_i1
+  x13_o1 - x13
+    clock = clk
+    role = manager
+    edge to x23_i1
+  x20_i0 - x20
+    clock = clk
+    role = subordinate
+    edge to x20_o0
+    edge to x20_o1
+  x20_i1 - x20
+    clock = clk
+    role = subordinate
+    edge to x20_o0
+    edge to x20_o1
+  x20_o0 - x20
+    clock = clk
+    role = manager
+    edge to o0
+      protocol = True
+  x20_o1 - x20
+    clock = clk
+    role = manager
+    edge to o1
+      protocol = True
+  x21_i0 - x21
+    clock = clk
+    role = subordinate
+    edge to x21_o0
+    edge to x21_o1
+  x21_i1 - x21
+    clock = clk
+    role = subordinate
+    edge to x21_o0
+    edge to x21_o1
+  x21_o0 - x21
+    clock = clk
+    role = manager
+    edge to o2
+      protocol = True
+  x21_o1 - x21
+    clock = clk
+    role = manager
+    edge to o3
+      protocol = True
+  x22_i0 - x22
+    clock = clk
+    role = subordinate
+    edge to x22_o0
+    edge to x22_o1
+  x22_i1 - x22
+    clock = clk
+    role = subordinate
+    edge to x22_o0
+    edge to x22_o1
+  x22_o0 - x22
+    clock = clk
+    role = manager
+    edge to o4
+      protocol = True
+  x22_o1 - x22
+    clock = clk
+    role = manager
+    edge to o5
+      protocol = True
+  x23_i0 - x23
+    clock = clk
+    role = subordinate
+    edge to x23_o0
+    edge to x23_o1
+  x23_i1 - x23
+    clock = clk
+    role = subordinate
+    edge to x23_o0
+    edge to x23_o1
+  x23_o0 - x23
+    clock = clk
+    role = manager
+    edge to o6
+      protocol = True
+  x23_o1 - x23
+    clock = clk
+    role = manager
+    edge to o7
+      protocol = True
+crossbars:
+  x00
+    clock = clk
+    subordinates:
+      x00_i0
+      x00_i1
+    managers:
+      x00_o0
+      x00_o1
+  x01
+    clock = clk
+    subordinates:
+      x01_i0
+      x01_i1
+    managers:
+      x01_o0
+      x01_o1
+  x02
+    clock = clk
+    subordinates:
+      x02_i0
+      x02_i1
+    managers:
+      x02_o0
+      x02_o1
+  x03
+    clock = clk
+    subordinates:
+      x03_i0
+      x03_i1
+    managers:
+      x03_o0
+      x03_o1
+  x10
+    clock = clk
+    subordinates:
+      x10_i0
+      x10_i1
+    managers:
+      x10_o0
+      x10_o1
+  x11
+    clock = clk
+    subordinates:
+      x11_i0
+      x11_i1
+    managers:
+      x11_o0
+      x11_o1
+  x12
+    clock = clk
+    subordinates:
+      x12_i0
+      x12_i1
+    managers:
+      x12_o0
+      x12_o1
+  x13
+    clock = clk
+    subordinates:
+      x13_i0
+      x13_i1
+    managers:
+      x13_o0
+      x13_o1
+  x20
+    clock = clk
+    subordinates:
+      x20_i0
+      x20_i1
+    managers:
+      x20_o0
+      x20_o1
+  x21
+    clock = clk
+    subordinates:
+      x21_i0
+      x21_i1
+    managers:
+      x21_o0
+      x21_o1
+  x22
+    clock = clk
+    subordinates:
+      x22_i0
+      x22_i1
+    managers:
+      x22_o0
+      x22_o1
+  x23
+    clock = clk
+    subordinates:
+      x23_i0
+      x23_i1
+    managers:
+      x23_o0
+      x23_o1
+address maps:
+  ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+  o0
+  0
+  4096
+  ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+  o1
+  4096
+  4096
+  ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+  o2
+  8192
+  4096
+  ['i0', 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7']
+  o3
+  12288
+  4096
