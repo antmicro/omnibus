@@ -10,9 +10,11 @@ connections:
       dst: pout1
   ports:
     main:
-      clk_i: clk
+      clk_i: clk_i
+      rst_ni: rst_ni
     pr_conv_main_pout1_axi4_to_pout1_axi4lite:
-      clk_i: clk
+      clk_i: clk_i
+      rst_ni: rst_ni
 external:
   interfaces:
     in:
@@ -22,7 +24,8 @@ external:
     - pout2
   ports:
     in:
-    - clk
+    - clk_i
+    - rst_ni
 ips:
   main:
     file: file:tests/out/modules/cores/main/module.yaml

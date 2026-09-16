@@ -13,6 +13,17 @@ from ..types import MappedComponent
 
 filelist = []
 
+def set_clock_and_reset(ports, clk, prefix=""):
+    clk = clk.removeprefix("clk_")
+    clk = clk.removeprefix("clk")
+
+    if len(clk) > 0:
+        ports[f"{prefix}clk_i"] = f"clk_{clk}_i"
+        ports[f"{prefix}rst_ni"] = f"rst_{clk}_ni"
+    else:
+        ports[f"{prefix}clk_i"] = "clk_i"
+        ports[f"{prefix}rst_ni"] = "rst_ni"
+
 class PulpCrossbar(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,8 +83,7 @@ class PulpCrossbar(MappedComponent):
         filelist.append(str(os.path.join("src", f"axi_crossbar_{self.name}.sv")))
 
     def generate_hierarchy(self, ports, params):
-        port = next(iter(self.srcports.values()))
-        ports['clk_i'] = port.attributes['clock']
+        set_clock_and_reset(ports, next(iter(self.srcports.values())).attributes['clock'])
 
 class PulpCDC(MappedComponent):
     def __init__(self, *args, **kwargs):
@@ -98,8 +108,8 @@ class PulpCDC(MappedComponent):
         srcattr = next(iter(self.srcports.values())).attributes
         dstattr = next(iter(self.dstports.values())).attributes
 
-        ports['src_clk_i'] = srcattr['clock'] 
-        ports['dst_clk_i'] = dstattr['clock']
+        set_clock_and_reset(ports, srcattr['clock'], prefix="src_")
+        set_clock_and_reset(ports, dstattr['clock'], prefix="dst_")
 
         params['AxiDataWidth'] = srcattr['data_width']
         params['AxiIdWidth']   = srcattr['id_width']
@@ -129,7 +139,7 @@ class PulpDWConv(MappedComponent):
         srcattr = next(iter(self.srcports.values())).attributes
         dstattr = next(iter(self.dstports.values())).attributes
 
-        ports['clk_i'] = srcattr['clock']
+        set_clock_and_reset(ports, srcattr['clock'])
 
         params['AxiMaxReads']         = srcattr.get('axi_max_reads', self.defattr['axi_max_reads'])
         
@@ -161,8 +171,8 @@ class IWConv(MappedComponent):
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        ports['clk_i'] = srcattr['clock']
-        
+        set_clock_and_reset(ports, srcattr['clock'])
+
         params['AxiMaxReads']   = srcattr.get('axi_max_reads', self.defattr['axi_max_reads'])
 
         params['AxiDataWidth']  = srcattr['data_width']
@@ -199,8 +209,8 @@ class PulpPrAXIAPB(MappedComponent):
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        ports['clk_i'] = srcattr['clock']
-    
+        set_clock_and_reset(ports, srcattr['clock'])
+
         params['AxiDataWidth'] = srcattr['data_width']
         params['AxiAddrWidth'] = self.glbattr['addr_width']
 
@@ -228,8 +238,8 @@ class PulpPrAXIAXILite(MappedComponent):
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        ports['clk_i'] = srcattr['clock']
-    
+        set_clock_and_reset(ports, srcattr['clock'])
+
         params['AxiDataWidth'] = srcattr['data_width']
         params['AxiAddrWidth'] = self.glbattr['addr_width']
 
@@ -268,8 +278,8 @@ class PrAXIAHB(MappedComponent):
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        ports['clk_i'] = srcattr['clock']
-    
+        set_clock_and_reset(ports, srcattr['clock'])
+
         params['AxiIdWidth']   = srcattr['id_width']
 
 class Backend:
@@ -397,9 +407,16 @@ class Backend:
     
         # external clocks
         tree_ports = tree['external']['ports']
-        for name in self.clocks:
-            tree_ports['in'].append(name)    
-            
+        for clk in self.clocks:
+            clk = clk.removeprefix("clk_")
+            clk = clk.removeprefix("clk")
+
+            if len(clk) > 0:
+                tree_ports['in'].append(f"clk_{clk}_i")
+                tree_ports['in'].append(f"rst_{clk}_ni")
+            else:
+                tree_ports['in'].append("clk_i")
+                tree_ports['in'].append("rst_ni")
             
         # external ports (actually interfaces)
         tree_interfaces  = tree['external']['interfaces']

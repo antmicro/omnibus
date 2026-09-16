@@ -12,9 +12,6 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_src*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_dst*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_main*"
 
-//reset is not yet properly dealt with
-lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*rst*"
-
 //I do not know what to do with these
 //lint off so they dont pollute the output
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*free_clk*"
@@ -22,6 +19,7 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*scan_mode*
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*bus_clk*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*clk_override*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*force_halt*"
+lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*rst_l*"
 
 //unlikely to cause problems
 lint_off -rule SPLITVAR -file "*" -contents "*" -match "*bitwidth is 1*"

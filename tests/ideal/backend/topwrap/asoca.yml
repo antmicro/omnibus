@@ -63,37 +63,56 @@ connections:
       dst: fast_vdma_csr
   ports:
     cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
-      dst_clk_i: clk_slow
-      src_clk_i: clk_fast
+      dst_clk_i: clk_slow_i
+      dst_rst_ni: rst_slow_ni
+      src_clk_i: clk_fast_i
+      src_rst_ni: rst_fast_ni
     cdc_main_i3c_target_clk_fast_to_i3c_target_clk_slow:
-      dst_clk_i: clk_slow
-      src_clk_i: clk_fast
+      dst_clk_i: clk_slow_i
+      dst_rst_ni: rst_slow_ni
+      src_clk_i: clk_fast_i
+      src_rst_ni: rst_fast_ni
     cdc_main_timers_csr_clk_fast_to_timers_csr_clk_slow:
-      dst_clk_i: clk_slow
-      src_clk_i: clk_fast
+      dst_clk_i: clk_slow_i
+      dst_rst_ni: rst_slow_ni
+      src_clk_i: clk_fast_i
+      src_rst_ni: rst_fast_ni
     cdc_main_uart_csr_clk_fast_to_uart_csr_clk_ahb:
-      dst_clk_i: clk_ahb
-      src_clk_i: clk_fast
+      dst_clk_i: clk_ahb_i
+      dst_rst_ni: rst_ahb_ni
+      src_clk_i: clk_fast_i
+      src_rst_ni: rst_fast_ni
     cdc_veer_el2_ifu_clk_slow_to_main_veer_el2_ifu_clk_fast:
-      dst_clk_i: clk_fast
-      src_clk_i: clk_slow
+      dst_clk_i: clk_fast_i
+      dst_rst_ni: rst_fast_ni
+      src_clk_i: clk_slow_i
+      src_rst_ni: rst_slow_ni
     cdc_veer_el2_lsu_clk_slow_to_main_veer_el2_lsu_clk_fast:
-      dst_clk_i: clk_fast
-      src_clk_i: clk_slow
+      dst_clk_i: clk_fast_i
+      dst_rst_ni: rst_fast_ni
+      src_clk_i: clk_slow_i
+      src_rst_ni: rst_slow_ni
     dw_conv_coral_npu_in_128_to_main_coral_npu_in_64:
-      clk_i: clk_fast
+      clk_i: clk_fast_i
+      rst_ni: rst_fast_ni
     dw_conv_main_coral_npu_out_64_to_coral_npu_out_128:
-      clk_i: clk_fast
+      clk_i: clk_fast_i
+      rst_ni: rst_fast_ni
     dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
-      clk_i: clk_fast
+      clk_i: clk_fast_i
+      rst_ni: rst_fast_ni
     main:
-      clk_i: clk_fast
+      clk_i: clk_fast_i
+      rst_ni: rst_fast_ni
     pr_conv_cdc_timers_csr_clk_slow_axi4_to_timers_csr_apb3:
-      clk_i: clk_slow
+      clk_i: clk_slow_i
+      rst_ni: rst_slow_ni
     pr_conv_cdc_uart_csr_clk_ahb_axi4_to_uart_csr_ahb3:
-      clk_i: clk_ahb
+      clk_i: clk_ahb_i
+      rst_ni: rst_ahb_ni
     pr_conv_dw_conv_fast_vdma_csr_32_axi4_to_fast_vdma_csr_axi4lite:
-      clk_i: clk_fast
+      clk_i: clk_fast_i
+      rst_ni: rst_fast_ni
 external:
   interfaces:
     in:
@@ -112,9 +131,12 @@ external:
     - uart_csr
   ports:
     in:
-    - clk_slow
-    - clk_fast
-    - clk_ahb
+    - clk_slow_i
+    - rst_slow_ni
+    - clk_fast_i
+    - rst_fast_ni
+    - clk_ahb_i
+    - rst_ahb_ni
 ips:
   cdc_main_i3c_controller_clk_fast_to_i3c_controller_clk_slow:
     file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml

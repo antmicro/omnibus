@@ -28,19 +28,27 @@ connections:
       - src
   ports:
     cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
-      dst_clk_i: clk_bus
-      src_clk_i: clk_cpu
+      dst_clk_i: clk_bus_i
+      dst_rst_ni: rst_bus_ni
+      src_clk_i: clk_cpu_i
+      src_rst_ni: rst_cpu_ni
     cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
-      dst_clk_i: clk_lpp
-      src_clk_i: clk_bus
+      dst_clk_i: clk_lpp_i
+      dst_rst_ni: rst_lpp_ni
+      src_clk_i: clk_bus_i
+      src_rst_ni: rst_bus_ni
     pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3:
-      clk_i: clk_lpp
+      clk_i: clk_lpp_i
+      rst_ni: rst_lpp_ni
     pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3:
-      clk_i: clk_lpp
+      clk_i: clk_lpp_i
+      rst_ni: rst_lpp_ni
     sb_cpu:
-      clk_i: clk_bus
+      clk_i: clk_bus_i
+      rst_ni: rst_bus_ni
     sb_lpp:
-      clk_i: clk_lpp
+      clk_i: clk_lpp_i
+      rst_ni: rst_lpp_ni
 external:
   interfaces:
     in:
@@ -52,9 +60,12 @@ external:
     - apb_i2c
   ports:
     in:
-    - clk_bus
-    - clk_cpu
-    - clk_lpp
+    - clk_bus_i
+    - rst_bus_ni
+    - clk_cpu_i
+    - rst_cpu_ni
+    - clk_lpp_i
+    - rst_lpp_ni
 ips:
   cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
     file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
