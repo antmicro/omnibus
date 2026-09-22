@@ -21,13 +21,15 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*clk_overri
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*force_halt*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*rst_l*"
 
+//some signals are not used by the bridge
+lint_off -rule UNUSEDSIGNAL -file "out/src/axi_prconv_axi_ahb.sv"
+
 //unlikely to cause problems
 lint_off -rule SPLITVAR -file "*" -contents "*" -match "*bitwidth is 1*"
 lint_off -rule GENUNNAMED
 
-//modules many modules/interfaces in single file
-//also some cannot be changed anyway 
-lint_off -rule DECLFILENAME 
+//rvdff is located in beh_lib
+lint_off -rule DECLFILENAME -file "out/src/beh_lib.sv"
 
 //not good but should not cause problems, at least for tests
 lint_off -rule IMPORTSTAR
@@ -42,4 +44,4 @@ lint_off -rule USERWARN -file "*common_cells/src/deprecated/cf_math_pkg.sv*" -co
 lint_off -rule UNOPTFLAT -file "*common_cells/*"
 lint_off -rule UNOPTFLAT -file "*axi/*"
 //taken from VeeR
-lint_off -rule UNOPTFLAT -file "*axi_pr_axi_ahb.sv*"
+lint_off -rule UNOPTFLAT -file "*axi_prconv_axi_ahb.sv*"

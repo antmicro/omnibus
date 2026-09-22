@@ -92,9 +92,9 @@ ips:
       AxiDataWidth: 32
       AxiIdWidth: 2
   sb_cpu:
-    file: file:tests/out/modules/cores/sb_cpu/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_sb_cpu/module.yaml
     parameters: {}
   sb_lpp:
-    file: file:tests/out/modules/cores/sb_lpp/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_sb_lpp/module.yaml
     parameters: {}
 name: MyInterconnect

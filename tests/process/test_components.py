@@ -9,7 +9,7 @@ from omnibus import InterconnectBuilder
 # These tests check whether parameters are properly propagated and components properly inserted
 class TestComponents:
     def _test(self, name, directory="examples"):
-        ic = InterconnectBuilder(frontend="yaml") 
+        ic = InterconnectBuilder(frontend="yaml")
 
         ic.read_yaml(f"{directory}/{name}.yml")
         ic.propagate_parameters()
@@ -17,9 +17,12 @@ class TestComponents:
         ic._print_set_output("tests/output.txt")
         ic._print_ports()
         ic._print_components()
-        
-        assert 0 == subprocess.call(f"diff -y tests/output.txt tests/ideal/process/components/{name}.txt", shell=True)
-        
+
+        assert 0 == subprocess.call(
+            f"diff -y tests/output.txt tests/ideal/process/components/{name}.txt",
+            shell=True,
+        )
+
     def test_simple(self):
         self._test("simple")
 
@@ -28,7 +31,7 @@ class TestComponents:
 
     def test_butterfly(self):
         self._test("butterfly")
-        
+
     def test_asoca(self):
         self._test("asoca")
 

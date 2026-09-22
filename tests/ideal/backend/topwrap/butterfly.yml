@@ -139,39 +139,39 @@ external:
     - rst_ni
 ips:
   x00:
-    file: file:tests/out/modules/cores/x00/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x00/module.yaml
     parameters: {}
   x01:
-    file: file:tests/out/modules/cores/x01/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x01/module.yaml
     parameters: {}
   x02:
-    file: file:tests/out/modules/cores/x02/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x02/module.yaml
     parameters: {}
   x03:
-    file: file:tests/out/modules/cores/x03/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x03/module.yaml
     parameters: {}
   x10:
-    file: file:tests/out/modules/cores/x10/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x10/module.yaml
     parameters: {}
   x11:
-    file: file:tests/out/modules/cores/x11/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x11/module.yaml
     parameters: {}
   x12:
-    file: file:tests/out/modules/cores/x12/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x12/module.yaml
     parameters: {}
   x13:
-    file: file:tests/out/modules/cores/x13/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x13/module.yaml
     parameters: {}
   x20:
-    file: file:tests/out/modules/cores/x20/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x20/module.yaml
     parameters: {}
   x21:
-    file: file:tests/out/modules/cores/x21/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x21/module.yaml
     parameters: {}
   x22:
-    file: file:tests/out/modules/cores/x22/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x22/module.yaml
     parameters: {}
   x23:
-    file: file:tests/out/modules/cores/x23/module.yaml
+    file: file:tests/out/modules/cores/axi_crossbar_x23/module.yaml
     parameters: {}
 name: butterfly

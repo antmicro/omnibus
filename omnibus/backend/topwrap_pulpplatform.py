@@ -13,6 +13,7 @@ from ..types import MappedComponent
 
 filelist = []
 
+
 def set_clock_and_reset(ports, clk, prefix=""):
     clk = clk.removeprefix("clk_")
     clk = clk.removeprefix("clk")
@@ -24,37 +25,43 @@ def set_clock_and_reset(ports, clk, prefix=""):
         ports[f"{prefix}clk_i"] = "clk_i"
         ports[f"{prefix}rst_ni"] = "rst_ni"
 
+
 class PulpCrossbar(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = self.name
+        self.core = f"axi_crossbar_{self.name}"
 
-    def generate_verilog(self, outdir, exists):
-        #it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role 
-        #therefore swap them internally
+    def generate_verilog(self, outdir, exists, errors, warns):
+        # it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role
+        # therefore swap them internally
         plugin_path = resources.files("omnibus")
         sys.path.append(os.path.join(plugin_path, "third_party", "axi", "scripts"))
         import axi_intercon_gen
 
-        slaves      = {}
-        masters     = {}
-        
+        slaves = {}
+        masters = {}
+
         for portname, port in self.srcports.items():
-            masters[portname] = {"id_width": port.attributes['id_width'], "slaves": list(self.dstports.keys())}
+            masters[portname] = {
+                "id_width": port.attributes["id_width"],
+                "slaves": list(self.dstports.keys()),
+            }
 
         for portname in self.dstports:
             offset = 0
-            size   = 0
-            
+            size = 0
+
             for entry in self.address_map:
                 if entry.dest == portname:
                     offset = entry.base
-                    size   = entry.size
+                    size = entry.size
                     break
-            
+
             if size == 0:
-                print(f"WARNING: rule of size 0 or lack of rule in crossbar {self.name} leading to port {portname}")
-                    
+                warns.append(
+                    f"WARNING: rule of size 0 or lack of rule in crossbar {self.name} leading to port {portname}"
+                )
+
             slaves[portname] = {"offset": offset, "size": size}
 
         with tempfile.NamedTemporaryFile("w") as file:
@@ -67,220 +74,240 @@ class PulpCrossbar(MappedComponent):
                 },
                 "vlnv": f"vendor:library:axi_crossbar_{self.name}:1.0",
             }
-        
-            yaml = ruamel.yaml.YAML(typ='safe')
+
+            yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
             yaml.dump(config, file)
-        
+
             prevdir = os.getcwd()
             os.chdir(outdir)
             save_stdout = sys.stdout
-            with open(os.devnull, 'w') as sys.stdout:
-                axi_intercon_gen.AxiIntercon(self.name, file.name).write()
+            with open(os.devnull, "w") as sys.stdout:
+                axi_intercon_gen.AxiIntercon(
+                    f"axi_crossbar_{self.name}", file.name
+                ).write()
             sys.stdout = save_stdout
             os.chdir(prevdir)
 
         filelist.append(str(os.path.join("src", f"axi_crossbar_{self.name}.sv")))
 
     def generate_hierarchy(self, ports, params):
-        set_clock_and_reset(ports, next(iter(self.srcports.values())).attributes['clock'])
+        set_clock_and_reset(
+            ports, next(iter(self.srcports.values())).attributes["clock"]
+        )
+
 
 class PulpCDC(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_cdc_wrapper'
+        self.core = "axi_cdc_wrapper"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('PulpCDC'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpCDC"):
             return
-        exists['PulpCDC'] = True
+        exists["PulpCDC"] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
 
-        shutil.copyfile(
-            os.path.join(src, "axi_cdc.sv"), 
-            os.path.join(dst, "axi_cdc_wrapper.sv"))
+        filename = f"{self.core}.sv"
+        shutil.copyfile(os.path.join(src, filename), os.path.join(dst, filename))
 
-        filelist.append(str(os.path.join("src", "axi_cdc_wrapper.sv")))
+        filelist.append(str(os.path.join("src", filename)))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
         dstattr = next(iter(self.dstports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'], prefix="src_")
-        set_clock_and_reset(ports, dstattr['clock'], prefix="dst_")
+        set_clock_and_reset(ports, srcattr["clock"], prefix="src_")
+        set_clock_and_reset(ports, dstattr["clock"], prefix="dst_")
 
-        params['AxiDataWidth'] = srcattr['data_width']
-        params['AxiIdWidth']   = srcattr['id_width']
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiIdWidth"] = srcattr["id_width"]
 
-        params['AxiAddrWidth'] = self.glbattr['addr_width']
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
+
 
 class PulpDWConv(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_dw_conv_wrapper'
+        self.core = "axi_dw_conv_wrapper"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('PulpDWConv'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpDWConv"):
             return
-        exists['PulpDWConv'] = True
+        exists["PulpDWConv"] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
 
+        filename = f"{self.core}.sv"
         shutil.copyfile(
-            os.path.join(src, "axi_dw_converter.sv"), 
-            os.path.join(dst, "axi_dw_converter_wrapper.sv"))
+            os.path.join(src, filename),
+            os.path.join(dst, filename),
+        )
 
-        filelist.append(str(os.path.join("src", "axi_dw_converter_wrapper.sv")))
+        filelist.append(str(os.path.join("src", filename)))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
         dstattr = next(iter(self.dstports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'])
+        set_clock_and_reset(ports, srcattr["clock"])
 
-        params['AxiMaxReads']         = srcattr.get('axi_max_reads', self.defattr['axi_max_reads'])
-        
-        params['AxiSrcPortDataWidth'] = srcattr['data_width']
-        params['AxiDstPortDataWidth'] = dstattr['data_width']
-        params['AxiIdWidth']          = srcattr['id_width']
+        params["AxiMaxReads"] = srcattr.get(
+            "axi_max_reads", self.defattr["axi_max_reads"]
+        )
 
-        params['AxiAddrWidth']        = self.glbattr['addr_width']
+        params["AxiSrcPortDataWidth"] = srcattr["data_width"]
+        params["AxiDstPortDataWidth"] = dstattr["data_width"]
+        params["AxiIdWidth"] = srcattr["id_width"]
+
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
+
 
 class IWConv(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_idwidth_expander'
+        self.core = "axi_idwidth_expander"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('IWConv'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("IWConv"):
             return
-        exists['IWConv'] = True
+        exists["IWConv"] = True
 
         src = os.path.join(resources.files("omnibus"), "modules")
         dst = os.path.join(outdir, "src")
 
+        filename = f"{self.core}.sv"
         shutil.copyfile(
-            os.path.join(src, "axi_idwidth_expander.sv"), 
-            os.path.join(dst, "axi_idwidth_expander.sv"))
+            os.path.join(src, filename),
+            os.path.join(dst, filename),
+        )
 
-        filelist.append(str(os.path.join("src", "axi_idwidth_expander.sv")))
+        filelist.append(str(os.path.join("src", filename)))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'])
+        set_clock_and_reset(ports, srcattr["clock"])
 
-        params['AxiMaxReads']   = srcattr.get('axi_max_reads', self.defattr['axi_max_reads'])
+        params["AxiMaxReads"] = srcattr.get(
+            "axi_max_reads", self.defattr["axi_max_reads"]
+        )
 
-        params['AxiDataWidth']  = srcattr['data_width']
-        params['AxiSrcIdWidth'] = srcattr['id_width']
-        params['AxiDstIdWidth'] = srcattr['id_width']
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiSrcIdWidth"] = srcattr["id_width"]
+        params["AxiDstIdWidth"] = srcattr["id_width"]
 
-        params['AxiAddrWidth']  = self.globals['addr_width']
+        params["AxiAddrWidth"] = self.globals["addr_width"]
+
 
 class PulpPrAXIAPB(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_prconv_axi_apb'
+        self.core = "axi_prconv_axi_apb"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('PulpPrAXIAPB'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpPrAXIAPB"):
             return
-        exists['PulpPrAXIAPB'] = True
+        exists["PulpPrAXIAPB"] = True
 
-        src    = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
-        dst    = os.path.join(outdir, "src")
-        inf    = os.path.join(resources.files("omnibus"), "interfaces")
+        src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
+        dst = os.path.join(outdir, "src")
+        inf = os.path.join(resources.files("omnibus"), "interfaces")
         dstinf = os.path.join(outdir, "modules", "interfaces")
 
+        filename = f"{self.core}.sv"
         shutil.copyfile(
-            os.path.join(src, "axi_pr_axi_apb.sv"), 
-            os.path.join(dst, "axi_pr_axi_apb.sv"))
-    
-        shutil.copyfile(
-            os.path.join(inf,    "apb.yml"), 
-            os.path.join(dstinf, "apb.yml"))
+            os.path.join(src, filename),
+            os.path.join(dst, filename),
+        )
 
-        filelist.append(str(os.path.join("src", "axi_pr_axi_apb.sv")))
+        shutil.copyfile(os.path.join(inf, "apb.yml"), os.path.join(dstinf, "apb.yml"))
+
+        filelist.append(str(os.path.join("src", filename)))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'])
+        set_clock_and_reset(ports, srcattr["clock"])
 
-        params['AxiDataWidth'] = srcattr['data_width']
-        params['AxiAddrWidth'] = self.glbattr['addr_width']
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
 
-        params['AxiIdWidth']   = srcattr['id_width']
+        params["AxiIdWidth"] = srcattr["id_width"]
+
 
 class PulpPrAXIAXILite(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_prconv_axi_axilite'
+        self.core = "axi_prconv_axi_axilite"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('PulpPrAXIAXILite'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpPrAXIAXILite"):
             return
-        exists['PulpPrAXIAXILite'] = True
+        exists["PulpPrAXIAXILite"] = True
 
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
 
+        filename = f"{self.core}.sv"
         shutil.copyfile(
-            os.path.join(src, "axi_pr_axi_axilite.sv"), 
-            os.path.join(dst, "axi_pr_axi_axilite.sv"))
+            os.path.join(src, filename),
+            os.path.join(dst, filename),
+        )
 
-        filelist.append(str(os.path.join("src", "axi_pr_axi_axilite.sv")))
+        filelist.append(str(os.path.join("src", filename)))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'])
+        set_clock_and_reset(ports, srcattr["clock"])
 
-        params['AxiDataWidth'] = srcattr['data_width']
-        params['AxiAddrWidth'] = self.glbattr['addr_width']
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
 
-        params['AxiIdWidth']   = srcattr['id_width']
+        params["AxiIdWidth"] = srcattr["id_width"]
+
 
 class PrAXIAHB(MappedComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ip = 'axi_prconv_axi_ahb'
+        self.core = "axi_prconv_axi_ahb"
 
-    def generate_verilog(self, outdir, exists):
-        if exists.get('PulpPrAXIAHB'):
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpPrAXIAHB"):
             return
-        exists['PulpPrAXIAHB'] = True
+        exists["PulpPrAXIAHB"] = True
 
-        src    = os.path.join(resources.files("omnibus"), "modules")
-        dst    = os.path.join(outdir, "src")
-        inf    = os.path.join(resources.files("omnibus"), "interfaces")
+        src = os.path.join(resources.files("omnibus"), "modules")
+        dst = os.path.join(outdir, "src")
+        inf = os.path.join(resources.files("omnibus"), "interfaces")
         dstinf = os.path.join(outdir, "modules", "interfaces")
 
+        filename = f"{self.core}.sv"
         shutil.copyfile(
-            os.path.join(src, "axi_pr_axi_ahb.sv"), 
-            os.path.join(dst, "axi_pr_axi_ahb.sv"))
+            os.path.join(src, filename),
+            os.path.join(dst, filename),
+        )
 
         shutil.copyfile(
-            os.path.join(src, "beh_lib.sv"), 
-            os.path.join(dst, "beh_lib.sv"))
+            os.path.join(src, "beh_lib.sv"), os.path.join(dst, "beh_lib.sv")
+        )
 
-        shutil.copyfile(
-            os.path.join(inf,    "ahb.yml"), 
-            os.path.join(dstinf, "ahb.yml"))
+        shutil.copyfile(os.path.join(inf, "ahb.yml"), os.path.join(dstinf, "ahb.yml"))
 
-        filelist.append(str(os.path.join("src", "axi_pr_axi_ahb.sv")))
+        filelist.append(str(os.path.join("src", filename)))
         filelist.append(str(os.path.join("src", "beh_lib.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
-        set_clock_and_reset(ports, srcattr['clock'])
+        set_clock_and_reset(ports, srcattr["clock"])
 
-        params['AxiIdWidth']   = srcattr['id_width']
+        params["AxiIdWidth"] = srcattr["id_width"]
+
 
 class Backend:
     """
@@ -288,28 +315,18 @@ class Backend:
 
     This backend generates components from pulpplatform/axi and creates output readable by topwrap
     It requires somewhat large number of external commands due to how topwrap operates
-    See .ci.yml to see what is necessary to fully build existing example
+    See .ci.yml and tests/test_topwrapintegration.py to see what is necessary to fully build existing example
 
-    It contains 3 internal methods:
+    It contains 2 internal methods:
         map_components     - creates mapping from internal abstract component to real modules
-        generate_hierarchy - generate real modules and create final topwrap hierarchy file 
+        generate_hierarchy - generate real modules and create final topwrap hierarchy file
     """
+
     def __init__(self):
         self.parse_global = {}
-        self.parse_default = {
-            "axi_max_reads" : self._parse_positive_int
-        }
+        self.parse_default = {"axi_max_reads": self._parse_positive_int}
 
-        self.parse_connections = {
-            "axi_max_reads" : self._parse_positive_int
-        }
-
-    def _parse_axi_max_reads(self, val, where):
-        if type(val) is not int or val  < 1:
-            self.errors.append(f"ERROR: in {where}, 'axi_max_reads' takes positive int as an argument")
-            return 0 
-    
-        return val 
+        self.parse_connections = {"axi_max_reads": self._parse_positive_int}
 
     def generate(self, outdir):
         """Convenience method for internal operation"""
@@ -323,176 +340,188 @@ class Backend:
         Must be called after all internal processing is done
         """
 
-        #populate defaults
-        self.defaults['axi_max_reads'] = self.defaults.get('axi_max_reads', 1)
+        # populate defaults
+        self.defaults["axi_max_reads"] = self.defaults.get("axi_max_reads", 1)
 
         registry = {
-            'crossbar': PulpCrossbar,
-            'dw_conv' : PulpDWConv,
-            'cdc'     : PulpCDC,
-            'iw_conv' : IWConv,
-            'pr_conv' : {'axiaxilite': PulpPrAXIAXILite,
-                         'axiapb'    : PulpPrAXIAPB,
-                         'axiahb'    : PrAXIAHB
-                        }
-            }
+            "crossbar": PulpCrossbar,
+            "dw_conv": PulpDWConv,
+            "cdc": PulpCDC,
+            "iw_conv": IWConv,
+            "pr_conv": {
+                "axiaxilite": PulpPrAXIAXILite,
+                "axiapb": PulpPrAXIAPB,
+                "axiahb": PrAXIAHB,
+            },
+        }
 
         self.real_components = []
 
-         #TODO: in the future when proper mapping is implemented, this should include actual choice 
+        # TODO: in the future when proper mapping is implemented, this should include actual choice
         for name, component in self.components.items():
             srcattr = self.ports[component.srcports[0]].attributes
             dstattr = self.ports[component.dstports[0]].attributes
 
-            if component.kind == 'pr_conv':
-                srcattr = srcattr['protocol'].lower()
-                dstattr = dstattr['protocol'].lower()
-                
-                if srcattr not in ['axi', 'axi4']:
-                    print(f"ERROR: invalid protocol source, found '{srcattr}' but the only valid one is 'axi4'")
+            if component.kind == "pr_conv":
+                srcattr = srcattr["protocol"]
+                dstattr = dstattr["protocol"]
+
+                if srcattr != "axi4":
+                    self.errors.append(
+                        f"ERROR: invalid protocol source, found '{srcattr}' but the only valid one is 'axi4'"
+                    )
                     return
 
-                if   dstattr in ['ahb', 'ahb3']:
-                    self.real_components.append(registry['pr_conv']['axiahb'](name, self.globals, self.defaults, component.address_map))
-                elif dstattr in ['apb', 'apb3']:
-                    self.real_components.append(registry['pr_conv']['axiapb'](name, self.globals, self.defaults, component.address_map))
-                elif dstattr in ['axi4lite', 'axilite', 'axi_lite', 'axi4_lite', 'axi lite', 'axi4 lite']:
-                    self.real_components.append(registry['pr_conv']['axiaxilite'](name, self.globals, self.defaults, component.address_map))
+                if dstattr == "ahb3":
+                    self.real_components.append(
+                        registry["pr_conv"]["axiahb"](
+                            name, self.globals, self.defaults, component.address_map
+                        )
+                    )
+                elif dstattr == "apb3":
+                    self.real_components.append(
+                        registry["pr_conv"]["axiapb"](
+                            name, self.globals, self.defaults, component.address_map
+                        )
+                    )
+                elif dstattr == "axi4lite":
+                    self.real_components.append(
+                        registry["pr_conv"]["axiaxilite"](
+                            name, self.globals, self.defaults, component.address_map
+                        )
+                    )
                 else:
-                    print(f"ERROR: invalid protocol destination, found '{dstattr}' but the only valid ones are 'ahb3', 'apb3', 'axi4_lite'")
+                    self.errors.append(
+                        f"ERROR: invalid protocol destination, found '{dstattr}' but the only valid ones are 'ahb3', 'apb3', 'axi4_lite'"
+                    )
             else:
-                
-                self.real_components.append(registry[component.kind](name, self.globals, self.defaults, component.address_map))
+                self.real_components.append(
+                    registry[component.kind](
+                        name, self.globals, self.defaults, component.address_map
+                    )
+                )
 
             for portname in component.srcports + component.dstports:
                 port = self.ports[portname]
-                if port.attributes['role'] == "subordinate":
+                if port.attributes["role"] == "subordinate":
                     self.real_components[-1].srcports[portname] = port
                 else:
                     self.real_components[-1].dstports[portname] = port
-    
+
     def generate_hierarchy(self, outdir):
         """
         Generate verilog files and topwrap hierarchy so the final output can be generated
-    
+
         Must be called after map_components()
-    
-        Currently hardcoded to use modules from pulp-platform/axi
         """
 
-        os.makedirs(os.path.join(outdir, 'modules', 'interfaces'), exist_ok=True)
+        os.makedirs(os.path.join(outdir, "modules", "interfaces"), exist_ok=True)
 
-        with open('topwrap.yaml', 'w') as file:
-            yaml = ruamel.yaml.YAML(typ='safe')
+        with open("topwrap.yaml", "w") as file:
+            yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
-            yaml.dump({'repositories': {'repo': f"file:{os.path.join(outdir, 'modules')}"}}, file)
+            yaml.dump(
+                {"repositories": {"repo": f"file:{os.path.join(outdir, 'modules')}"}},
+                file,
+            )
 
         exists = {}
-        #generate verilog files
+        # generate verilog files
         for comp in self.real_components:
-            comp.generate_verilog(outdir, exists)
-     
-        #generate topwrap
+            comp.generate_verilog(outdir, exists, self.errors, self.warns)
+
+        # generate topwrap
         tree = {
-            'name': self.name,
-            'ips': {}, 
-            'connections': {
-                'ports': {}, 
-                'interfaces': {}}, 
-            'external': {
-                'ports': {'in': []},
-                'interfaces': {'in': [], 'out': []}
-            }
-        } 
-    
+            "name": self.name,
+            "ips": {},
+            "connections": {"ports": {}, "interfaces": {}},
+            "external": {"ports": {"in": []}, "interfaces": {"in": [], "out": []}},
+        }
+
         # external clocks
-        tree_ports = tree['external']['ports']
+        tree_ports = tree["external"]["ports"]
         for clk in self.clocks:
             clk = clk.removeprefix("clk_")
             clk = clk.removeprefix("clk")
 
             if len(clk) > 0:
-                tree_ports['in'].append(f"clk_{clk}_i")
-                tree_ports['in'].append(f"rst_{clk}_ni")
+                tree_ports["in"].append(f"clk_{clk}_i")
+                tree_ports["in"].append(f"rst_{clk}_ni")
             else:
-                tree_ports['in'].append("clk_i")
-                tree_ports['in'].append("rst_ni")
-            
+                tree_ports["in"].append("clk_i")
+                tree_ports["in"].append("rst_ni")
+
         # external ports (actually interfaces)
-        tree_interfaces  = tree['external']['interfaces']
+        tree_interfaces = tree["external"]["interfaces"]
         for name, port in self.ports.items():
             if port.parent is not None:
                 continue
-    
-            if port.attributes['role'] == 'subordinate':
-                tree_interfaces['in'].append(name)
+
+            if port.attributes["role"] == "subordinate":
+                tree_interfaces["in"].append(name)
             else:
-                tree_interfaces['out'].append(name)
+                tree_interfaces["out"].append(name)
 
         for comp in self.real_components:
-            tree['ips'][comp.name] = {
-                'file'      : f"file:{os.path.join(outdir, 'modules', 'cores', comp.ip, 'module.yaml')}",
-                'parameters': {}
-                }
+            tree["ips"][comp.name] = {
+                "file": f"file:{os.path.join(outdir, 'modules', 'cores', comp.core, 'module.yaml')}",
+                "parameters": {},
+            }
 
-
-            tree['connections']['interfaces'][comp.name] = {}
-            tree['connections']['ports']     [comp.name] = {}
+            tree["connections"]["interfaces"][comp.name] = {}
+            tree["connections"]["ports"][comp.name] = {}
 
             comp.generate_hierarchy(
-                ports  = tree['connections']['ports'][comp.name],
-                params = tree['ips'][comp.name]['parameters']
-                )
+                ports=tree["connections"]["ports"][comp.name],
+                params=tree["ips"][comp.name]["parameters"],
+            )
 
         for portname, port in self.ports.items():
             for dest in port.edges:
                 destname = dest.dest
                 destport = self.ports[destname]
-    
-                #connections are only added between components
+
+                # connections are only added between components
                 if port.parent == destport.parent:
                     continue
-    
+
                 portcomp = self.components.get(port.parent)
                 destcomp = self.components.get(destport.parent)
-    
-                #interfaces can only be defined from IPs 
-                #ensure we are not in external interface
-                #TODO: this is a bit ugly, find some nicer way
+
+                # interfaces can only be defined from IPs
+                # ensure we are not in external interface
                 if port.parent is None:
-                    ip = tree['connections']['interfaces'][destport.parent]
-    
-                    if destcomp.kind == 'crossbar':
-                        ip[destname] = portname
+                    core = tree["connections"]["interfaces"][destport.parent]
+
+                    if destcomp.kind == "crossbar":
+                        core[destname] = portname
                     else:
-                        ip['src'] = portname
+                        core["src"] = portname
                 elif destport.parent is None:
-                    ip = tree['connections']['interfaces'][port.parent]
-    
-                    if portcomp.kind == 'crossbar':
-                        ip[portname] = destname
+                    core = tree["connections"]["interfaces"][port.parent]
+
+                    if portcomp.kind == "crossbar":
+                        core[portname] = destname
                     else:
-                        ip['dst'] = destname
+                        core["dst"] = destname
                 else:
-                    ip = tree['connections']['interfaces'][port.parent]
-    
-                    if portcomp.kind == 'crossbar' and destcomp.kind == 'crossbar':
-                        ip[portname] = [destport.parent, destname]
-                    elif portcomp.kind == 'crossbar':
-                        ip[portname] = [destport.parent, 'src']
-                    elif destcomp.kind == 'crossbar':
-                        ip['dst'] = [destport.parent, destname]
+                    core = tree["connections"]["interfaces"][port.parent]
+
+                    if portcomp.kind == "crossbar" and destcomp.kind == "crossbar":
+                        core[portname] = [destport.parent, destname]
+                    elif portcomp.kind == "crossbar":
+                        core[portname] = [destport.parent, "src"]
+                    elif destcomp.kind == "crossbar":
+                        core["dst"] = [destport.parent, destname]
                     else:
-                        ip['dst'] = [destport.parent, 'src']
-    
-        with open(os.path.join(outdir, f"{self.name}.yml"), 'w') as file:
-            yaml = ruamel.yaml.YAML(typ='safe')
+                        core["dst"] = [destport.parent, "src"]
+
+        with open(os.path.join(outdir, f"{self.name}.yml"), "w") as file:
+            yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
             yaml.dump(tree, file)
-
 
         with open(os.path.join(outdir, f"{self.name}.f"), "w") as fl:
             for file in filelist:
                 fl.write(file)
-                fl.write('\n')
-    
+                fl.write("\n")

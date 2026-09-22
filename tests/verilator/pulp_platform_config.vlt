@@ -11,6 +11,8 @@ lint_off -rule UNUSEDPARAM  -file "*beh_lib.sv*"
 
 //cannot change anyway
 lint_off -rule CASEINCOMPLETE -file "axi/src/*"
+lint_off -rule DECLFILENAME -file "axi/*"
+lint_off -rule DECLFILENAME -file "common_cells/*"
 
 //cannot change anyway
 lint_off -rule PINCONNECTEMPTY -file "axi/src/*"
