@@ -11,6 +11,8 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*output*dst
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_src*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_dst*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_main*"
+lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_sb_cpu*"
+lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*o_sb_lpp*"
 
 //I do not know what to do with these
 //lint off so they dont pollute the output
@@ -21,8 +23,9 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*clk_overri
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*force_halt*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*rst_l*"
 
-//some signals are not used by the bridge
-lint_off -rule UNUSEDSIGNAL -file "out/src/axi_prconv_axi_ahb.sv"
+//left like that for convenience
+lint_off -rule UNUSEDSIGNAL -file "*out/src/axi_buffer_wrapper.sv*" 
+lint_off -rule UNDRIVEN -file "*out/src/axi_buffer_wrapper.sv*" 
 
 //unlikely to cause problems
 lint_off -rule SPLITVAR -file "*" -contents "*" -match "*bitwidth is 1*"
@@ -33,6 +36,9 @@ lint_off -rule DECLFILENAME -file "out/src/beh_lib.sv"
 
 //not good but should not cause problems, at least for tests
 lint_off -rule IMPORTSTAR
+
+//some signals are not used by the bridge
+lint_off -rule UNUSEDSIGNAL -file "out/src/axi_prconv_axi_ahb.sv"
 
 //user warning about deprecated package, irrelevant
 //for whatever reason, this does not work

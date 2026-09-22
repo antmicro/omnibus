@@ -1,0 +1,81 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+name: MyInterconnect
+version: 0.85a
+
+default:
+    data_width: 64
+    protocol: AXI4
+    clock: clk_bus
+
+clocks:
+  clk_bus:
+    frequency: 100e6
+  clk_cpu:
+    frequency: 1GHz
+  clk_lpp:
+    frequency: 25M
+
+ports:
+  axi_cpu:
+    clock: clk_cpu
+    role:  "subordinate"
+  axi_dbg:
+    role:  "subordinate"
+  axi_mem:
+    role:  "manager"
+  apb_uart:
+    protocol:  APB
+    clock: clk_lpp
+    role:  "manager"
+  apb_i2c:
+    protocol:  APB
+    clock: clk_lpp
+    role:  "manager"
+
+crossbars:
+  sb_cpu:
+    ports:
+      cpu:
+        role: "subordinate"
+      dbg:
+        role: "subordinate"
+      mem:
+        role: "manager"
+      lpp:
+        role: "manager"
+  sb_lpp:    
+    clock: clk_lpp
+    ports:
+      up:
+        role: "subordinate"
+      uart:
+        role: "manager"
+      i2c:
+        role: "manager"
+
+connections:
+  "axi_cpu -> sb_cpu.cpu":
+  "axi_dbg -> sb_cpu.dbg":
+  "sb_cpu.mem -> axi_mem":
+    "registers": 1 # Insert a skid buffer to help timing closure
+  "sb_cpu.lpp -> sb_lpp.up":
+  "sb_lpp.uart -> apb_uart":
+  "sb_lpp.i2c -> apb_i2c":
+
+address_map:
+  "memory":
+    to:    axi_mem
+    base:  0x00000000
+    size:  0x20000000
+  "uart": 
+    to:    apb_uart
+    base:  0x40000000
+    size:  0x00001000
+  "i2c":   
+    to:    apb_i2c
+    base:  0x40001000
+    size:  0x00001000

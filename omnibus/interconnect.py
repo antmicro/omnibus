@@ -349,14 +349,16 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
         def insert_new_components(self):
             """
-            Insert components for each parameter value crossing, e.g. CDC between different clocks
+            Insert components for each spill register and parameter value crossing, e.g. CDC between different clocks
 
             Must be called after propagate_parameters()
 
-            insertion start with highest priority, AKA the ones that should be placed first in case of multiple conversions on single connection
-            current prioretization is: id width > data width > clock > protocol
+            insertion start with highest priority, AKA the ones that should be placed first in case of multiple components on single connection
+            current prioretization is: registers > id width > data width > clock > protocol
 
-            insertion algorithm is:
+            registers are inserted directly
+
+            conversion components insertion algorithm is:
              1. go thru each connection, find connections between ports of different parameters
              2. insert two new ports under new component, the kind of component depends on the parameter
              3.
@@ -364,6 +366,51 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                b. for other parameters, get both ports' params from source port
             note: source/dest are regarding edge direction, on graph view, source is on the left
             """
+
+            newports = {}
+            for portname, port in self.ports.items():
+                for edge in port.edges:
+                    reg_count = edge.attributes.get("registers", 0)
+
+                    while reg_count > 0:
+                        name_comp = f"register_{portname}_to_{edge.dest}_{reg_count}"
+                        name1 = f"{name_comp}_src"
+                        name2 = f"{name_comp}_dst"
+
+                        self.components[name_comp] = Component("register", {})
+                        self.components[name_comp].srcports = [name1]
+                        self.components[name_comp].dstports = [name2]
+
+                        newports[name1] = Port(
+                            name_comp, copy.deepcopy(port.attributes)
+                        )
+                        newports[name2] = Port(
+                            name_comp, copy.deepcopy(port.attributes)
+                        )
+
+                        newports[name1].edges.append(Edge(name2, {}))
+                        newports[name2].edges.append(Edge(edge.dest, {}))
+                        edge.dest = name1
+
+                        # fix manager-subordinate port organization as they are copied from left port, which is not correct
+                        # notice that the only case when both
+                        #  1. port.parent is None
+                        #  2. outgoing edges are not empty
+                        # is when port.role = 'subordinate'
+                        # therefore fix is always done by swapping the port name2
+                        if port.parent is None:
+                            newports[name2].attributes["role"] = "manager"
+                        # when port.parent is not none, then notice that outgoing connection from port name2 is correct
+                        #  as it was correct when similar connection was outgoing from src port
+                        # but, srcport is always master
+                        # therefore the fix is done by swapping port name1
+                        else:
+                            newports[name1].attributes["role"] = "subordinate"
+
+                        reg_count -= 1
+
+            self.ports |= newports
+
             for param, kind in [
                 ("id_width", "iw_conv"),
                 ("data_width", "dw_conv"),
@@ -410,17 +457,9 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                         newports[name2].edges.append(Edge(destname, {}))
 
                         # fix manager-subordinate port organization as they are copied from left port, which is not correct
-                        # notice that the only case when both
-                        #  1. port.parent is None
-                        #  2. outgoing edges are not empty
-                        # is when port.role = 'subordinate'
-                        # therefore fix is always done by swapping the port name2
+                        # as above
                         if port.parent is None:
                             newports[name2].attributes["role"] = "manager"
-                        # when port.parent is not none, then notice that outgoing connection from port name2 is correct
-                        #  as it was correct when similar connection was outgoing from src port
-                        # but, srcport is always master
-                        # therefore the fix is done by swapping port name1
                         else:
                             newports[name1].attributes["role"] = "subordinate"
 

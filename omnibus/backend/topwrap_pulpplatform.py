@@ -309,6 +309,35 @@ class PrAXIAHB(MappedComponent):
         params["AxiIdWidth"] = srcattr["id_width"]
 
 
+class PulpRegister(MappedComponent):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.core = "axi_buffer_wrapper"
+
+    def generate_verilog(self, outdir, exists, errors, warns):
+        if exists.get("PulpRegister"):
+            return
+        exists["PulpRegister"] = True
+
+        src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
+        dst = os.path.join(outdir, "src")
+
+        filename = f"{self.core}.sv"
+        shutil.copyfile(os.path.join(src, filename), os.path.join(dst, filename))
+
+        filelist.append(str(os.path.join("src", filename)))
+
+    def generate_hierarchy(self, ports, params):
+        srcattr = next(iter(self.srcports.values())).attributes
+
+        set_clock_and_reset(ports, srcattr["clock"])
+
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
+
+        params["AxiIdWidth"] = srcattr["id_width"]
+
+
 class Backend:
     """
     Topwrap Pulp Platform backend
@@ -348,6 +377,7 @@ class Backend:
             "dw_conv": PulpDWConv,
             "cdc": PulpCDC,
             "iw_conv": IWConv,
+            "register": PulpRegister,
             "pr_conv": {
                 "axiaxilite": PulpPrAXIAXILite,
                 "axiapb": PulpPrAXIAPB,
@@ -424,6 +454,9 @@ class Backend:
                 {"repositories": {"repo": f"file:{os.path.join(outdir, 'modules')}"}},
                 file,
             )
+
+        global filelist
+        filelist = []
 
         exists = {}
         # generate verilog files

@@ -44,6 +44,7 @@ class TestTopwrapBackend:
         assert os.path.isfile("tests/out/src/axi_crossbar_sb_cpu.sv")
         assert os.path.isfile("tests/out/src/axi_crossbar_sb_lpp.sv")
         assert os.path.isfile("tests/out/src/axi_cdc_wrapper.sv")
+        assert os.path.isfile("tests/out/src/axi_buffer_wrapper.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_axi_apb.sv")
         assert os.path.isfile("tests/out/modules/interfaces/apb.yml")
 

@@ -50,3 +50,40 @@ class TestTopwarpIntegration:
             "verilator --lint-only -Wall tests/verilator/general_config.vlt tests/verilator/pulp_platform_config.vlt -f tests/verilator/pulp_platform_filelist.f -F out/ASoCaInt.f build/ASoCaInt.sv --top-module ASoCaInt",
             shell=True,
         )
+
+    def test_spec(self):
+        # cleanup any existing files
+        subprocess.call("rm -fr topwrap.yaml MyInterconnect.yml out/", shell=True)
+
+        # uses this file instead of 'example/spec.yml' as temporary workaround for address maps
+        assert 0 == subprocess.call("omnibus tests/spec/spec2.yml", shell=True)
+
+        assert 0 == subprocess.call(
+            "topwrap repo parse repo out/src --inference-interface AXI4 --inference-interface APB3 --log-level error",
+            shell=True,
+        )
+
+        subprocess.call("rm -f out/modules/interfaces/vendor*", shell=True)
+
+        subprocess.call("cp -f out/MyInterconnect.yml ./", shell=True)
+
+        assert 0 == subprocess.call(
+            "topwrap build --design MyInterconnect.yml --log-level error", shell=True
+        )
+
+        assert 0 == subprocess.call(
+            "diff <(grep -v build/MyInterconnect.sv -e 'Automatically generated') <(grep -v ./tests/ideal/topwrap/spec.sv -e 'Automatically generated')",
+            shell=True,
+            executable="/bin/bash",
+        )
+
+        # this warning must be removed in place, it cannot be turned off in lint
+        subprocess.call(
+            'sed -i "s/\\$warning.*//g" common_cells/src/deprecated/cf_math_pkg.sv',
+            shell=True,
+        )
+
+        assert 0 == subprocess.call(
+            "verilator --lint-only -Wall tests/verilator/general_config.vlt tests/verilator/pulp_platform_config.vlt -f tests/verilator/pulp_platform_filelist.f -F out/MyInterconnect.f build/MyInterconnect.sv --top-module MyInterconnect",
+            shell=True,
+        )

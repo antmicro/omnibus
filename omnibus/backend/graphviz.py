@@ -123,6 +123,8 @@ class Backend:
                 sg.node(
                     port, fillcolor=color, label=str(params.attributes["data_width"])
                 )
+            elif kind == "register":
+                sg.node(port, fillcolor=color, label=port[-3:])
 
             for edge in params.edges:
                 dest = edge.dest

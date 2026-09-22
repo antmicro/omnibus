@@ -9,10 +9,11 @@ digraph MyInterconnect {
 	axi_mem [fillcolor=1]
 	apb_uart [fillcolor=3]
 	apb_i2c [fillcolor=3]
-	sb_cpu_mem -> axi_mem
+	sb_cpu_mem -> register_sb_cpu_mem_to_axi_mem_1_src
 	sb_cpu_lpp -> cdc_sb_cpu_lpp_clk_bus
 	sb_lpp_uart -> pr_conv_sb_lpp_uart_axi4
 	sb_lpp_i2c -> pr_conv_sb_lpp_i2c_axi4
+	register_sb_cpu_mem_to_axi_mem_1_dst -> axi_mem
 	cdc_sb_cpu_cpu_clk_bus -> sb_cpu_cpu
 	cdc_sb_lpp_up_clk_lpp -> sb_lpp_up
 	pr_conv_apb_uart_apb3 -> apb_uart
@@ -51,6 +52,14 @@ sb_lpp"
 		sb_lpp_up -> sb_lpp_i2c
 		sb_lpp_uart [fillcolor=3]
 		sb_lpp_i2c [fillcolor=3]
+	}
+	subgraph "cluster register_sb_cpu_mem_to_axi_mem_1" {
+		label="register
+register_sb_cpu_mem_to_axi_mem_1"
+		color=lightgrey style=dashed
+		register_sb_cpu_mem_to_axi_mem_1_src [fillcolor=1]
+		register_sb_cpu_mem_to_axi_mem_1_src -> register_sb_cpu_mem_to_axi_mem_1_dst
+		register_sb_cpu_mem_to_axi_mem_1_dst [fillcolor=1]
 	}
 	subgraph "cluster cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus" {
 		label="cdc
