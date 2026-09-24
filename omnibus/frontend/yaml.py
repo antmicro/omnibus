@@ -1,12 +1,30 @@
 # Copyright (c) 2026 Antmicro
 # SPDX-License-Identifier: Apache-2.0
 
+import difflib
 import os
 import sys
 
 import ruamel.yaml
 
 from .base import FrontendBase
+
+#: Every legitimate key at the top level of a spec file. Used once, up front,
+#: to catch typos/unknown fields there -- see _check_fields()'s "did you mean"
+#: suggestion for why this replaces what used to be a hardcoded pairwise
+#: typo check (e.g. 'globals' -> 'global') per field.
+TOP_LEVEL_FIELDS = {
+    "desc_version",
+    "name",
+    "version",
+    "global",
+    "default",
+    "clocks",
+    "ports",
+    "crossbars",
+    "connections",
+    "address_map",
+}
 
 
 class Frontend(FrontendBase):
@@ -19,6 +37,14 @@ class Frontend(FrontendBase):
     It internally uses 'spec' dictionary for some processing and debug print
     """
 
+    def _suggest(self, name, allowed):
+        """
+        Return a ", did you mean 'x'?" suffix if `name` closely resembles one
+        of `allowed` (e.g. a singular/plural mix-up or a simple typo), else "".
+        """
+        match = difflib.get_close_matches(name, allowed, n=1, cutoff=0.6)
+        return f", did you mean '{match[0]}'?" if match else ""
+
     def _check_fields(self, where, keys, required, optional):
         err = False
 
@@ -26,7 +52,8 @@ class Frontend(FrontendBase):
         for fieldname in keys:
             if fieldname not in allowed:
                 self.errors.append(
-                    f"ERROR: {where} has invalid field '{fieldname}', allowed ones are {sorted(allowed)}"
+                    f"ERROR: {where} has invalid field '{fieldname}'"
+                    f"{self._suggest(fieldname, allowed)}, allowed ones are {sorted(allowed)}"
                 )
                 err = True
 
@@ -58,6 +85,10 @@ class Frontend(FrontendBase):
                 self.errors.append(str(ex.problem_mark))
                 return 2
 
+        ## Catch unknown/mistyped top level fields once, up front, with a
+        ## generic "did you mean" hint instead of a hardcoded check per field.
+        self._check_fields("top level", self.spec.keys(), set(), TOP_LEVEL_FIELDS)
+
         ## Desc Version
         if self.spec.pop("desc_version", "none") != 1.0:
             self.errors.append("ERROR: specification version invalid or not provided")
@@ -70,12 +101,6 @@ class Frontend(FrontendBase):
         self._set_version(self.spec.pop("version", 0))
 
         ## Globals
-        if "globals" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'globals', did you mean 'global'?"
-            )
-            self.spec.pop("globals")
-
         if self.spec.get("global") is None:
             self.spec["global"] = {}
         elif type(self.spec["global"]) is not dict:
@@ -89,12 +114,6 @@ class Frontend(FrontendBase):
             self._add_global(name, val)
 
         ## Defaults
-        if "defaults" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'defaults', did you mean 'default'?"
-            )
-            self.spec.pop("defaults")
-
         if self.spec.get("default") is None:
             self.spec["default"] = {}
         elif type(self.spec["default"]) is not dict:
@@ -107,12 +126,6 @@ class Frontend(FrontendBase):
             self._add_default(name, val)
 
         ## Clocks
-        if "clock" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'clock', did you mean 'clocks'?"
-            )
-            self.spec.pop("clock")
-
         if "clocks" in self.spec:
             if type(self.spec["clocks"]) is not dict:
                 self.errors.append(
@@ -158,12 +171,6 @@ class Frontend(FrontendBase):
             )
 
         ## Ports
-        if "port" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'port', did you mean 'ports'?"
-            )
-            self.spec.pop("port")
-
         top_level_ports = 0
         if "ports" in self.spec:
             if type(self.spec["ports"]) is not dict:
@@ -203,12 +210,6 @@ class Frontend(FrontendBase):
             return 4
 
         ## Crossbars
-        if "crossbar" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'crossbar', did you mean 'crossbars'?"
-            )
-            self.spec.pop("crossbar")
-
         if ("crossbars" in self.spec) != ("connections" in self.spec):
             self.errors.append(
                 "ERROR: 'crossbars' and 'connections' must be both either defined or left for inference"
@@ -295,12 +296,6 @@ class Frontend(FrontendBase):
                 )
 
         ## Connections
-        if "connection" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'connection', did you mean 'connections'?"
-            )
-            self.spec.pop("connections")
-
         if "connections" not in self.spec:
             self.spec["connections"] = {}
 
@@ -337,12 +332,6 @@ class Frontend(FrontendBase):
             )
 
         ## Address map
-        if "address_maps" in self.spec:
-            self.errors.append(
-                "ERROR: invalid field name 'address_maps', did you mean 'address_map'?"
-            )
-            self.spec.pop("address_maps")
-
         if "address_map" not in self.spec:
             self.errors.append("ERROR: lack of 'address_map' field")
             self.spec["address_map"] = {}
@@ -395,11 +384,6 @@ class Frontend(FrontendBase):
 
             self._add_address_map_entry(
                 name, entry["from"], entry["to"], entry["base"], entry["size"]
-            )
-
-        for entry in self.spec:
-            self.errors.append(
-                f"ERROR: invalid top level field '{entry}', see allowed ones at https://antmicro.github.io/omnibus/specification.html#yaml-syntax-specification"
             )
 
         if len(self.errors) > 0:
