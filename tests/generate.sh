@@ -38,8 +38,8 @@ cp -r build out $1.yml artifacts/$1/
 #code check, removing lines with time and commit 
 diff <(grep -v build/$1.sv -e 'Automatically generated') <(grep -v ./tests/ideal/topwrap/$1.sv -e 'Automatically generated')
 
-#this warning must be removed in place, it cannot be turned off in lint
-sed -i "s/\\$warning.*//g" common_cells/src/deprecated/cf_math_pkg.sv
+#pulp_platform_filelist.f defines COMMON_CELLS_NO_DEPRECATED_WARNINGS, silencing the
+#deprecation $warning in common_cells' cf_math_pkg.sv that -Wall would fail on
 
 #linter
 verilator --lint-only -Wall tests/verilator/general_config.vlt tests/verilator/pulp_platform_config.vlt -f tests/verilator/pulp_platform_filelist.f -F out/$1.f build/$1.sv --top-module $1

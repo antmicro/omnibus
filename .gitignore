@@ -7,10 +7,9 @@ omnibus.egg-info
 #created by the tests
 tests/out/
 tests/output.txt
+tests/sim/.build/
 
 #pulled from git to make final project
-axi/
-common_cells/
-tech_cells_generic/
-
-artifacts/
+/axi/
+/common_cells/
+/tech_cells_generic/

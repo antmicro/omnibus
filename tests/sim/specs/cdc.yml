@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# Clock domain crossing: the memory runs on a clock unrelated to the manager's.
+desc_version: 1.0
+name: cdc
+default:
+  data_width: 64
+  clock: clk_a
+  protocol: axi4
+clocks:
+  clk_a:
+    frequency: 100MHz
+  clk_b:
+    frequency: 73MHz
+ports:
+  cpu:
+    role: subordinate
+    clock: clk_a
+  mem:
+    role: manager
+    clock: clk_b
+address_map:
+  mem:
+    to: mem
+    base: 0x1000_0000
+    size: 0x0010_0000

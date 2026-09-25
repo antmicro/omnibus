@@ -19,6 +19,11 @@ dependencies=[
 test = [
     "pytest",
     "rich"]
+# simulation tests in tests/sim; they also need Verilator
+sim = [
+    "pytest",
+    "cocotb==2.0.1",
+    "cocotbext-axi==0.1.28"]
 
 [project.scripts]
 omnibus = "omnibus.main:main"

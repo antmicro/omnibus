@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# Data width conversion: a 64-bit manager reaching 32- and 128-bit memories.
+desc_version: 1.0
+name: dw_mix
+default:
+  data_width: 64
+  clock: clk
+  frequency: 100MHz
+  protocol: axi4
+ports:
+  cpu:
+    role: subordinate
+  mem32:
+    role: manager
+    data_width: 32
+  mem128:
+    role: manager
+    data_width: 128
+address_map:
+  mem32:
+    to: mem32
+    base: 0x1000_0000
+    size: 0x0010_0000
+  mem128:
+    to: mem128
+    base: 0x2000_0000
+    size: 0x0010_0000

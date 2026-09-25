@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# Two managers, two memories of different sizes with gaps around them.
+desc_version: 1.0
+name: xbar_2x2
+default:
+  data_width: 64
+  clock: clk
+  frequency: 100MHz
+  protocol: axi4
+ports:
+  cpu0:
+    role: subordinate
+  cpu1:
+    role: subordinate
+  mem0:
+    role: manager
+  mem1:
+    role: manager
+address_map:
+  mem0:
+    to: mem0
+    base: 0x1000_0000
+    size: 0x0010_0000
+  mem1:
+    to: mem1
+    base: 0x2000_0000
+    size: 0x0001_0000

@@ -1,3 +1,9 @@
 [submodule "omnibus/third_party/axi"]
 	path = omnibus/third_party/axi
 	url = https://github.com/antmicro/axi
+[submodule "omnibus/third_party/common_cells"]
+	path = omnibus/third_party/common_cells
+	url = https://github.com/pulp-platform/common_cells
+[submodule "omnibus/third_party/tech_cells_generic"]
+	path = omnibus/third_party/tech_cells_generic
+	url = https://github.com/pulp-platform/tech_cells_generic

@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# One memory reachable through two separate address windows.
+desc_version: 1.0
+name: two_windows
+default:
+  data_width: 64
+  clock: clk
+  frequency: 100MHz
+  protocol: axi4
+ports:
+  cpu:
+    role: subordinate
+  mem:
+    role: manager
+address_map:
+  mem_lo:
+    to: mem
+    base: 0x1000_0000
+    size: 0x0000_4000
+  mem_hi:
+    to: mem
+    base: 0x8000_0000
+    size: 0x0000_4000

@@ -33,11 +33,6 @@ lint_off -rule IMPORTSTAR
 //some signals are not used by the bridge
 lint_off -rule UNUSEDSIGNAL -file "out/src/axi_prconv_axi_ahb.sv"
 
-//user warning about deprecated package, irrelevant
-//for whatever reason, this does not work
-//the file is modified in place instead
-lint_off -rule USERWARN -file "*common_cells/src/deprecated/cf_math_pkg.sv*" -contents "*" -match "*deprecated*"
-
 //likely only simulation problem
 //requires further care to be sure though
 lint_off -rule UNOPTFLAT -file "*common_cells/*"
