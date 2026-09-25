@@ -180,7 +180,7 @@ ips:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 64
       AxiIdWidth: 1
-      AxiMaxReads: 2
+      AxiMaxReads: 1
       AxiSrcPortDataWidth: 128
   dw_conv_main_coral_npu_out_64_to_coral_npu_out_128:
     file: file:tests/out/modules/cores/axi_dw_conv_wrapper/module.yaml
@@ -188,7 +188,7 @@ ips:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 128
       AxiIdWidth: 4
-      AxiMaxReads: 2
+      AxiMaxReads: 1
       AxiSrcPortDataWidth: 64
   dw_conv_main_fast_vdma_csr_64_to_fast_vdma_csr_32:
     file: file:tests/out/modules/cores/axi_dw_conv_wrapper/module.yaml
@@ -196,7 +196,7 @@ ips:
       AxiAddrWidth: 32
       AxiDstPortDataWidth: 32
       AxiIdWidth: 4
-      AxiMaxReads: 2
+      AxiMaxReads: 1
       AxiSrcPortDataWidth: 64
   main:
     file: file:tests/out/modules/cores/axi_crossbar_main/module.yaml

@@ -2,7 +2,6 @@
 addr_width = 32
 ### DEFAULTS ###
 data_width = 64
-axi_max_reads = 2
 clock = clk_fast
 protocol = axi4
 ### CLOCKS ###

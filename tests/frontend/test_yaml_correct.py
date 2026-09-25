@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import subprocess
+import sys
 
 from omnibus import InterconnectBuilder
+
+from tests.filediff import filediff
 
 
 # These tests check whether yaml frontend behaves as expected
@@ -14,16 +17,10 @@ class TestYaml:
         ic.read_yaml(f"examples/{name}.yml")
         ic._print_spec("tests/out/output.txt")
 
-        if corrname is None:
-            assert 0 == subprocess.call(
-                f"diff -y tests/out/output.txt tests/ideal/frontend/{name}.txt",
-                shell=True,
-            )
-        else:
-            assert 0 == subprocess.call(
-                f"diff -y tests/out/output.txt tests/ideal/frontend/{corrname}.txt",
-                shell=True,
-            )
+        assert not filediff(
+            "tests/out/output.txt",
+            f"tests/ideal/frontend/{corrname if corrname else name}.txt",
+        )
 
     def test_simple(self):
         self._test("simple")

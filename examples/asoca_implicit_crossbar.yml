@@ -10,7 +10,6 @@ default:
   clock: clk_fast
   protocol: axi4
   data_width: 64
-  axi_max_reads: 2
 
 clocks:
   clk_slow: 

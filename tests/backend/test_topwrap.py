@@ -7,6 +7,8 @@ import sys
 
 from omnibus import InterconnectBuilder
 
+from tests.filediff import filediff
+
 
 # These tests check whether topwrap backend operates properly
 class TestTopwrapBackend:
@@ -20,16 +22,10 @@ class TestTopwrapBackend:
         ic.generate("tests/out/")
         os.sync()
 
-        if icname:
-            assert 0 == subprocess.call(
-                f"diff -y tests/out/{icname}.yml tests/ideal/backend/topwrap/{name}.yml",
-                shell=True,
-            )
-        else:
-            assert 0 == subprocess.call(
-                f"diff -y tests/out/{name}.yml tests/ideal/backend/topwrap/{name}.yml",
-                shell=True,
-            )
+        assert not filediff(
+            f"tests/out/{icname if icname else name}.yml",
+            f"tests/ideal/backend/topwrap/{name}.yml",
+        )
 
     def test_simple(self):
         self._test("simple")

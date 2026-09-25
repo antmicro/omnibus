@@ -5,6 +5,8 @@ import subprocess
 
 from omnibus import InterconnectBuilder
 
+from tests.filediff import filediff
+
 
 # These tests check whether data is properly passed to the internal represntation
 class TestBasic:
@@ -14,9 +16,7 @@ class TestBasic:
         ic.read_yaml(f"examples/{name}.yml")
         ic._print_elements("tests/output.txt")
 
-        assert 0 == subprocess.call(
-            f"diff -y tests/output.txt tests/ideal/process/basic/{name}.txt", shell=True
-        )
+        assert not filediff("tests/output.txt", f"tests/ideal/process/basic/{name}.txt")
 
     def test_simple(self):
         self._test("simple")

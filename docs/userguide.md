@@ -76,7 +76,7 @@ omnibus examples/simple.yml
 This generates necessary files in `out/` and topwrap repo.  
 Then, parse the created files with Topwrap: 
 ```
-topwrap repo parse repo out/src/*sv --log-level=error
+topwrap repo parse repo out/src/*sv -I --log-level=error
 ```
 Before generating with Topwrap, change the file structure slightly:  
 ```

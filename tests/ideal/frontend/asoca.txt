@@ -3,7 +3,6 @@ version: 0
 globals:
   addr_width = 32
 defaults:
-  axi_max_reads = 2
   clock = clk_fast
   data_width = 64
   protocol = axi4

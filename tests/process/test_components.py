@@ -5,6 +5,8 @@ import subprocess
 
 from omnibus import InterconnectBuilder
 
+from tests.filediff import filediff
+
 
 # These tests check whether parameters are properly propagated and components properly inserted
 class TestComponents:
@@ -18,9 +20,8 @@ class TestComponents:
         ic._print_ports()
         ic._print_components()
 
-        assert 0 == subprocess.call(
-            f"diff -y tests/output.txt tests/ideal/process/components/{name}.txt",
-            shell=True,
+        assert not filediff(
+            "tests/output.txt", f"tests/ideal/process/components/{name}.txt"
         )
 
     def test_simple(self):

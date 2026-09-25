@@ -5,6 +5,7 @@ import subprocess
 
 from omnibus import InterconnectBuilder
 
+from tests.filediff import filediff
 
 # These tests check whether routing properly finds paths for each crossbars
 class TestRouting:
@@ -16,10 +17,7 @@ class TestRouting:
         ic._print_set_output("tests/output.txt")
         ic._print_address_maps()
 
-        assert 0 == subprocess.call(
-            f"diff -y tests/output.txt tests/ideal/process/routing/{name}.txt",
-            shell=True,
-        )
+        assert not filediff("tests/output.txt", f"tests/ideal/process/routing/{name}.txt")
 
     def test_simple(self):
         self._test("simple")
