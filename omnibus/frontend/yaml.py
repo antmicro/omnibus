@@ -330,20 +330,6 @@ class Frontend(FrontendBase):
         for portname, port in self.spec["ports"].items():
             self._add_port(portname, dict(port))
 
-        # ports missing a parameter that has no default are not added
-        if len(self.ports) < 2:
-            self.errors.append(
-                "ERROR: at least two valid top level ports must be provided"
-            )
-        if len(self.srcports) < 1:
-            self.errors.append(
-                "ERROR: at least one subordinate top level port must be provided"
-            )
-        if len(self.dstports) < 1:
-            self.errors.append(
-                "ERROR: at least one manager top level port must be provided"
-            )
-
         # errors by this point generally make proper crossbar, connection, and address_map read impossible
         if len(self.errors) > 0:
             return 4

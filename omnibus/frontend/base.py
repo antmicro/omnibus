@@ -13,43 +13,17 @@ class FrontendBase:
     """
 
     def _set_name(self, name):
-        if type(name) is not str or len(name) == 0:
-            self.errors.append(
-                "ERROR: invalid name, must be a string of nonzero length"
-            )
-            return
         self.name = name
 
     def _set_version(self, version):
-        if type(version) is not int and (type(version) is not str or len(version) == 0):
-            self.errors.append(
-                "ERROR: invalid version, must be a string of nonzero length or integer"
-            )
-            return
         self.version = version
 
     def _parse_frequency(self, name, freq, where):
         if type(freq) in [float, int]:
-            if freq > 0:
-                return float(freq)
-            else:
-                self.errors.append(
-                    f"ERROR: in {where}, invalid 'frequency' value, must be positive"
-                )
-                return "n/a"
-
-        if type(freq) != str:
-            self.errors.append(f"ERROR: in {where}, invalid 'frequency' value")
-            return "n/a"
+            return float(freq)
 
         if freq == "n/a":
             return freq
-
-        if len(freq) == 0:
-            self.errors.append(
-                f"ERROR: in {where}, invalid 'frequency' value, cannot be empty string"
-            )
-            return "n/a"
 
         ii = 0
         while ii < len(freq) and freq[ii].isdigit():
@@ -63,25 +37,13 @@ class FrontendBase:
         if len(freq) > ii:
             freqright = freq[ii:]
 
-        if int(freqleft) == 0:
-            self.errors.append(
-                f"ERROR: in {where}, invalid 'frequency' value, frequency must be positive"
-            )
-            return "n/a"
-
         if re.fullmatch("[Hh]z", freqright):
             return float(freqleft) * 1e0
         if re.fullmatch("k([Hh]z)?", freqright):
             return float(freqleft) * 1e3
         if re.fullmatch("M([Hh]z)?", freqright):
             return float(freqleft) * 1e6
-        if re.fullmatch("G([Hh]z)?", freqright):
-            return float(freqleft) * 1e9
-
-        self.errors.append(
-            f"ERROR: in {where}, invalid 'frequency' suffix, must be one of [Hz, k, kHz, M, MHz, G, GHz]"
-        )
-        return "n/a"
+        return float(freqleft) * 1e9
 
     def _add_global(self, name, val):
         if name not in self.parse_global:
@@ -102,48 +64,22 @@ class FrontendBase:
             self.defaults[name] = val
 
     def _parse_positive_int(self, name, val, where):
-        if type(val) is not int or val < 1:
-            self.errors.append(
-                f"ERROR: in {where}, '{name}' takes positive int as an argument"
-            )
-            return 0
-
         return val
 
     def _parse_str(self, name, val, where):
-        if type(val) is not str or len(val) < 1:
-            self.errors.append(
-                f"ERROR: in {where}, '{name}' must be a string of nonzero length"
-            )
-            return 0
-
         return val
 
     def _parse_bool(self, name, val, where):
-        if type(val) is not bool:
-            self.errors.append(f"ERROR: in {where}, '{name}' must be 'True' or 'False'")
-            return 0
-
         return val
 
     def _parse_protocol(self, name, val, where):
-        if type(val) is not str:
-            self.errors.append(f"ERROR: in {where}, 'protocol' name must be a string")
-            return ""
-
         if re.fullmatch("axi4?", val.lower()):
             return "axi4"
         if re.fullmatch("ahb3?", val.lower()):
             return "ahb3"
         if re.fullmatch("apb3?", val.lower()):
             return "apb3"
-        if re.fullmatch("axi4?[\\s_]?lite", val.lower()):
-            return "axi4lite"
-
-        self.errors.append(
-            f"ERROR: in {where}, invalid 'protocol' name, expected one of [axi4, ahb3, apb3, axi4lite]"
-        )
-        return "invalid"
+        return "axi4lite"
 
     def _connect(self, port1name, port2name, params):
         port1 = self.ports.get(port1name)

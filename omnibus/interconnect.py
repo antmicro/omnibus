@@ -193,13 +193,9 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
             Connection parameters the backend lists in port_connection_params are also
             copied to the port each connection starts at
-
-            data width is special in that it can be forced on connections
-            to deal with this:
-             1. find all connections that have it forced
-             2. assign it to connected ports
-             3. if this process leads to conflict, there exists no valid configuration
-            later handle it like most other parameters
+            This means that there might be situation where no valid configuration exists
+            (for example when two connections of a port have different value)
+            If valid configuration exists, handle it like most other parameters
 
             id width is handled as fully separate case
             finding it requires some degree of backtracking and rewriting already found results
@@ -218,40 +214,34 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
               later, id_width_extender might be needed
             """
 
-            # backend-specific parameters its components read from ports
-            for portname, port in self.ports.items():
-                for edge in port.edges:
-                    for param in self.port_connection_params:
-                        if edge.attributes.get(param):
-                            port.attributes[param] = edge.attributes[param]
+            for param in ["data_width"] + self.port_connection_params:
+                for portname, port in self.ports.items():
+                    for edge in port.edges:
+                        destname = edge.dest
+                        dest = self.ports[destname]
 
-            for portname, port in self.ports.items():
-                for edge in port.edges:
-                    destname = edge.dest
-                    dest = self.ports[destname]
+                        val = edge.attributes.get(param)
 
-                    data_width = edge.attributes.get("data_width")
+                        if val is None:
+                            continue
 
-                    if data_width is None:
-                        continue
+                        port_val = port.attributes.get(param)
+                        dest_val = dest.attributes.get(param)
 
-                    port_width = port.attributes.get("data_width")
-                    dest_width = dest.attributes.get("data_width")
+                        if port_val != val:
+                            self.errors.append(
+                                f"ERROR: no valid configuration exists for {param}, port {portname} has assigned value that is different than its outgoing connection to {destname}"
+                            )
+                            continue
 
-                    if port_width != data_width:
-                        self.errors.append(
-                            f"ERROR: no valid configuration exists for data width, port {portname} has assigned data width that is different than its outgoing connection to {destname}"
-                        )
-                        continue
+                        if dest_val != val:
+                            self.errors.append(
+                                f"ERROR: no valid configuration exists for {param}, port {destname} has assigned value that is different than its incoming connection from {portname}"
+                            )
+                            continue
 
-                    if dest_width != data_width:
-                        self.errors.append(
-                            f"ERROR: no valid configuration exists for data width, port {destname} has assigned data width that is different than its incoming connection from {portname}"
-                        )
-                        continue
-
-                    port.attributes["data_width"] = data_width
-                    dest.attributes["data_width"] = data_width
+                        port.attributes[param] = val
+                        dest.attributes[param] = val
 
             ports_to_process = []
 

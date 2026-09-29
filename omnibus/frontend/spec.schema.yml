@@ -238,7 +238,7 @@ $defs:
   protocol:
     description: Bus protocol, matched case-insensitively.
     type: string
-    pattern: "^(?:[Aa][Xx][Ii]4?(?:[\\s_]?[Ll][Ii][Tt][Ee])?|[Aa][Hh][Bb]3?|[Aa][Pp][Bb]3?)$"
+    pattern: "(?i)^(?:ahb3?|apb3?|axi4?|axi4?(?:_|\\s)?lite)$"
     x-error-message: "invalid protocol '{instance}'{suggestion}, expected one of [axi4, ahb3, apb3, axi4lite]"
     x-suggestions: [axi4, ahb3, apb3, axi4lite]
 

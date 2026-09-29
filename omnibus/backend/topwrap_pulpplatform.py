@@ -361,7 +361,7 @@ class Backend:
         self.parse_connections = {"axi_max_reads": self._parse_positive_int}
         # connection parameters copied onto the port the connection starts at,
         # where the components reading them look for them
-        self.port_connection_params = {"axi_max_reads"}
+        self.port_connection_params = ["axi_max_reads"]
 
     def generate(self, outdir):
         """Convenience method for internal operation"""

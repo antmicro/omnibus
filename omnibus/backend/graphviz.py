@@ -21,7 +21,7 @@ class Backend:
         self.parse_global = {}
         self.parse_default = {}
         self.parse_connections = {}
-        self.port_connection_params = set()
+        self.port_connection_params = []
 
     def generate(
         self,

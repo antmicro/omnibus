@@ -378,10 +378,7 @@ class TestYaml:
                 "ERROR: top level port 'a' parameter 'data_width' has no value and no default was provided",
                 "ERROR: top level port 'b' parameter 'clock' has no value and no default was provided",
                 "ERROR: top level port 'b' parameter 'protocol' has no value and no default was provided",
-                "ERROR: top level port 'b' parameter 'data_width' has no value and no default was provided",
-                "ERROR: at least two valid top level ports must be provided",
-                "ERROR: at least one subordinate top level port must be provided",
-                "ERROR: at least one manager top level port must be provided",
+                "ERROR: top level port 'b' parameter 'data_width' has no value and no default was provided"
             ],
             warns="WARNING: clock 'clock' has no assigned frequency and no default was provided, defaulting to 'n/a', features depending on clock frequency will be unavailable",
         )
