@@ -2,29 +2,165 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import difflib
+import functools
+import io
 import os
 import sys
+from importlib import resources
 
+import jsonschema
 import ruamel.yaml
+from referencing import Registry, Resource
+from referencing.jsonschema import DRAFT202012
 
 from .base import FrontendBase
 
-#: Every legitimate key at the top level of a spec file. Used once, up front,
-#: to catch typos/unknown fields there -- see _check_fields()'s "did you mean"
-#: suggestion for why this replaces what used to be a hardcoded pairwise
-#: typo check (e.g. 'globals' -> 'global') per field.
-TOP_LEVEL_FIELDS = {
-    "desc_version",
-    "name",
-    "version",
-    "global",
-    "default",
-    "clocks",
-    "ports",
-    "crossbars",
-    "connections",
-    "address_map",
+
+def _load_schema(package, name):
+    yaml = ruamel.yaml.YAML(typ="safe")
+    with resources.files(package).joinpath(name).open() as stream:
+        return yaml.load(stream)
+
+
+#: JSON Schema of the specification format, see spec.schema.yml.
+SCHEMA = _load_schema(__package__, "spec.schema.yml")
+
+#: where SCHEMA expects the selected backend's schema extension
+BACKEND_SCHEMA_URI = "urn:omnibus:backend"
+_NO_BACKEND_EXTENSION = {"$defs": {"default": {}, "connection": {}}}
+
+
+@functools.cache
+def _validator(extension):
+    """
+    Validator for SCHEMA with a backend's extension registered: `extension` is
+    a file name in omnibus/backend, or None for a backend without one.
+    """
+    fragment = (
+        _NO_BACKEND_EXTENSION
+        if extension is None
+        else _load_schema("omnibus.backend", extension)
+    )
+    registry = Registry().with_resource(
+        BACKEND_SCHEMA_URI, Resource(fragment, specification=DRAFT202012)
+    )
+    return jsonschema.Draft202012Validator(SCHEMA, registry=registry)
+
+
+def _suggestion(name, allowed, fold_case=False):
+    """
+    ", did you mean 'x'?" if `name` closely resembles one of `allowed` (e.g. a
+    singular/plural mix-up or a simple typo), else "".
+    """
+    name = str(name).lower() if fold_case else str(name)
+    match = difflib.get_close_matches(name, allowed, n=1, cutoff=0.6)
+    return f", did you mean '{match[0]}'?" if match else ""
+
+
+# JSON Schema types, as someone writing YAML would call them
+_TYPE_WORDS = {
+    "object": "a mapping",
+    "array": "a list",
+    "string": "a string",
+    "integer": "an integer",
+    "number": "a number",
+    "boolean": "true or false",
+    "null": "nothing",
 }
+
+
+def _describe_value(value):
+    """What a parsed YAML value is, and how it was (roughly) written."""
+    if value is None:
+        return "nothing"
+    if isinstance(value, bool):
+        return f"a boolean ({str(value).lower()})"
+    if isinstance(value, str):
+        return f"a string ('{value}')"
+    if isinstance(value, (list, dict)):
+        yaml = ruamel.yaml.YAML(typ="safe")
+        yaml.default_flow_style = True
+        yaml.width = 4096
+        stream = io.StringIO()
+        yaml.dump(value, stream)
+        kind = "a list" if isinstance(value, list) else "a mapping"
+        return f"{kind} ({stream.getvalue().strip()})"
+    kind = "an integer" if isinstance(value, int) else "a number"
+    return f"{kind} ({value})"
+
+
+def _leaves(error):
+    """Innermost errors under anyOf/oneOf alternatives: what actually failed."""
+    return (
+        [leaf for e in error.context for leaf in _leaves(e)]
+        if error.context
+        else [error]
+    )
+
+
+def _expected_types(error):
+    """The types the value should have had, or None if its type is acceptable."""
+    leaves = _leaves(error)
+    if any(
+        l.validator != "type" or l.absolute_path != error.absolute_path for l in leaves
+    ):
+        return None
+    types = [leaf.validator_value for leaf in leaves]
+    types = [t for ts in types for t in ([ts] if isinstance(ts, str) else ts)]
+    return list(dict.fromkeys(types))
+
+
+def _custom_message(error):
+    """
+    Message from the `x-error-message` annotation on the failing schema node, if
+    any. For anyOf/oneOf, the annotation may sit on one of the alternatives (e.g.
+    "frequency, or null"), so look into their errors too.
+
+    A value of the wrong type gets the generic type message instead: annotations
+    describe what's wrong with a value of the right type. `{instance}` in the
+    message is the value; `{suggestion}` is a "did you mean" hint from the
+    node's `x-suggestions` list, compared case-insensitively.
+    """
+    if _expected_types(error) is not None:
+        return None
+
+    schema = error.schema if isinstance(error.schema, dict) else {}
+    message = schema.get("x-error-message")
+    if message is not None:
+        suggestion = _suggestion(
+            error.instance, schema.get("x-suggestions", []), fold_case=True
+        )
+        return message.format(instance=error.instance, suggestion=suggestion)
+
+    for suberror in error.context or []:
+        message = _custom_message(suberror)
+        if message is not None:
+            return message
+
+    return None
+
+
+def _value_message(error):
+    """Readable text for an error about a value; jsonschema's own if there's none."""
+    types = _expected_types(error)
+    if types is not None:
+        words = [_TYPE_WORDS[t] for t in types]
+        expected = (
+            ", ".join(words[:-1]) + " or " + words[-1] if len(words) > 1 else words[0]
+        )
+        return f"expected {expected}, got {_describe_value(error.instance)}"
+    if error.context:
+        # anyOf/oneOf: report what's wrong in the alternative of the right type
+        leaf = next((l for l in _leaves(error) if l.validator != "type"), None)
+        return _value_message(leaf) if leaf else error.message
+    if error.validator == "minProperties":
+        names = ", ".join(f"'{name}'" for name in error.instance)
+        entries = "entry" if error.validator_value == 1 else "entries"
+        got = f"{len(error.instance)} ({names})" if error.instance else "none"
+        return f"expected at least {error.validator_value} {entries}, got {got}"
+    if error.validator == "minLength":
+        return "must not be empty"
+    return error.message
 
 
 class Frontend(FrontendBase):
@@ -34,35 +170,95 @@ class Frontend(FrontendBase):
     This frontend reads specification from yaml file according to docs/specification.md
     Using this file, all interconnect attributes are populated
 
+    The document is first validated against spec.schema.yml, which covers its
+    structure: allowed and required fields, types and value formats. Only
+    specifications passing it are parsed further, which covers the remaining
+    checks: references between sections, defaults, and address ranges.
+
     It internally uses 'spec' dictionary for some processing and debug print
     """
 
-    def _suggest(self, name, allowed):
+    def _location(self, error, key=None):
         """
-        Return a ", did you mean 'x'?" suffix if `name` closely resembles one
-        of `allowed` (e.g. a singular/plural mix-up or a simple typo), else "".
+        "file:line:col: " of the deepest key on the error's path, or of `key` in
+        the mapping the path leads to (an unknown field, a malformed key). Errors
+        with nothing to point at, e.g. a missing top-level field, get "file: ".
         """
-        match = difflib.get_close_matches(name, allowed, n=1, cutoff=0.6)
-        return f", did you mean '{match[0]}'?" if match else ""
-
-    def _check_fields(self, where, keys, required, optional):
-        err = False
-
-        allowed = required | optional
-        for fieldname in keys:
-            if fieldname not in allowed:
-                self.errors.append(
-                    f"ERROR: {where} has invalid field '{fieldname}'"
-                    f"{self._suggest(fieldname, allowed)}, allowed ones are {sorted(allowed)}"
+        node, pos = self._positions, None
+        for step in error.absolute_path:
+            try:
+                pos = (
+                    node.lc.key(step) if isinstance(node, dict) else node.lc.item(step)
                 )
-                err = True
+                node = node[step]
+            except (AttributeError, KeyError, IndexError, TypeError):
+                break
+        if key is not None:
+            try:
+                pos = node.lc.key(key)
+            except (AttributeError, KeyError, TypeError):
+                pass
+        if pos is None:
+            return f"{self._filename}: "
+        return f"{self._filename}:{pos[0] + 1}:{pos[1] + 1}: "
 
-        for fieldname in required:
-            if fieldname not in keys:
-                self.errors.append(f"ERROR: {where} lacks required field '{fieldname}'")
-                err = True
+    def _schema_error_messages(self, error):
+        """Translate a single jsonschema ValidationError into error messages"""
+        path = [str(p) for p in error.absolute_path]
+        where = "top level" if not path else "'" + ".".join(path) + "'"
+        # errors about a key rather than its value: a malformed key (e.g. a connection
+        # name), or a key that requires another one to be present
+        key = None
+        if "propertyNames" in error.schema_path:
+            key = error.instance
+        elif error.validator == "dependentRequired":
+            key = next(
+                k
+                for k, deps in error.validator_value.items()
+                if k in error.instance and any(d not in error.instance for d in deps)
+            )
 
-        return err
+        message = _custom_message(error)
+        if message is not None:
+            return [f"{self._location(error, key)}ERROR: in {where}, {message}"]
+
+        if error.validator == "additionalProperties":
+            known = error.schema.get("properties", {})
+            allowed = sorted(known)
+            return [
+                f"{self._location(error, name)}ERROR: in {where}, unknown field '{name}'"
+                f"{_suggestion(name, allowed)}, allowed ones are {allowed}"
+                for name in error.instance
+                if name not in known
+            ]
+
+        message = _value_message(error)
+        return [f"{self._location(error, key)}ERROR: in {where}, {message}"]
+
+    def _validate_schema(self):
+        """
+        Validate self.spec against the specification schema, reporting all
+        violations at once. Returns True if any were found.
+        """
+        errors = sorted(
+            # the backend this frontend is combined with may extend the schema
+            _validator(getattr(self, "SCHEMA_EXTENSION", None)).iter_errors(self.spec),
+            key=lambda error: [str(p) for p in error.absolute_path],
+        )
+
+        # a value of the wrong type fails most other rules on it too -- report
+        # only the type mismatch
+        type_errors = {tuple(e.absolute_path) for e in errors if e.validator == "type"}
+        errors = [
+            e
+            for e in errors
+            if e.validator == "type" or tuple(e.absolute_path) not in type_errors
+        ]
+
+        for error in errors:
+            self.errors.extend(self._schema_error_messages(error))
+
+        return len(errors) > 0
 
     def read_yaml(self, filename):
         """Read yaml and populate internal representation according to the specification.md"""
@@ -75,95 +271,54 @@ class Frontend(FrontendBase):
             return 1
 
         ## Yaml
-        yaml = ruamel.yaml.YAML(typ="safe")
         with open(filename, "r") as stream:
             try:
-                self.spec = yaml.load(stream)
+                self.spec = ruamel.yaml.YAML(typ="safe").load(stream)
             except Exception as ex:  # noqa: BLE001
                 self.errors.append("ERROR: invalid yaml provided")
                 self.errors.append(ex.problem)
                 self.errors.append(str(ex.problem_mark))
                 return 2
+            # a second, round-trip load only for positions of keys in error
+            # messages; the parser itself uses the plain safe-loaded data
+            stream.seek(0)
+            self._filename = filename
+            self._positions = ruamel.yaml.YAML(typ="rt").load(stream)
 
-        ## Catch unknown/mistyped top level fields once, up front, with a
-        ## generic "did you mean" hint instead of a hardcoded check per field.
-        self._check_fields("top level", self.spec.keys(), set(), TOP_LEVEL_FIELDS)
-
-        ## Desc Version
-        if self.spec.pop("desc_version", "none") != 1.0:
-            self.errors.append("ERROR: specification version invalid or not provided")
+        ## Schema
+        # everything below can rely on the document's structure being valid
+        if self._validate_schema():
             return 3
 
-        ## Name
-        self._set_name(self.spec.pop("name", "interconnect"))
-
-        ## Version
-        self._set_version(self.spec.pop("version", 0))
+        ## Name, Version
+        self._set_name(self.spec.get("name", "interconnect"))
+        self._set_version(self.spec.get("version", 0))
 
         ## Globals
-        if self.spec.get("global") is None:
-            self.spec["global"] = {}
-        elif type(self.spec["global"]) is not dict:
-            self.errors.append(
-                "ERROR: field 'global' must contain dictionary of globals or be empty"
-            )
-            self.spec["global"] = {}
-        self.spec["global"]["addr_width"] = self.spec["global"].get("addr_width", 32)
-
-        for name, val in self.spec.pop("global", {}).items():
+        global_ = dict(self.spec.get("global") or {})
+        global_.setdefault("addr_width", 32)
+        for name, val in global_.items():
             self._add_global(name, val)
 
         ## Defaults
-        if self.spec.get("default") is None:
-            self.spec["default"] = {}
-        elif type(self.spec["default"]) is not dict:
-            self.errors.append(
-                "ERROR: field 'default' must contain dictionary of defaults or be empty"
-            )
-            self.spec["default"] = {}
-
-        for name, val in self.spec.pop("default", {}).items():
+        for name, val in (self.spec.get("default") or {}).items():
             self._add_default(name, val)
 
         ## Clocks
-        if "clocks" in self.spec:
-            if type(self.spec["clocks"]) is not dict:
-                self.errors.append(
-                    "ERROR: field 'clocks' must contain dictionary of clocks"
-                )
-                self.spec["clocks"] = {}
-            elif len(self.spec["clocks"].keys()) == 0:
-                self.errors.append("ERROR: at least one clock has to be created")
-        else:
-            self.spec["clocks"] = {self.defaults.get("clock", "clock"): None}
+        clocks = self.spec.get("clocks") or {self.defaults.get("clock", "clock"): None}
+        for clkname, clk in clocks.items():
+            frequency = (clk or {}).get("frequency")
 
-        for clkname, clk in self.spec.pop("clocks").items():
-            if clk is None:
-                clk = {"frequency": None}
-            elif type(clk) is not dict:
-                self.errors.append(
-                    f"ERROR: clock '{clkname}' does not have dictionary of attributes"
-                )
-
-            if len(clkname) == 0:
-                self.errors.append("ERROR: clock name must not be empty")
-                continue
-
-            if self._check_fields(
-                f"clock '{clkname}'", clk.keys(), set(), {"frequency"}
-            ):
-                continue
-
-            if clk.get("frequency") in ["n/a", None]:
+            if frequency in ["n/a", None]:
                 if "frequency" in self.defaults:
-                    clk["frequency"] = self.defaults["frequency"]
+                    frequency = self.defaults["frequency"]
                 else:
                     self.warns.append(
                         f"WARNING: clock '{clkname}' has no assigned frequency and no default was provided, defaulting to 'n/a', features depending on clock frequency will be unavailable"
                     )
-                    clk["frequency"] = "n/a"
+                    frequency = "n/a"
 
-            self._add_clock(clkname, clk["frequency"])
+            self._add_clock(clkname, frequency)
 
         if ("clock" in self.defaults) and (self.defaults["clock"] not in self.clocks):
             self.errors.append(
@@ -171,27 +326,11 @@ class Frontend(FrontendBase):
             )
 
         ## Ports
-        top_level_ports = 0
-        if "ports" in self.spec:
-            if type(self.spec["ports"]) is not dict:
-                self.errors.append(
-                    "ERROR: field 'ports' must contain dictionary of ports"
-                )
-                self.spec["ports"] = {}
-        else:
-            self.errors.append("ERROR: lack of 'ports' field")
-            self.spec["ports"] = {}
+        top_level_ports = len(self.spec["ports"])
+        for portname, port in self.spec["ports"].items():
+            self._add_port(portname, dict(port))
 
-        for portname, port in self.spec.pop("ports").items():
-            if type(port) is not dict:
-                self.errors.append(
-                    f"ERROR: top level port '{portname}' does not have dictionary of attributes"
-                )
-                port = {}
-
-            self._add_port(portname, port)
-            top_level_ports += 1
-
+        # ports missing a parameter that has no default are not added
         if len(self.ports) < 2:
             self.errors.append(
                 "ERROR: at least two valid top level ports must be provided"
@@ -210,180 +349,55 @@ class Frontend(FrontendBase):
             return 4
 
         ## Crossbars
-        if ("crossbars" in self.spec) != ("connections" in self.spec):
-            self.errors.append(
-                "ERROR: 'crossbars' and 'connections' must be both either defined or left for inference"
-            )
+        # the schema guarantees crossbars and connections are either both present or both absent
+        crossbars = self.spec.get("crossbars")
+        connections = self.spec.get("connections")
 
-        if "crossbars" in self.spec:
-            if type(self.spec["crossbars"]) is not dict:
-                self.errors.append(
-                    "ERROR: field 'crossbars' must contain dictionary of crossbars"
-                )
-                self.spec["crossbars"] = {}
-        else:
-            self.spec["crossbars"] = {"main": {"clock": None, "ports": {}}}
-            self.spec["connections"] = {}
-
-            xb_ports = self.spec["crossbars"]["main"]["ports"]
+        if crossbars is None:
+            crossbars = {"main": {"clock": None, "ports": {}}}
+            connections = {}
 
             for portname, port in self.ports.items():
                 role = port.attributes["role"]
-                xb_ports[portname] = {"role": role}
+                crossbars["main"]["ports"][portname] = {"role": role}
 
                 if role == "subordinate":
-                    self.spec["connections"][f"{portname} -> main.{portname}"] = {}
+                    connections[f"{portname} -> main.{portname}"] = {}
                 else:
-                    self.spec["connections"][f"main.{portname} -> {portname}"] = {}
+                    connections[f"main.{portname} -> {portname}"] = {}
 
-        for crossbar, cpars in self.spec.pop("crossbars").items():
-            if type(cpars) is not dict:
-                self.errors.append(
-                    f"ERROR: crossbar '{crossbar}' does not have dictionary of attributes"
-                )
-                cpars = {}
-
-            if self._check_fields(
-                f"crossbar '{crossbar}'", cpars.keys(), {"ports"}, {"clock"}
-            ):
-                continue
-
-            clock = cpars.get("clock")
-
-            if not clock:
-                clock = self.defaults.get("clock")
-                cpars["clock"] = clock
+        for crossbar, cpars in crossbars.items():
+            cpars = dict(cpars)
             # clock might still be null, in that case it is filled by propagation
-
+            cpars["clock"] = cpars.get("clock") or self.defaults.get("clock")
             ports = cpars["ports"]
 
-            if type(ports) is not dict:
-                self.errors.append(
-                    f"ERROR: crossbar '{crossbar}' field 'ports' must be a dictionary of ports"
-                )
-                continue
-
             self._add_crossbar(crossbar, cpars)
-
-            # some error occurred and it was not added
-            if crossbar not in self.components:
-                continue
-
             for portname, port in ports.items():
-                if type(port) is not dict:
-                    self.errors.append(
-                        f"ERROR: crossbar '{crossbar}' port '{portname}' does not have dictionary of attributes"
-                    )
-                    port = {}
-
-                name = crossbar + "_" + portname
-                self._add_port(name, port, parent=crossbar)
-
-            comp = self.components[crossbar]
-            srcportcnt = len(comp.srcports)
-            dstportcnt = len(comp.dstports)
-            if srcportcnt + dstportcnt < 2:
-                self.errors.append(
-                    f"ERROR: crossbar '{crossbar}' does not have enough valid ports, must be at least 2"
-                )
-            if srcportcnt < 1:
-                self.errors.append(
-                    f"ERROR: crossbar '{crossbar}' does not have enough valid subordinate ports, must be at least 1"
-                )
-            if dstportcnt < 1:
-                self.errors.append(
-                    f"ERROR: crossbar '{crossbar}' does not have enough valid manager ports, must be at least 1"
-                )
+                self._add_port(crossbar + "_" + portname, dict(port), parent=crossbar)
 
         ## Connections
-        if "connections" not in self.spec:
-            self.spec["connections"] = {}
-
-        if type(self.spec["connections"]) is not dict:
-            self.errors.append(
-                "ERROR: field 'connections' must contain dictionary of connections"
-            )
-            self.spec["connections"] = {}
-        elif len(self.spec["connections"].keys()) < top_level_ports:
+        if len(connections) < top_level_ports:
             self.errors.append(
                 "ERROR: insufficient number of connections, each top level port must include connection"
             )
 
-        for conn, params in self.spec.pop("connections").items():
-            parts = conn.split(" ")
-
-            if len(parts) != 3 or parts[1] != "->":
-                self.errors.append(
-                    f"ERROR: entry in 'connections' '{conn}' invalid: expected format 'a -> b'"
-                )
-                continue
-
-            if params is None:
-                params = {}
-
-            if type(params) is not dict:
-                self.errors.append(
-                    f"ERROR: connection '{conn}' should include dictionary of parameters"
-                )
-                continue
-
+        for conn, params in connections.items():
+            source, _, dest = conn.split(" ")
             self._connect(
-                parts[0].replace(".", "_"), parts[2].replace(".", "_"), params
+                source.replace(".", "_"), dest.replace(".", "_"), params or {}
             )
 
         ## Address map
-        if "address_map" not in self.spec:
-            self.errors.append("ERROR: lack of 'address_map' field")
-            self.spec["address_map"] = {}
-
-        if type(self.spec["address_map"]) is not dict:
-            self.errors.append(
-                "ERROR: field 'address_map' must contain dictionary of mappings"
-            )
-            self.spec["address_map"] = {}
-
-        for name, entry in self.spec.pop("address_map").items():
-            if type(entry) is not dict:
-                self.errors.append(
-                    f"ERROR: 'address_map' entry '{name}' should include dictionary of fields"
-                )
-                continue
-
-            if self._check_fields(
-                f"'address_map' entry '{name}'", entry, {"to", "base", "size"}, {"from"}
-            ):
-                continue
-
-            if type(entry["to"]) is not str:
-                self.errors.append(
-                    f"ERROR: 'address_map' entry '{name}' does not point to a valid port name - must be a single string"
-                )
-                continue
-
-            if type(entry["base"]) is not int:
-                self.errors.append(
-                    f"ERROR: 'address_map' entry '{name}' 'base' is not an integer"
-                )
-                continue
-
-            if type(entry["size"]) is not int:
-                self.errors.append(
-                    f"ERROR: 'address_map' entry '{name}' 'size' is not an integer"
-                )
-                continue
-
-            if entry.get("from") is None:
-                entry["from"] = list(self.srcports)
-            elif type(entry["from"]) is str:
-                entry["from"] = [entry["from"]]
-            elif type(entry["from"]) is not list:
-                self.errors.append(
-                    f"ERROR: 'address_map' entry '{name}' does not start from valid ports name, must be either string or list of strings"
-                )
-                continue
+        for name, entry in self.spec["address_map"].items():
+            sources = entry.get("from")
+            if sources is None:
+                sources = list(self.srcports)
+            elif isinstance(sources, str):
+                sources = [sources]
 
             self._add_address_map_entry(
-                name, entry["from"], entry["to"], entry["base"], entry["size"]
+                name, sources, entry["to"], entry["base"], entry["size"]
             )
 
         if len(self.errors) > 0:

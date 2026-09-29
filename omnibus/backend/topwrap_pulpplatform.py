@@ -351,11 +351,17 @@ class Backend:
         generate_hierarchy - generate real modules and create final topwrap hierarchy file
     """
 
+    #: schema of the parameters this backend adds, next to this file
+    SCHEMA_EXTENSION = "topwrap_pulpplatform.schema.yml"
+
     def __init__(self):
         self.parse_global = {}
         self.parse_default = {"axi_max_reads": self._parse_positive_int}
 
         self.parse_connections = {"axi_max_reads": self._parse_positive_int}
+        # connection parameters copied onto the port the connection starts at,
+        # where the components reading them look for them
+        self.port_connection_params = {"axi_max_reads"}
 
     def generate(self, outdir):
         """Convenience method for internal operation"""

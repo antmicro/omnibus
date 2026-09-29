@@ -1193,6 +1193,7 @@ version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "graphviz" },
+    { name = "jsonschema" },
     { name = "pyyaml" },
     { name = "ruamel-yaml" },
     { name = "topwrap" },
@@ -1207,6 +1208,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "graphviz" },
+    { name = "jsonschema", specifier = ">=4.18" },
     { name = "pytest", marker = "extra == 'test'" },
     { name = "pyyaml" },
     { name = "rich", marker = "extra == 'test'" },

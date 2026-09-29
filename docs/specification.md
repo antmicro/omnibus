@@ -99,11 +99,13 @@ For allowed set of values see corresponding fields in other sections.
 
 #### Backend Specific
 ##### Pulp Platform Axi
+Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`. Other backends report them as unknown, with a warning.
+
 :::{list-table}
 * - **Field Name**
   - **Description**
 * - `axi_max_reads`
-  - max number of reads in axi
+  - max number of outstanding reads of data width and ID width converters
 :::
 
 ### Clocks
@@ -116,7 +118,7 @@ name:
 ```
 where `name` has to be unique clock identifier.
 `frequency` can be omitted, in which case it is taken from [Defaults](#Defaults), or set to `n/a` if not available.
-Valid values for `frequency` are any positive floating point numbers, they can include suffix `Hz`, `KHz,`, `K`, `MHz`, `M`, `GHz`, or `G`, which scales the value accordingly.
+Valid values for `frequency` are positive numbers in Hz (e.g. `100e6`), or strings made of an optional positive integer and an optional suffix `Hz`, `k`, `kHz`, `M`, `MHz`, `G` or `GHz`, which scales the value accordingly (e.g. `"100MHz"`, `"25k"`), or `n/a`. Strings can't hold fractions or exponents: write `"2500kHz"` or `2.5e6` rather than `"2.5MHz"`.
 
 When omitted, one clock with name `clk` and default frequency is created.
 
@@ -222,6 +224,8 @@ If port is crossbar port then its name is "crossbar.port", e.g. `main.cpu`.
 
 #### Backend specific parameters
 ##### Pulp Platform Axi
+Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`. Other backends report them as unknown, with a warning.
+
 :::{list-table}
 * - **Field Name**
   - **Optional**
@@ -232,7 +236,7 @@ If port is crossbar port then its name is "crossbar.port", e.g. `main.cpu`.
   - yes
   - any positive integer
   - value from [Defaults](#Defaults) if exists, otherwise `1`
-  - number of maximum axi reads
+  - max number of outstanding reads of data width and ID width converters on this connection
 :::
 
 ### Address Map

@@ -41,6 +41,17 @@ They read internal list of components and create appropriate output.
 
 Generally, they should expose simple `generate(outdir)` interface, but they are allowed to use different one.  
 
+A backend can accept specification parameters of its own, in `default` and in connections.
+It declares them in three places:
+- `parse_default` and `parse_connections`: parameter name to parse function, set in its `__init__`.
+  `Interconnect` adds the common parameters to them, and frontends warn about parameters found in neither.
+- `SCHEMA_EXTENSION`: file name of a JSON Schema fragment next to the backend, or `None`.
+  Properties under its `$defs/default` extend `default`, those under `$defs/connection` extend connection parameters.
+  The YAML frontend validates specifications against `frontend/spec.schema.yml` with the fragment of the selected backend.
+- `port_connection_params`: connection parameters that internal processing copies onto the port each connection starts at, for components that read them from ports.
+
+See `topwrap_pulpplatform` and its `topwrap_pulpplatform.schema.yml` for an example.
+
 ### Graphviz
 Argument name: "graphviz".  
 

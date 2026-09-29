@@ -191,7 +191,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
             Internally the tool copies parameters from one port to each of its neighbors, ignoring direction of edges
 
-            Certain parameters assignable to edge are also copied to neighboring ports
+            Connection parameters the backend lists in port_connection_params are also
+            copied to the port each connection starts at
 
             data width is special in that it can be forced on connections
             to deal with this:
@@ -217,12 +218,12 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
               later, id_width_extender might be needed
             """
 
+            # backend-specific parameters its components read from ports
             for portname, port in self.ports.items():
                 for edge in port.edges:
-                    if edge.attributes.get("axi_max_reads"):
-                        port.attributes["axi_max_reads"] = edge.attributes[
-                            "axi_max_reads"
-                        ]
+                    for param in self.port_connection_params:
+                        if edge.attributes.get(param):
+                            port.attributes[param] = edge.attributes[param]
 
             for portname, port in self.ports.items():
                 for edge in port.edges:

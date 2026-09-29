@@ -1,0 +1,257 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+#
+# JSON Schema for the Omnibus YAML interconnect specification,
+# see docs/specification.md. Written in YAML; validates the parsed document, so
+# spec files stay YAML too.
+#
+# omnibus/frontend/yaml.py validates every spec against this schema before
+# running its own checks, and derives its "did you mean" hints from the field
+# names defined here. Two kinds of rules are intentionally NOT expressed here and
+# stay in the parser:
+#   - cross-references (port/clock names that must exist elsewhere in the spec,
+#     address range fitting in addr_width)
+#   - unknown keys under `global`, `default` and connection parameters, which the
+#     parser reports as warnings rather than errors -- those mappings therefore
+#     list their known keys but do not forbid additional ones.
+#
+# Parameters that only a backend understands are not defined here either: each
+# backend can extend `default` and connection parameters with a schema fragment of
+# its own (e.g. omnibus/backend/topwrap_pulpplatform.schema.yml). The frontend
+# registers the selected backend's fragment as urn:omnibus:backend, which the
+# $refs below point at.
+#
+# `x-error-message` is a custom annotation (ignored by JSON Schema validators):
+# when a node carrying it fails validation, the parser reports that message
+# instead of a generated one. `{instance}` is replaced with the offending value,
+# `{suggestion}` with a ", did you mean 'x'?" hint when the value resembles one of
+# the node's `x-suggestions` (another custom annotation). A value of the wrong
+# type gets the parser's generic type message instead.
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/antmicro/omnibus/spec.schema.yml
+title: Omnibus interconnect specification
+type: object
+required: [desc_version, ports, address_map]
+additionalProperties: false
+dependentRequired:
+  crossbars: [connections]
+  connections: [crossbars]
+
+properties:
+  desc_version:
+    description: Version of the specification format used.
+    const: 1.0
+
+  name:
+    description: Interconnect name.
+    type: string
+    minLength: 1
+    default: interconnect
+
+  version:
+    description: Interconnect version.
+    oneOf:
+      - type: integer
+      - type: string
+        minLength: 1
+    default: 0
+    x-error-message: must be an integer or a non-empty string
+
+  global:
+    description: Global interconnect configuration options.
+    type: [object, "null"]
+    properties:
+      addr_width:
+        description: Address width used by the address map and components.
+        $ref: "#/$defs/positive_int"
+        default: 32
+
+  default:
+    description: Default values for parameters used throughout the specification.
+    type: [object, "null"]
+    properties:
+      data_width:
+        $ref: "#/$defs/positive_int"
+      clock:
+        $ref: "#/$defs/name"
+      frequency:
+        $ref: "#/$defs/frequency"
+      protocol:
+        $ref: "#/$defs/protocol"
+    # backend-specific defaults
+    $ref: "urn:omnibus:backend#/$defs/default"
+
+  clocks:
+    description: >-
+      Clocks used in the interconnect, each implies a reset domain. When omitted,
+      a single clock named after default.clock (or `clock`) is created.
+    type: object
+    minProperties: 1
+    propertyNames:
+      minLength: 1
+      x-error-message: clock name must not be empty
+    additionalProperties:
+      description: A clock; null means "take frequency from default".
+      type: [object, "null"]
+      additionalProperties: false
+      properties:
+        frequency:
+          anyOf:
+            - $ref: "#/$defs/frequency"
+            - type: "null"
+
+  ports:
+    description: Top level interconnect ports.
+    type: object
+    minProperties: 2
+    $ref: "#/$defs/both_roles"
+    additionalProperties:
+      type: object
+      required: [role]
+      additionalProperties: false
+      properties:
+        role:
+          $ref: "#/$defs/role"
+        data_width:
+          $ref: "#/$defs/positive_int"
+        clock:
+          $ref: "#/$defs/name"
+        protocol:
+          $ref: "#/$defs/protocol"
+
+  crossbars:
+    description: >-
+      Interconnect crossbars. When omitted (together with connections), a single
+      all-to-all crossbar is inferred.
+    type: object
+    additionalProperties:
+      type: object
+      required: [ports]
+      additionalProperties: false
+      properties:
+        clock:
+          description: Crossbar clock; inferred from the design when unset.
+          anyOf:
+            - $ref: "#/$defs/name"
+            - type: "null"
+        ports:
+          type: object
+          minProperties: 2
+          $ref: "#/$defs/both_roles"
+          additionalProperties:
+            type: object
+            required: [role]
+            additionalProperties: false
+            properties:
+              role:
+                $ref: "#/$defs/role"
+
+  connections:
+    description: >-
+      Connections written as "a -> b", from interconnect subordinate ports towards
+      manager ports. Crossbar ports are referenced as "crossbar.port".
+    type: object
+    propertyNames:
+      pattern: "^[^\\s]+ -> [^\\s]+$"
+      x-error-message: "invalid connection '{instance}', expected format 'a -> b'"
+    additionalProperties:
+      type: [object, "null"]
+      properties:
+        registers:
+          description: Number of skid buffers.
+          $ref: "#/$defs/positive_int"
+        cdc:
+          description: Treat this connection as a clock propagation barrier.
+          type: boolean
+        data_width:
+          description: >-
+            Force the data width of both ports this connection joins. Widths then
+            propagate from them as from any other port, and data width converters
+            are inserted where neighbouring ports end up with different widths.
+          $ref: "#/$defs/positive_int"
+        protocol:
+          description: Treat this connection as a protocol propagation barrier.
+          type: boolean
+      # backend-specific connection parameters
+      $ref: "urn:omnibus:backend#/$defs/connection"
+
+  address_map:
+    description: Address map entries, each identified by a unique name.
+    type: object
+    additionalProperties:
+      type: object
+      required: [to, base, size]
+      additionalProperties: false
+      properties:
+        from:
+          description: Source port(s) the entry applies to; all subordinate ports by default.
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          x-error-message: must be a port name or a list of port names
+        to:
+          description: Destination (manager) port.
+          type: string
+        base:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 0
+
+$defs:
+  name:
+    type: string
+    minLength: 1
+
+  positive_int:
+    type: integer
+    minimum: 1
+
+  role:
+    enum: [subordinate, manager]
+
+  both_roles:
+    # At least one subordinate and at least one manager port. Mappings have no
+    # `contains`, but since `role` is required and has only two values, "at least
+    # one manager" is the same as "not every port is a subordinate" (and vice versa).
+    # Ports lacking `role` do not count, they are reported as missing it instead.
+    allOf:
+      - not:
+          additionalProperties:
+            required: [role]
+            properties:
+              role:
+                const: subordinate
+        x-error-message: at least one manager port must be provided
+      - not:
+          additionalProperties:
+            required: [role]
+            properties:
+              role:
+                const: manager
+        x-error-message: at least one subordinate port must be provided
+
+  protocol:
+    description: Bus protocol, matched case-insensitively.
+    type: string
+    pattern: "^(?:[Aa][Xx][Ii]4?(?:[\\s_]?[Ll][Ii][Tt][Ee])?|[Aa][Hh][Bb]3?|[Aa][Pp][Bb]3?)$"
+    x-error-message: "invalid protocol '{instance}'{suggestion}, expected one of [axi4, ahb3, apb3, axi4lite]"
+    x-suggestions: [axi4, ahb3, apb3, axi4lite]
+
+  frequency:
+    description: >-
+      Positive number of Hz, or a string with an optional positive integer and an
+      optional Hz/k/kHz/M/MHz/G/GHz suffix, or "n/a".
+    oneOf:
+      - type: number
+        exclusiveMinimum: 0
+      - type: string
+        pattern: "^(?:n/a|(?:0*[1-9][0-9]*)?(?:k|M|G)?(?:[Hh]z)?)$"
+        minLength: 1
+    x-error-message: >-
+      invalid frequency '{instance}', must be a positive number, or a positive
+      integer with an optional Hz/k/kHz/M/MHz/G/GHz suffix, or 'n/a'

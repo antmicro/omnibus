@@ -14,10 +14,14 @@ class Backend:
     The `generate` method can be used to set filename, set whether to display the graph, set whether to color it according to some parameter, set colorscheme, and whether to shorten the names used in the graph
     """
 
+    #: no parameters of its own, so no schema extension
+    SCHEMA_EXTENSION = None
+
     def __init__(self):
         self.parse_global = {}
         self.parse_default = {}
         self.parse_connections = {}
+        self.port_connection_params = set()
 
     def generate(
         self,

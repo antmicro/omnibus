@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+#no default section: ports lacking clock, protocol and data_width can't be completed
+
+ports:
+  a:
+    role: "subordinate"
+  b:
+    role: "manager"
+
+address_map:
+  b:
+    to: b
+    size: 0
+    base: 0

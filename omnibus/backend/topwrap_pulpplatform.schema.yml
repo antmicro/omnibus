@@ -1,0 +1,26 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+#
+# Parameters the topwrap_pulpplatform backend adds to the specification, as an
+# extension of omnibus/frontend/spec.schema.yml: properties under $defs/default
+# are accepted in `default`, those under $defs/connection in every connection's
+# parameters. See "Backends" in docs/toolorganization.md.
+
+$schema: https://json-schema.org/draft/2020-12/schema
+
+$defs:
+  axi_max_reads:
+    description: >-
+      Max number of outstanding reads of the data width and ID width converters
+      (their AxiMaxReads parameter).
+    $ref: "https://github.com/antmicro/omnibus/spec.schema.yml#/$defs/positive_int"
+
+  default:
+    properties:
+      axi_max_reads:
+        $ref: "#/$defs/axi_max_reads"
+
+  connection:
+    properties:
+      axi_max_reads:
+        $ref: "#/$defs/axi_max_reads"

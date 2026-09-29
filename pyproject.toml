@@ -12,6 +12,7 @@ dependencies=[
     "ruamel.yaml", 
     "pyyaml", 
     "graphviz",
+    "jsonschema>=4.18",
     "topwrap @ git+https://github.com/antmicro/topwrap@8ada28df663bc3329ba13e8df430c0a2703c232b"]
 
 [project.optional-dependencies]
