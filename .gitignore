@@ -12,3 +12,5 @@ tests/output.txt
 axi/
 common_cells/
 tech_cells_generic/
+
+artifacts/

@@ -32,6 +32,9 @@ cp -f out/$1.yml ./
 #build verilog
 topwrap build --design $1.yml --log-level error
 
+mkdir -p artifacts/$1/
+cp -r build out $1.yml artifacts/$1/
+
 #code check, removing lines with time and commit 
 diff <(grep -v build/$1.sv -e 'Automatically generated') <(grep -v ./tests/ideal/topwrap/$1.sv -e 'Automatically generated')
 

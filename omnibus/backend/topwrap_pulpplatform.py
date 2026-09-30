@@ -78,6 +78,7 @@ class PulpCrossbar(MappedComponent):
             yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
             yaml.dump(config, file)
+            file.flush()
 
             prevdir = os.getcwd()
             os.chdir(outdir)
