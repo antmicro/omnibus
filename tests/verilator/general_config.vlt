@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `verilator_config 
-//topwrap generates file without EoF NewLine
-lint_off -rule EOFNEWLINE -file "*build/*.sv*"
-
 //outports are assigned near destination rather than near source
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*output*src*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*output*dst*"
@@ -22,10 +19,6 @@ lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*bus_clk*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*clk_override*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*force_halt*"
 lint_off -rule PINMISSING -file "*build/*.sv*" -contents "*" -match "*rst_l*"
-
-//left like that for convenience
-lint_off -rule UNUSEDSIGNAL -file "*out/src/axi_buffer_wrapper.sv*" 
-lint_off -rule UNDRIVEN -file "*out/src/axi_buffer_wrapper.sv*" 
 
 //unlikely to cause problems
 lint_off -rule SPLITVAR -file "*" -contents "*" -match "*bitwidth is 1*"
