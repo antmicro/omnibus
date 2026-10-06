@@ -14,7 +14,7 @@ class TestTopwarpIntegration:
 
     def test_spec(self):
         assert 0 == subprocess.call(
-            "tests/generate.sh MyInterconnect tests/spec/spec2.yml",
+            "tests/generate.sh MyInterconnect examples/spec.yml",
             shell=True,
             executable="/bin/bash",
         )

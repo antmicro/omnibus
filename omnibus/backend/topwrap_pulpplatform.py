@@ -32,7 +32,7 @@ class PulpCrossbar(MappedComponent):
         self.core = f"axi_crossbar_{self.name}"
 
     def generate_verilog(self, outdir, exists, errors, warns):
-        # it appears that the slave/master used in script generation describes connected device role, rather than crossbar port role
+        # the slave/master used in script generation describes connected device role, rather than crossbar port role
         # therefore swap them internally
         plugin_path = resources.files("omnibus")
         sys.path.append(os.path.join(plugin_path, "third_party", "axi", "scripts"))
@@ -65,11 +65,14 @@ class PulpCrossbar(MappedComponent):
             slaves[portname] = {"offset": offset, "size": size}
 
         with tempfile.NamedTemporaryFile("w") as file:
+            srcattr = next(iter(self.srcports.values())).attributes
             config = {
                 "parameters": {
                     "output_file": os.path.join("src", f"axi_crossbar_{self.name}.sv"),
                     "slaves": slaves,
                     "masters": masters,
+                    "addr_width": self.glbattr["addr_width"],
+                    "data_width": srcattr["data_width"],
                     "atop": 0,
                 },
                 "vlnv": f"vendor:library:axi_crossbar_{self.name}:1.0",

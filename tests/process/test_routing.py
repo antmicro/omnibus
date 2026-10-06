@@ -7,6 +7,7 @@ from omnibus import InterconnectBuilder
 
 from tests.filediff import filediff
 
+
 # These tests check whether routing properly finds paths for each crossbars
 class TestRouting:
     def _test(self, name):
@@ -17,7 +18,9 @@ class TestRouting:
         ic._print_set_output("tests/output.txt")
         ic._print_address_maps()
 
-        assert not filediff("tests/output.txt", f"tests/ideal/process/routing/{name}.txt")
+        assert not filediff(
+            "tests/output.txt", f"tests/ideal/process/routing/{name}.txt"
+        )
 
     def test_simple(self):
         self._test("simple")
