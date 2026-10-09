@@ -290,26 +290,22 @@ class PrAXIAHB(MappedComponent):
         inf = os.path.join(resources.files("omnibus"), "interfaces")
         dstinf = os.path.join(outdir, "modules", "interfaces")
 
-        filename = f"{self.core}.sv"
-        shutil.copyfile(
-            os.path.join(src, filename),
-            os.path.join(dst, filename),
-        )
-
-        shutil.copyfile(
-            os.path.join(src, "beh_lib.sv"), os.path.join(dst, "beh_lib.sv")
-        )
+        for filename in (f"{self.core}.sv", "axi_prconv_fifo.sv"):
+            shutil.copyfile(
+                os.path.join(src, filename),
+                os.path.join(dst, filename),
+            )
+            filelist.append(str(os.path.join("src", filename)))
 
         shutil.copyfile(os.path.join(inf, "ahb.yml"), os.path.join(dstinf, "ahb.yml"))
-
-        filelist.append(str(os.path.join("src", filename)))
-        filelist.append(str(os.path.join("src", "beh_lib.sv")))
 
     def generate_hierarchy(self, ports, params):
         srcattr = next(iter(self.srcports.values())).attributes
 
         set_clock_and_reset(ports, srcattr["clock"])
 
+        params["AxiDataWidth"] = srcattr["data_width"]
+        params["AxiAddrWidth"] = self.glbattr["addr_width"]
         params["AxiIdWidth"] = srcattr["id_width"]
 
 

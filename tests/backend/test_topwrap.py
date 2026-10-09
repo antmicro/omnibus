@@ -70,6 +70,6 @@ class TestTopwrapBackend:
         assert os.path.isfile("tests/out/src/axi_prconv_axi_axilite.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_axi_apb.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_axi_ahb.sv")
-        assert os.path.isfile("tests/out/src/beh_lib.sv")
+        assert os.path.isfile("tests/out/src/axi_prconv_fifo.sv")
         assert os.path.isfile("tests/out/modules/interfaces/apb.yml")
         assert os.path.isfile("tests/out/modules/interfaces/ahb.yml")

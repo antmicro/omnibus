@@ -3,12 +3,14 @@
 `tests/sim` holds simulation tests of the RTL Omnibus generates.
 Each specification in `tests/sim/specs/` is turned into SystemVerilog, compiled with [Verilator](https://verilator.org), and exercised by [cocotb](https://www.cocotb.org/) 2.0 tests using [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi) managers and memories.
 
+The bridge `axi_prconv_axi_ahb` also has UVM tests, with the AXI4 and AHB AVIPs on Verilator; see [uvmtests.md](uvmtests.md).
+
 This page describes how the suite is organized, what it generates while running, and how a single test runs, for reviewers of the suite and for anyone extending it.
 
 ## Quick start
 
 Requirements:
-- Verilator on `PATH`; the suite was run with v5.052 and 5.053.
+- Verilator on `PATH`; the suite was run with v5.052, 5.053 and a newer commit of Verilator's master.
 - Topwrap (see [Installation](installation.md)).
 - The Python packages in the `sim` extra: `pip install ".[sim]"` (cocotb, cocotbext-axi, pytest).
 - The pulp submodules in `omnibus/third_party` (`axi`, `common_cells`, `tech_cells_generic`): `git submodule update --init`.
