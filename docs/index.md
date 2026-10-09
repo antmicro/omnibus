@@ -9,5 +9,6 @@ userguide
 examples
 specification
 toolorganization
+simulationtests
 plannedextensions
 ```

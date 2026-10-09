@@ -9,7 +9,3 @@ tests/out/
 tests/output.txt
 tests/sim/.build/
 
-#pulled from git to make final project
-/axi/
-/common_cells/
-/tech_cells_generic/

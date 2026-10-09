@@ -15,6 +15,7 @@ Checked so far:
 from collections import defaultdict, deque
 
 import cocotb
+from cocotb.handle import HierarchyObject, LogicObject
 from cocotb.simtime import get_sim_time
 from cocotb.triggers import RisingEdge
 
@@ -47,7 +48,9 @@ MAX_REPORTED = 20
 
 
 class AxiChecker:
-    def __init__(self, dut, port: str, clock, reset):
+    def __init__(
+        self, dut: HierarchyObject, port: str, clock: LogicObject, reset: LogicObject
+    ):
         self.port = port
         self.clock = clock
         self.reset = reset
@@ -132,7 +135,7 @@ class AxiChecker:
                 self._violation(f"R with ID {rid} and no outstanding read")
                 return
             self.r_beats[rid] += 1
-            last = int(p["rlast"]) if "rlast" in p else 1
+            last = int(p.get("rlast", 1))
             expected = self.ar_lens[rid][0] + 1
             if last or self.r_beats[rid] > expected:
                 if self.r_beats[rid] != expected:

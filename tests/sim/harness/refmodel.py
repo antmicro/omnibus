@@ -13,7 +13,7 @@ Omnibus's routing code -- expected results must not inherit its bugs.
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import yaml
+import ruamel.yaml
 
 from omnibus import InterconnectBuilder
 
@@ -84,17 +84,6 @@ class SpecModel:
         ]
 
 
-def clock_port_names(clock: str) -> tuple[str, str]:
-    """
-    (clock, reset) port names omnibus gives a clock -- mirrors
-    set_clock_and_reset() in omnibus's pulp platform backend.
-    """
-    stem = clock.removeprefix("clk_").removeprefix("clk")
-    if stem:
-        return f"clk_{stem}_i", f"rst_{stem}_ni"
-    return "clk_i", "rst_ni"
-
-
 def load(spec_path: Path) -> SpecModel:
     ic = InterconnectBuilder()
     if ic.read_yaml(str(spec_path)) != 0:
@@ -118,7 +107,7 @@ def load(spec_path: Path) -> SpecModel:
         for name, clk in ic.clocks.items()
     }
 
-    raw = yaml.safe_load(spec_path.read_text())
+    raw = ruamel.yaml.YAML(typ="safe").load(spec_path)
     all_sources = tuple(p.name for p in ports.values() if p.role == "subordinate")
     windows = []
     for name, entry in raw["address_map"].items():

@@ -33,10 +33,6 @@ EXPECTED_MODULES = {
 # Known failures, keyed by (spec, tier or "build"). strict: a fix makes the test
 # XPASS and fail, so the entry gets removed together with the fix.
 XFAIL = {
-    ("regslice", "tier1_smoke"): (
-        "axi_buffer_wrapper never drives the R and B payload (rdata, rid, rresp, rlast, "
-        "bid, bresp) towards the manager, only valid/ready"
-    ),
     ("two_windows", "build"): (
         "a target with two address windows: process() records a misleading 'rules different "
         "based on source id' error, the CLI still exits 0, and the generated crossbar keeps "

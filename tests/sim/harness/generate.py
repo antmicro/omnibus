@@ -142,7 +142,11 @@ def build(spec: Path, work_dir: Path = DEFAULT_WORK_DIR, waves: bool = False) ->
         # pulp first: the generated RTL relies on macros leaking from axi/typedef.svh
         sources=[*pulp_sources, *generated, out / "build" / f"{model.name}.sv"],
         includes=pulp_includes,
-        build_args=[*VERILATOR_ARGS, *pulp_options],
+        build_args=[
+            *VERILATOR_ARGS,
+            *pulp_options,
+            *(["--trace-fst"] if waves else []),
+        ],
         hdl_toplevel=model.name,
         build_dir=sim_build,
         timescale=("1ns", "1ps"),

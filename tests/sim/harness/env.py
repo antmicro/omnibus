@@ -25,6 +25,8 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, with_timeout
 from cocotbext.axi import AxiBus, AxiLiteBus, AxiLiteRam, AxiMaster, AxiRam
 
+from omnibus.backend.topwrap_pulpplatform import set_clock_and_reset
+
 from . import refmodel
 from .checker import AxiChecker
 
@@ -45,7 +47,9 @@ class IcEnv:
         self.clocks = {}
         self.resets = {}
         for name, freq in self.model.clocks.items():
-            clk, rst = refmodel.clock_port_names(name)
+            ports = {}
+            set_clock_and_reset(ports, name)
+            clk, rst = ports["clk_i"], ports["rst_ni"]
             # period in ps, even: cocotb's Clock splits it into two equal halves
             self.clocks[name] = (getattr(dut, clk), 2 * round(1e12 / freq / 2))
             self.resets[name] = getattr(dut, rst)

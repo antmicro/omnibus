@@ -31,7 +31,7 @@ async def port_widths(dut):
 
 @cocotb.test()
 async def reset_idle(dut):
-    """No VALID the DUT drives rises during reset or in the idle cycles after it."""
+    """No VALID driven by DUT rises during reset or in the idle cycles after it."""
     env = IcEnv(dut)
     outputs = []
     for port in env.model.managers:
