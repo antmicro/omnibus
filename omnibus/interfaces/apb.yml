@@ -8,14 +8,14 @@ id:
 signals:
   required:
     out:
-      ADDR: addr
-      PROT: prot
-      SEL: sel
-      ENABLE: enable
-      WRITE: write
-      WDATA: wdata
-      STRB: strb
+      PADDR: paddr
+      PPROT: pprot
+      PSEL: psel
+      PENABLE: penable
+      PWRITE: pwrite
+      PWDATA: pwdata
+      PSTRB: pstrb
     in:
-      READY: ready
-      RDATA: rdata
-      SLVERR: slverr
+      PREADY: pready
+      PRDATA: prdata
+      PSLVERR: pslverr

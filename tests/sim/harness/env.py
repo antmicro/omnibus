@@ -23,12 +23,13 @@ from pathlib import Path
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, with_timeout
-from cocotbext.axi import AxiBus, AxiLiteBus, AxiLiteRam, AxiMaster, AxiRam
+from cocotbext.axi import AxiBus, AxiLiteBus, AxiLiteRam, AxiMaster, AxiRam, ApbBus, ApbRam
 
 from omnibus.backend.topwrap_pulpplatform import set_clock_and_reset
 
 from . import refmodel
-from .checker import AxiChecker
+from .axichecker import AxiChecker
+from .apbchecker import ApbChecker
 
 RESET_CYCLES = 10
 # per bus operation, in cycles of the slowest clock
@@ -59,7 +60,7 @@ class IcEnv:
         logging.getLogger(f"cocotb.{dut._name}").setLevel(logging.WARNING)
 
         self.managers: dict[str, AxiMaster] = {}
-        self.memories: dict[str, AxiRam | AxiLiteRam] = {}
+        self.memories: dict[str, AxiRam | AxiLiteRam | ApbRam] = {}
         self.checkers: list[AxiChecker] = []
         mem_size = 2**self.model.addr_width
         for port in self.model.managers:
@@ -71,14 +72,19 @@ class IcEnv:
             self.checkers.append(AxiChecker(dut, port.name, clk, rst))
         for port in self.model.memories:
             clk, rst = self._clock_reset(port)
-            if port.protocol == "axi4lite":
+            if port.protocol == "apb3":
+                bus = ApbBus.from_prefix(dut, port.name)
+                mem = ApbRam(bus, clk, rst, reset_active_level=False, size=mem_size)
+                self.checkers.append(ApbChecker(dut, port.name, clk, rst))
+            elif port.protocol == "axi4lite":
                 bus = AxiLiteBus.from_prefix(dut, port.name)
                 mem = AxiLiteRam(bus, clk, rst, reset_active_level=False, size=mem_size)
+                self.checkers.append(AxiChecker(dut, port.name, clk, rst))
             else:
                 bus = AxiBus.from_prefix(dut, port.name)
                 mem = AxiRam(bus, clk, rst, reset_active_level=False, size=mem_size)
+                self.checkers.append(AxiChecker(dut, port.name, clk, rst))
             self.memories[port.name] = mem
-            self.checkers.append(AxiChecker(dut, port.name, clk, rst))
         self.mem_index = {name: i for i, name in enumerate(sorted(self.memories))}
 
     def _clock_reset(self, port: refmodel.Port):

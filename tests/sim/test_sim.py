@@ -28,6 +28,7 @@ EXPECTED_MODULES = {
     "dw_mix": {"axi_dw_conv_wrapper"},
     "lite": {"axi_prconv_axi_axilite"},
     "regslice": {"axi_buffer_wrapper"},
+    "apb": {"axi_prconv_axi_apb"},
 }
 
 # Known failures, keyed by (spec, tier or "build"). strict: a fix makes the test

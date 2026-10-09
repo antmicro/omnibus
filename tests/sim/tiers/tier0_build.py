@@ -17,16 +17,29 @@ async def port_widths(dut):
     for port in env.model.ports.values():
         if port.name in env.model.unsupported:
             continue
-        for sig, width in [("wdata", port.data_width), ("rdata", port.data_width)]:
-            handle = getattr(dut, f"{port.name}_{sig}")
-            assert len(handle) == width, (
-                f"{port.name}_{sig} is {len(handle)} bits, spec: {width}"
-            )
-        for sig in ("awaddr", "araddr"):
-            handle = getattr(dut, f"{port.name}_{sig}")
-            assert len(handle) == env.model.addr_width, (
-                f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
-            )
+
+        if port.protocol == "apb3":
+            for sig, width in [("pwdata", port.data_width), ("prdata", port.data_width)]:
+                handle = getattr(dut, f"{port.name}_{sig}")
+                assert len(handle) == width, (
+                    f"{port.name}_{sig} is {len(handle)} bits, spec: {width}"
+                )
+            for sig in ["paddr"]:
+                handle = getattr(dut, f"{port.name}_{sig}")
+                assert len(handle) == env.model.addr_width, (
+                    f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
+                )
+        else:
+            for sig, width in [("wdata", port.data_width), ("rdata", port.data_width)]:
+                handle = getattr(dut, f"{port.name}_{sig}")
+                assert len(handle) == width, (
+                    f"{port.name}_{sig} is {len(handle)} bits, spec: {width}"
+                )
+            for sig in ("awaddr", "araddr"):
+                handle = getattr(dut, f"{port.name}_{sig}")
+                assert len(handle) == env.model.addr_width, (
+                    f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
+                )
 
 
 @cocotb.test()
@@ -35,8 +48,12 @@ async def reset_idle(dut):
     env = IcEnv(dut)
     outputs = []
     for port in env.model.managers:
+        if port.protocol == "apb3":
+            continue
         outputs += [getattr(dut, f"{port.name}_{s}valid") for s in ("b", "r")]
     for port in env.model.memories:
+        if port.protocol == "apb3":
+            continue
         outputs += [getattr(dut, f"{port.name}_{s}valid") for s in ("aw", "w", "ar")]
 
     env.start_clocks()

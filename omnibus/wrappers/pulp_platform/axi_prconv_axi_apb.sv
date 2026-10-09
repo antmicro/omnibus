@@ -57,16 +57,16 @@ module axi_prconv_axi_apb #(
       input  wire                               i_src_rready,
 
 
-      output wire [AxiAddrWidth - 1 :0]         o_dst_addr,
-      output wire  [2:0]                        o_dst_prot,
-      output wire  [0:0]                        o_dst_sel,
-      output wire                               o_dst_enable,
-      output wire                               o_dst_write,
-      output wire [AxiDataWidth - 1:0]          o_dst_wdata,
-      output wire [AxiDataWidth/8 - 1:0]        o_dst_strb,
-      input  wire                               i_dst_ready,
-      input  wire [AxiDataWidth - 1:0]          i_dst_rdata,
-      input  wire                               i_dst_slverr
+      output wire [AxiAddrWidth - 1 :0]         o_dst_paddr,
+      output wire  [2:0]                        o_dst_pprot,
+      output wire  [0:0]                        o_dst_psel,
+      output wire                               o_dst_penable,
+      output wire                               o_dst_pwrite,
+      output wire [AxiDataWidth - 1:0]          o_dst_pwdata,
+      output wire [AxiDataWidth/8 - 1:0]        o_dst_pstrb,
+      input  wire                               i_dst_pready,
+      input  wire [AxiDataWidth - 1:0]          i_dst_prdata,
+      input  wire                               i_dst_pslverr
     );
 
     typedef logic [AxiIdWidth-1:0]        id_t;
@@ -222,16 +222,16 @@ module axi_prconv_axi_apb #(
     assign o_src_rvalid = src_resp.r_valid;
     assign src_req.r_ready = i_src_rready;
 
-    assign o_dst_addr       = dst_req.paddr;
-    assign o_dst_prot       = dst_req.pprot;
-    assign o_dst_enable     = dst_req.penable;
-    assign o_dst_write      = dst_req.pwrite;
-    assign o_dst_wdata      = dst_req.pwdata;
-    assign o_dst_strb       = dst_req.pstrb;
-    assign o_dst_sel        = dst_req.psel;
-    assign dst_resp.pready  = i_dst_ready;
-    assign dst_resp.prdata  = i_dst_rdata;
-    assign dst_resp.pslverr = i_dst_slverr;
+    assign o_dst_paddr       = dst_req.paddr;
+    assign o_dst_pprot       = dst_req.pprot;
+    assign o_dst_penable     = dst_req.penable;
+    assign o_dst_pwrite      = dst_req.pwrite;
+    assign o_dst_pwdata      = dst_req.pwdata;
+    assign o_dst_pstrb       = dst_req.pstrb;
+    assign o_dst_psel        = dst_req.psel;
+    assign dst_resp.pready  = i_dst_pready;
+    assign dst_resp.prdata  = i_dst_prdata;
+    assign dst_resp.pslverr = i_dst_pslverr;
 
 endmodule
 
