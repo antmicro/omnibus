@@ -23,6 +23,7 @@ SPECS = sorted((SIM_ROOT / "specs").glob("*.yml"))
 # Modules a spec's generated RTL must contain, so a spec can't silently stop
 # exercising the feature it's in the corpus for.
 EXPECTED_MODULES = {
+    "ahb": {"axi_prconv_axi_ahb"},
     "cdc": {"axi_cdc_wrapper"},
     "chain": {"axi_crossbar_near", "axi_crossbar_far"},
     "dw_mix": {"axi_dw_conv_wrapper"},

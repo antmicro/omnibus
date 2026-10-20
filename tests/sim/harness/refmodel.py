@@ -19,7 +19,7 @@ from omnibus import InterconnectBuilder
 
 DEFAULT_FREQUENCY = 100_000_000
 # protocols the harness has memory models for; ports with others are left undriven
-SUPPORTED_MANAGER_PROTOCOLS = ("axi4", "axi4lite", "apb3")
+SUPPORTED_MANAGER_PROTOCOLS = ("axi4", "axi4lite", "apb3", "ahb3")
 
 
 @dataclass(frozen=True)

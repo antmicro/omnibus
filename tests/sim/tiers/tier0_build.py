@@ -18,33 +18,26 @@ async def port_widths(dut):
         if port.name in env.model.unsupported:
             continue
 
-        if port.protocol == "apb3":
-            for sig, width in [("pwdata", port.data_width), ("prdata", port.data_width)]:
-                handle = getattr(dut, f"{port.name}_{sig}")
-                assert len(handle) == width, (
-                    f"{port.name}_{sig} is {len(handle)} bits, spec: {width}"
-                )
-            for sig in ["paddr"]:
-                handle = getattr(dut, f"{port.name}_{sig}")
-                assert len(handle) == env.model.addr_width, (
-                    f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
-                )
-        else:
-            for sig, width in [("wdata", port.data_width), ("rdata", port.data_width)]:
-                handle = getattr(dut, f"{port.name}_{sig}")
-                assert len(handle) == width, (
-                    f"{port.name}_{sig} is {len(handle)} bits, spec: {width}"
-                )
-            for sig in ("awaddr", "araddr"):
-                handle = getattr(dut, f"{port.name}_{sig}")
-                assert len(handle) == env.model.addr_width, (
-                    f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
-                )
+        # (data signals, address signals) of the protocol
+        data, addr = {
+            "apb3": (("pwdata", "prdata"), ("paddr",)),
+            "ahb3": (("hwdata", "hrdata"), ("haddr",)),
+        }.get(port.protocol, (("wdata", "rdata"), ("awaddr", "araddr")))
+        for sig in data:
+            handle = getattr(dut, f"{port.name}_{sig}")
+            assert len(handle) == port.data_width, (
+                f"{port.name}_{sig} is {len(handle)} bits, spec: {port.data_width}"
+            )
+        for sig in addr:
+            handle = getattr(dut, f"{port.name}_{sig}")
+            assert len(handle) == env.model.addr_width, (
+                f"{port.name}_{sig} is {len(handle)} bits, spec addr_width: {env.model.addr_width}"
+            )
 
 
 @cocotb.test()
 async def reset_idle(dut):
-    """No VALID driven by DUT rises during reset or in the idle cycles after it."""
+    """No VALID (AHB: non-IDLE HTRANS) driven by DUT rises during reset or in the idle cycles after it."""
     env = IcEnv(dut)
     outputs = []
     for port in env.model.managers:
@@ -54,7 +47,12 @@ async def reset_idle(dut):
     for port in env.model.memories:
         if port.protocol == "apb3":
             continue
-        outputs += [getattr(dut, f"{port.name}_{s}valid") for s in ("aw", "w", "ar")]
+        if port.protocol == "ahb3":
+            outputs.append(getattr(dut, f"{port.name}_htrans"))
+        else:
+            outputs += [
+                getattr(dut, f"{port.name}_{s}valid") for s in ("aw", "w", "ar")
+            ]
 
     env.start_clocks()
     slowest = max(env.clocks.values(), key=lambda c: c[1])[0]

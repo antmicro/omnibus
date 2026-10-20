@@ -1,0 +1,28 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# AXI4 -> AHB3 conversion next to a plain AXI4 memory.
+desc_version: 1.0
+name: ahb
+default:
+  data_width: 64
+  clock: clk
+  frequency: 100MHz
+  protocol: axi4
+ports:
+  cpu:
+    role: subordinate
+  mem:
+    role: manager
+  periph:
+    role: manager
+    protocol: ahb3
+address_map:
+  mem:
+    to: mem
+    base: 0x1000_0000
+    size: 0x0010_0000
+  periph:
+    to: periph
+    base: 0x4000_0000
+    size: 0x0001_0000

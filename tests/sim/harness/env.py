@@ -23,13 +23,16 @@ from pathlib import Path
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, with_timeout
+from cocotb_AHB.drivers.DutManager import DUTManager
 from cocotbext.axi import AxiBus, AxiLiteBus, AxiLiteRam, AxiMaster, AxiRam, ApbBus, ApbRam
 
 from omnibus.backend.topwrap_pulpplatform import set_clock_and_reset
 
 from . import refmodel
-from .axichecker import AxiChecker
+from .ahb import AhbRam
+from .ahbchecker import AhbChecker
 from .apbchecker import ApbChecker
+from .axichecker import AxiChecker
 
 RESET_CYCLES = 10
 # per bus operation, in cycles of the slowest clock
@@ -60,7 +63,7 @@ class IcEnv:
         logging.getLogger(f"cocotb.{dut._name}").setLevel(logging.WARNING)
 
         self.managers: dict[str, AxiMaster] = {}
-        self.memories: dict[str, AxiRam | AxiLiteRam | ApbRam] = {}
+        self.memories: dict[str, AxiRam | AxiLiteRam | ApbRam | AhbRam] = {}
         self.checkers: list[AxiChecker] = []
         mem_size = 2**self.model.addr_width
         for port in self.model.managers:
@@ -72,7 +75,16 @@ class IcEnv:
             self.checkers.append(AxiChecker(dut, port.name, clk, rst))
         for port in self.model.memories:
             clk, rst = self._clock_reset(port)
-            if port.protocol == "apb3":
+            if port.protocol == "ahb3":
+                manager = DUTManager(dut, port.data_width, name=port.name)
+                windows = [
+                    (w.base, w.size)
+                    for w in self.model.windows
+                    if w.target == port.name
+                ]
+                mem = AhbRam(manager, clk, rst, windows)
+                self.checkers.append(AhbChecker(dut, port.name, clk, rst))
+            elif port.protocol == "apb3":
                 bus = ApbBus.from_prefix(dut, port.name)
                 mem = ApbRam(bus, clk, rst, reset_active_level=False, size=mem_size)
                 self.checkers.append(ApbChecker(dut, port.name, clk, rst))
@@ -93,6 +105,9 @@ class IcEnv:
     def start_clocks(self):
         for sig, period in self.clocks.values():
             cocotb.start_soon(Clock(sig, period, unit="ps").start())
+        for mem in self.memories.values():
+            if isinstance(mem, AhbRam):
+                mem.start()
 
     async def reset(self):
         """Assert every reset, then release them in random order."""

@@ -23,7 +23,8 @@ test = [
 sim = [
     "pytest",
     "cocotb==2.0.1",
-    "cocotbext-axi==0.1.28"]
+    "cocotbext-axi==0.1.28",
+    "cocotb-ahb @ git+https://github.com/antmicro/cocotb-ahb@b9fb4abffd2531ec07be8edd30a08db18697b47e"]
 
 [project.scripts]
 omnibus = "omnibus.main:main"

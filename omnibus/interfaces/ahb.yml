@@ -17,6 +17,6 @@ signals:
       HWDATA: hwdata
       HWRITE: hwrite
     in:
-      RDATA: hrdata
-      READY: hready
-      RESP: hresp
+      HRDATA: hrdata
+      HREADY: hready
+      HRESP: hresp

@@ -1,7 +1,7 @@
 # Simulation Tests
 
 `tests/sim` holds simulation tests of the RTL Omnibus generates.
-Each specification in `tests/sim/specs/` is turned into SystemVerilog, compiled with [Verilator](https://verilator.org), and exercised by [cocotb](https://www.cocotb.org/) 2.0 tests using [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi) managers and memories.
+Each specification in `tests/sim/specs/` is turned into SystemVerilog, compiled with [Verilator](https://verilator.org), and exercised by [cocotb](https://www.cocotb.org/) 2.0 tests using [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi) managers and memories, and a [cocotb-ahb](https://github.com/antmicro/cocotb-ahb) memory for AHB3 ports.
 
 The bridge `axi_prconv_axi_ahb` also has UVM tests, with the AXI4 and AHB AVIPs on Verilator; see [uvmtests.md](uvmtests.md).
 
@@ -12,10 +12,11 @@ This page describes how the suite is organized, what it generates while running,
 Requirements:
 - Verilator on `PATH`; the suite was run with v5.052, 5.053 and a newer commit of Verilator's master.
 - Topwrap (see [Installation](installation.md)).
-- The Python packages in the `sim` extra: `pip install ".[sim]"` (cocotb, cocotbext-axi, pytest).
+- The Python packages in the `sim` extra: `pip install ".[sim]"` (cocotb, cocotbext-axi, cocotb-ahb, pytest).
 - The pulp submodules in `omnibus/third_party` (`axi`, `common_cells`, `tech_cells_generic`): `git submodule update --init`.
 
 The tests skip themselves when Verilator, cocotb, cocotbext-axi or Topwrap are missing.
+The bridge tests (see [Converter tests](#converter-tests)) also need cocotb-ahb.
 
 ```
 pytest tests/sim                                # everything
@@ -25,6 +26,7 @@ pytest tests/sim -k "dw_mix and tier1_smoke"    # one specification and tier
 COCOTB_TEST_FILTER=byte_lanes pytest tests/sim -k "dw_mix and tier1_smoke"
                                                 # one cocotb test
 pytest tests/sim --sim-waves                    # also dump waveforms
+pytest tests/sim/test_bridges.py --sim-seed 42   # repeat the random stimulus of the bridge tests
 ```
 
 ## Layout
@@ -39,10 +41,15 @@ tests/sim/
 |   |-- generate.py      specification -> RTL -> Verilator build, cached
 |   |-- refmodel.py      what a specification says the interconnect must do
 |   |-- env.py           the test bench: clocks, resets, managers, memories
-|   `-- checker.py       passive AXI protocol checker
+|   |-- ahb.py           AHB memory (cocotb-ahb) with the same backdoor access as AxiRam
+|   |-- axichecker.py    passive AXI protocol checker
+|   |-- apbchecker.py    passive APB protocol checker
+|   `-- ahbchecker.py    passive AHB protocol checker
 |-- tiers/
 |   |-- tier0_build.py   cocotb tests of tier 0
 |   `-- tier1_smoke.py   cocotb tests of tier 1
+|-- test_bridges.py      pytest entry point of the converter tests
+|-- bridges/axi_ahb.py   cocotb tests of the AXI4 -> AHB3 bridge module alone
 `-- .build/              generated, git-ignored: RTL, simulator builds, logs
 ```
 
@@ -165,7 +172,7 @@ A build is reused as long as its inputs are unchanged. The directory name carrie
 A directory is reused only if its `built` marker exists, so an interrupted build starts over.
 Starting a new build of a specification deletes its older builds.
 
-Changes to the test bench (`env.py`, `checker.py`, `refmodel.py`) or to `tiers/` don't need a rebuild: they're Python, loaded when a tier runs.
+Changes to the test bench (`env.py`, the checkers, `refmodel.py`) or to `tiers/` don't need a rebuild: they're Python, loaded when a tier runs.
 To force a rebuild, delete the build directory.
 
 ### Running a tier
@@ -198,8 +205,10 @@ The test bench attaches to them by name:
   - `AxiRam`
 * - `role: manager`, AXI4-Lite
   - `AxiLiteRam`
-* - `role: manager`, APB3 or AHB3
-  - not driven: address windows to it are left out of the tests
+* - `role: manager`, AHB3
+  - `AhbRam`: a cocotb-ahb `DUTManager` on the port pins, a `SimMem1PSubordinate` with random wait states behind it
+* - `role: manager`, APB3
+  - `ApbRam`
 :::
 
 ## Inside the test bench
@@ -219,7 +228,7 @@ A window with no `from` is reachable from every manager.
 - **Resets:** `start()` holds every reset low for `RESET_CYCLES` cycles of the slowest clock, then releases them in random order.
 - **Managers and memories:** one `AxiMaster` per manager port, one memory per memory port (see [The DUT's interface](#the-duts-interface)).
   - Memories have size `2**addr_width` and are sparse, so they answer at the absolute addresses the interconnect passes through at no cost. cocotbext-axi's default size of 2**64 doesn't work: it overflows Python's `len()`.
-- **Protocol checker:** one `AxiChecker` per port.
+- **Protocol checker:** one per port: `AxiChecker`, `ApbChecker` or `AhbChecker`, by the port's protocol.
 - **Logging:** cocotbext-axi logs every transaction at INFO, so its loggers are raised to WARNING.
 - **Timeouts:** every bus operation goes through `op()`, which fails the test after `OP_TIMEOUT_CYCLES` cycles of the slowest clock instead of hanging on a deadlock.
 
@@ -229,15 +238,25 @@ A memory accepts any address, so writing a value and reading it back over the sa
 
 `finish()`, called at the end of a cocotb test, fails the test on any protocol violation any checker has seen.
 
-### Protocol checker
+### Protocol checkers
 
-`AxiChecker` in `harness/checker.py` samples one port on every rising edge of its clock, in both directions, so it checks the DUT's outputs and the test bench's own stimulus alike:
+`AxiChecker` in `harness/axichecker.py` samples one port on every rising edge of its clock, in both directions, so it checks the DUT's outputs and the test bench's own stimulus alike:
 - a VALID that wasn't accepted stays high, with its payload unchanged;
 - W bursts have AWLEN+1 beats, with WLAST on the last (AXI4);
 - R bursts have ARLEN+1 beats, with RLAST on the last, per ID (AXI4);
 - every B and R response has an outstanding request with its ID.
 
 Its state is cleared while the port's reset is asserted. The first 20 violations of a port are kept, with their simulation time, for `finish()` to report.
+
+`AhbChecker` in `harness/ahbchecker.py` samples one AHB manager port on every rising edge of its clock. It checks the DUT's address phase and the responses it gets:
+- an address aligned to HSIZE, with the transfer within the data bus;
+- an address phase that stays unchanged while HREADY is low (an ERROR response may cancel it);
+- SEQ and BUSY only inside a burst, at the address the burst continues with;
+- HBURST, HSIZE and HWRITE constant inside a burst, and INCR bursts not crossing a 1KB boundary;
+- fixed-length bursts completed (unless an ERROR cancelled them), and no burst ending with BUSY;
+- no transfer after the second cycle of an ERROR response.
+
+It also records the accepted NONSEQ and SEQ address phases (`xfers`) and the BUSY cycles (`busy`), for tests that look at how a burst was split. Its state is cleared while the port's reset is asserted. The first 20 violations of a port are kept, with their simulation time, for `finish()` to report.
 
 ## Tiers
 
@@ -286,7 +305,7 @@ A new tier is a module in `tiers/`, plus its name in `TIERS` in `harness/__init_
 
 - **Logs.** The pytest failure names the log: `run/<tier>/sim.log` in the specification's build directory. Build problems are in `generate.log` (generation) and `build.log` (Verilator).
 - **Narrowing down.** Select one specification and tier with `-k "<spec> and <tier>"`, and one cocotb test with `COCOTB_TEST_FILTER=<test name>`.
-- **Reproducing random data.** `sim.log` starts with `Seeding Python random module with <seed>`; `COCOTB_RANDOM_SEED=<seed>` repeats that run.
+- **Reproducing random data.** `sim.log` starts with `Seeding Python random module with <seed>`; `COCOTB_RANDOM_SEED=<seed>` repeats that run. The bridge tests take one seed per pytest run: it is printed in the pytest header (`sim seed: <seed>`), stored as the `seed` property of every test in the JUnit report and repeated in the message of a failure, and `--sim-seed <seed>` reuses it.
 - **Waveforms.** `--sim-waves` builds a separate simulator with tracing (a `-waves` build directory) and writes `run/<tier>/dump.fst`.
 - **Generation by hand.** The commands in `generate.log` can be re-run in the build directory.
 
@@ -296,3 +315,23 @@ A new tier is a module in `tiers/`, plus its name in `TIERS` in `harness/__init_
 - **Deprecation warnings.** cocotbext-axi uses APIs that cocotb 2.0 deprecates; the `py.warnings` lines in `sim.log` come from there.
 - **Known issue: builds with and without `--sim-waves` evict each other.** Removing a specification's older builds also removes its build of the other kind, so alternating between the two rebuilds every time.
 - **Not covered yet.** Error responses, bursts, concurrent traffic and performance, planned as further tiers.
+
+## Converter tests
+
+`test_bridges.py` tests single converter modules without an interconnect around them: the module under `omnibus/modules` is the Verilator top level, and `bridges/<name>.py` holds its cocotb tests.
+Currently that is `axi_prconv_axi_ahb`, built for 32 and 64 bit data and for `FifoDepth` 1 to 4 (the FIFO depth parameter):
+
+```
+pytest tests/sim/test_bridges.py
+pytest tests/sim/test_bridges.py -k "64-3"      # 64 bit data, FifoDepth 3
+```
+
+The AXI side is driven with cocotbext-axi channel sources and sinks, and the AHB side is answered by an `AhbRam`.
+A Python model of the AXI address rules says which bytes each beat of a burst carries, and the memory is compared with a byte-for-byte model after every write.
+The tests cover:
+- full-width, narrow and unaligned transfers, INCR, WRAP and FIXED bursts, sparse and empty `WSTRB`, IDs, read/write arbitration, and random traffic with backpressure;
+- which AHB bursts an AXI burst becomes (`ahb_bursts`): HBURST=INCR restarted at every 1KB, WRAP4/8/16 for reads, single transfers for FIXED, WRAP2, WRAP writes and beats that have to be split;
+- BUSY while the R channel is blocked (`busy`), and the cycle counts of 16-beat bursts with no wait states (`throughput`; reads need `FifoDepth` 3 for one beat per cycle);
+- AHB errors (`ahb_error`): no further AHB transfers after the error, SLVERR on the remaining read beats and on the B of a write.
+
+The AHB side is watched by an `AhbChecker` (see [Protocol checkers](#protocol-checkers)). `ahb_bursts` and `busy` also look at the address phases and BUSY cycles it records, and `Bench.finish()` fails a test on its violations.

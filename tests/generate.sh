@@ -35,8 +35,8 @@ topwrap build --design $1.yml --log-level error
 mkdir -p artifacts/$1/
 cp -r build out $1.yml artifacts/$1/
 
-#code check, removing lines with time and commit, sorted to ignore line ordering
-diff <(sort ./build/$1.sv | grep -v -e 'Automatically generated') <(sort ./tests/ideal/topwrap/$1.sv | grep -v -e 'Automatically generated')
+#code check, removing lines with time and commit
+diff <(grep -v -e 'Automatically generated' ./build/$1.sv) <(grep -v -e 'Automatically generated' ./tests/ideal/topwrap/$1.sv)
 
 #pulp_platform_filelist.f defines COMMON_CELLS_NO_DEPRECATED_WARNINGS, silencing the
 #deprecation $warning in common_cells' cf_math_pkg.sv that -Wall would fail on
