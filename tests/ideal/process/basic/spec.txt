@@ -116,7 +116,7 @@ axi_mem
 0
 536870912
 -- uart --
-['axi_cpu']
+['axi_cpu', 'axi_dbg']
 apb_uart
 1073741824
 4096

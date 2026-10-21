@@ -227,3 +227,19 @@ address_map:
     to:    o3
     base:  0x3000
     size:  0x1000
+  "o4":
+    to:    o4
+    base:  0x4000
+    size:  0x1000
+  "o5":
+    to:    o5
+    base:  0x5000
+    size:  0x1000
+  "o6":
+    to:    o6
+    base:  0x6000
+    size:  0x1000
+  "o7":
+    to:    o7
+    base:  0x7000
+    size:  0x1000

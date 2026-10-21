@@ -32,32 +32,32 @@ coral_npu_out
 268435455
 == CROSSBAR main==
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_coral_npu_out
 1610612736
 268435455
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_fast_vdma_csr
 1342177280
 65535
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_i3c_controller
 1073807360
 65535
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_i3c_target
 1073741824
 65535
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_timers_csr
 1073938432
 65535
 --
-['_']
+['coral_npu_in', 'fast_vdma', 'veer_eh2_ifu', 'veer_eh2_lsu', 'veer_el2_ifu', 'veer_el2_lsu']
 main_uart_csr
 1073872896
 65535

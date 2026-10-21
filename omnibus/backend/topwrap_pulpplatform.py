@@ -48,21 +48,25 @@ class PulpCrossbar(MappedComponent):
             }
 
         for portname in self.dstports:
-            offset = 0
-            size = 0
+            offsets = []
+            sizes = []
 
             for entry in self.address_map:
                 if entry.dest == portname:
-                    offset = entry.base
-                    size = entry.size
-                    break
+                    offsets.append(entry.base)
+                    sizes.append(entry.size)
 
-            if size == 0:
+            if len(sizes) == 0:
                 warns.append(
-                    f"WARNING: rule of size 0 or lack of rule in crossbar {self.name} leading to port {portname}"
+                    f"WARNING: lack of addresses in crossbars {self.name} leading to port {portname}"
                 )
+            for size in sizes:
+                if size == 0:
+                    warns.append(
+                        f"WARNING: address range of size 0 in crossbar {self.name} leading to port {portname}"
+                    )
 
-            slaves[portname] = {"offset": offset, "size": size}
+            slaves[portname] = {"offsets": offsets, "sizes": sizes}
 
         with tempfile.NamedTemporaryFile("w") as file:
             srcattr = next(iter(self.srcports.values())).attributes

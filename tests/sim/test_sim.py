@@ -35,11 +35,6 @@ EXPECTED_MODULES = {
 # Known failures, keyed by (spec, tier or "build"). strict: a fix makes the test
 # XPASS and fail, so the entry gets removed together with the fix.
 XFAIL = {
-    ("two_windows", "build"): (
-        "a target with two address windows: process() records a misleading 'rules different "
-        "based on source id' error, the CLI still exits 0, and the generated crossbar keeps "
-        "only the first window"
-    ),
 }
 
 

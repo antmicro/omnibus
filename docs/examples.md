@@ -205,6 +205,9 @@ desc_version: 1.0
 
 name: butterfly
 
+global:
+  addr_width: 16
+
 default:
   protocol: AXI4
   clock: clk
@@ -410,20 +413,36 @@ connections:
 address_map:
   "o0":
     to:    o0
-    base:  0x00000000
-    size:  0x10000000
+    base:  0x0000
+    size:  0x1000
   "o1":
     to:    o1
-    base:  0x10000000
-    size:  0x10000000
+    base:  0x1000
+    size:  0x1000
   "o2":
     to:    o2
-    base:  0x20000000
-    size:  0x10000000
+    base:  0x2000
+    size:  0x1000
   "o3":
     to:    o3
-    base:  0x30000000
-    size:  0x10000000
+    base:  0x3000
+    size:  0x1000
+  "o4":
+    to:    o4
+    base:  0x4000
+    size:  0x1000
+  "o5":
+    to:    o5
+    base:  0x5000
+    size:  0x1000
+  "o6":
+    to:    o6
+    base:  0x6000
+    size:  0x1000
+  "o7":
+    to:    o7
+    base:  0x7000
+    size:  0x1000
 ```
 
 ### Command

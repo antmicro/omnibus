@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import subprocess
+import sys
 
 from omnibus import InterconnectBuilder
 
@@ -10,10 +11,11 @@ from tests.filediff import filediff
 
 # These tests check whether routing properly finds paths for each crossbars
 class TestRouting:
-    def _test(self, name):
+    def _test(self, name, path = None):
         ic = InterconnectBuilder(frontend="yaml")
 
-        ic.read_yaml(f"examples/{name}.yml")
+        ic.read_yaml(f"examples/{name}.yml" if not path else path)
+
         ic.find_routing_paths()
         ic._print_set_output("tests/output.txt")
         ic._print_address_maps()
@@ -35,3 +37,6 @@ class TestRouting:
 
     def test_asoca(self):
         self._test("asoca")
+
+    def test_two_windows(self):
+        self._test("two_windows", "tests/spec/two_windows.yml")

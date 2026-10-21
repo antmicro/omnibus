@@ -1,0 +1,23 @@
+### ADDR MAPS ###
+== INTERCONNECT ==
+-- mem_lo --
+['cpu']
+mem
+268435456
+16384
+-- mem_hi --
+['cpu']
+mem
+2147483648
+16384
+== CROSSBAR main==
+--
+['cpu']
+main_mem
+268435456
+16384
+--
+['cpu']
+main_mem
+2147483648
+16384

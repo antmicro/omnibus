@@ -6,7 +6,7 @@ axi_mem
 0
 536870912
 -- uart --
-['axi_cpu']
+['axi_cpu', 'axi_dbg']
 apb_uart
 1073741824
 4096
@@ -17,23 +17,23 @@ apb_i2c
 4096
 == CROSSBAR sb_cpu==
 --
-['_']
+['axi_cpu', 'axi_dbg']
 sb_cpu_lpp
 1073741824
 8192
 --
-['_']
+['axi_cpu', 'axi_dbg']
 sb_cpu_mem
 0
 536870912
 == CROSSBAR sb_lpp==
 --
-['_']
+['axi_cpu', 'axi_dbg']
 sb_lpp_i2c
 1073745920
 4096
 --
-['_']
+['axi_cpu', 'axi_dbg']
 sb_lpp_uart
 1073741824
 4096

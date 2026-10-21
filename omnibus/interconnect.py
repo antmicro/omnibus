@@ -3,6 +3,7 @@
 
 import copy
 import sys
+from collections import defaultdict
 from importlib import import_module
 
 import ruamel.yaml
@@ -63,6 +64,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             self.errors = []
             self.warns = []
 
+            self._print_dest = sys.stdout
+
         def process(self):
             """Shorthand for internal processing"""
             self.find_routing_paths()
@@ -80,6 +83,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
             """
             self.paths_to_search = []
             self.paths_complete = {}
+            self.ports_reaching_crossbars = defaultdict(set)
 
             for port in self.srcports:
                 self.paths_to_search.append(Path(port))
@@ -94,13 +98,20 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     # on crossbar, expand address map
                     if curport.parent is None:
                         # curport used above is Port object, while endport should be string identifier
-                        self.paths_complete[
-                            curpath.startport + " -> " + curpath.curport
-                        ] = curpath.crossbars
+                        pathname = curpath.startport + " -> " + curpath.curport
+
+                        if pathname in self.paths_complete:
+                            self.errors.append(
+                                f"ERROR: path {pathname} defined more than once, only one path between two ports can exist"
+                            )
+                            return
+
+                        self.paths_complete[pathname] = curpath.crossbars
                         continue
 
                     # again, we need portname not port
                     curpath.crossbars[curport.parent] = curpath.curport
+                    self.ports_reaching_crossbars[curport.parent].add(curpath.startport)
 
                 # for each outgoing node create new path
                 for destport in curport.edges:
@@ -109,7 +120,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     self.paths_to_search.append(newpath)
 
             # generate address maps here
-            for entry in self.address_map.values():
+            for name, entry in self.address_map.items():
                 sources = entry.src
                 dest = entry.dest
                 base = entry.base
@@ -118,7 +129,7 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                 for source in sources:
                     if not self.paths_complete.get(source + " -> " + dest):
                         self.errors.append(
-                            f"ERROR: interconnect is not fully connected, lack of path from {source} to {dest}"
+                            f"ERROR: no path from '{source}' to '{dest}', required by address map entry '{name}'"
                         )
                         return
                     for crossbar, port in self.paths_complete[
@@ -128,11 +139,14 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                             AddressMapEntry(source, port, base, size)
                         )
 
-            # now sort each address map by (source, dest port, base) in that order
+            # sort each address map by (source, dest port, base) in that order
             # after that, check whether one entry is followed directly by another
             # if so, merge them
-            for params in self.components.values():
+            for crossbarname, params in self.components.items():
                 if params.kind != "crossbar":
+                    continue
+
+                if len(params.address_map) == 0:
                     continue
 
                 params.address_map = sorted(
@@ -167,21 +181,32 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     cur = params.address_map[ii]
                     nxt = params.address_map[ii + 1]
 
-                    if cur.dest == nxt.dest:
-                        if cur.base == nxt.base and cur.size == nxt.size:
-                            params.address_map.pop(ii + 1)
-                        else:
-                            self.errors.append(
-                                f"ERROR: it is not possible yet to have address map rules that are different based on source id, rule to {cur.dest} has different paths from {cur.src} and {nxt.src}"
-                            )
-                            params.address_map.pop(ii + 1)
+                    if type(cur.src) is not list:
+                        cur.src = [cur.src]
 
+                    if (
+                        cur.dest == nxt.dest
+                        and cur.base == nxt.base
+                        and cur.size == nxt.size
+                    ):
+                        cur.src.append(nxt.src)
+                        params.address_map.pop(ii + 1)
                         continue
 
                     ii = ii + 1
 
+                last = params.address_map[-1]
+                if type(last.src) is not list:
+                    last.src = [last.src]
+
                 for entry in params.address_map:
-                    entry.src = "_"
+                    if sorted(entry.src) != sorted(
+                        self.ports_reaching_crossbars[crossbarname]
+                    ):
+                        # TODO: this should somehow figure out exact conflict source
+                        self.errors.append(
+                            "ERROR: it is not yet possible to have address map rules that are different based on source "
+                        )
 
         def propagate_parameters(self):
             """
@@ -464,85 +489,85 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     ]
 
         def _print_set_output(self, filename):
-            sys.stdout = open(filename, "w")  # noqa: SIM115
+            self._print_dest = open(filename, "w")  # noqa: SIM115
 
         def _print_globals(self):
-            print("### GLOBALS ###")
+            print("### GLOBALS ###", file=self._print_dest)
             for k, v in self.globals.items():
-                print(f"{k} = {v}")
+                print(f"{k} = {v}", file=self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_defaults(self):
-            print("### DEFAULTS ###")
+            print("### DEFAULTS ###", file=self._print_dest)
             for k, v in self.defaults.items():
-                print(f"{k} = {v}")
+                print(f"{k} = {v}", file=self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_clocks(self):
-            print("### CLOCKS ###")
+            print("### CLOCKS ###", file=self._print_dest)
             for k, v in self.clocks.items():
-                print(f"{k} - freq {v['frequency']}")
+                print(f"{k} - freq {v['frequency']}", file=self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_ports(self):
             yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
 
-            print("### PORTS ###")
+            print("### PORTS ###", file=self._print_dest)
             for k, v in self.ports.items():
-                print(f"== PORT {k} parent: {v.parent} ==")
-                yaml.dump(v.attributes, sys.stdout)
+                print(f"== PORT {k} parent: {v.parent} ==", file=self._print_dest)
+                yaml.dump(v.attributes, self._print_dest)
 
                 for edge in v.edges:
-                    print(f"- edge to {edge.dest} -")
-                    yaml.dump(edge.attributes, sys.stdout)
+                    print(f"- edge to {edge.dest} -", file=self._print_dest)
+                    yaml.dump(edge.attributes, self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_components(self):
             yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
 
-            print("### COMPONENTS ###")
+            print("### COMPONENTS ###", file=self._print_dest)
             for k, v in self.components.items():
-                print(f"== COMP {k} {v.kind}")
-                yaml.dump(v.attributes, sys.stdout)
+                print(f"== COMP {k} {v.kind}", file=self._print_dest)
+                yaml.dump(v.attributes, self._print_dest)
 
-                print("ports:")
+                print("ports:", file=self._print_dest)
                 for port in sorted(v.srcports + v.dstports):
-                    print(f"  {port}:")
+                    print(f"  {port}:", file=self._print_dest)
                     for attrname, attr in sorted(self.ports[port].attributes.items()):
-                        print(f"    {attrname} = {attr}")
+                        print(f"    {attrname} = {attr}", file=self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_address_maps(self):
-            print("### ADDR MAPS ###")
-            print("== INTERCONNECT ==")
+            print("### ADDR MAPS ###", file=self._print_dest)
+            print("== INTERCONNECT ==", file=self._print_dest)
             for name, entry in self.address_map.items():
-                print(f"-- {name} --")
-                print(sorted(entry.src))
-                print(entry.dest)
-                print(entry.base)
-                print(entry.size)
+                print(f"-- {name} --", file=self._print_dest)
+                print(sorted(entry.src), file=self._print_dest)
+                print(entry.dest, file=self._print_dest)
+                print(entry.base, file=self._print_dest)
+                print(entry.size, file=self._print_dest)
 
             for comp, params in self.components.items():
                 if params.kind != "crossbar":
                     continue
 
-                print(f"== CROSSBAR {comp}==")
+                print(f"== CROSSBAR {comp}==", file=self._print_dest)
 
                 for entry in params.address_map:
-                    print("--")
-                    print(sorted(entry.src))
-                    print(entry.dest)
-                    print(entry.base)
-                    print(entry.size)
+                    print("--", file=self._print_dest)
+                    print(sorted(entry.src), file=self._print_dest)
+                    print(entry.dest, file=self._print_dest)
+                    print(entry.base, file=self._print_dest)
+                    print(entry.size, file=self._print_dest)
 
-            sys.stdout.flush()
+            self._print_dest.flush()
 
         def _print_elements(self, filename=None):
             """Dumps all internally used elements"""

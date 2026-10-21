@@ -104,6 +104,8 @@ def main():
 
         ic.find_routing_paths()
         ic.propagate_parameters()
+        print_lines(ic.warns)
+        print_lines(ic.errors)
 
         if args.debug == "elements":
             ic._print_elements()
@@ -112,6 +114,18 @@ def main():
         return 0
 
     ic.process()
+    print_lines(ic.warns)
+    print_lines(ic.errors)
+    if len(ic.errors) > 0:
+        return 2
+
+    ic.warns = []
+    ic.errors = []
+
     ic.generate(args.output)
+    print_lines(ic.warns)
+    print_lines(ic.errors)
+    if len(ic.errors) > 0:
+        return 3
 
     return 0
