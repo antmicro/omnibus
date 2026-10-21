@@ -75,6 +75,18 @@ class SpecModel:
                 return window
         return None
 
+    def gaps(self) -> list[tuple[int, int]]:
+        """Address ranges [start, end) of the address space that no window covers."""
+        gaps = []
+        cursor = 0
+        for window in sorted(self.windows, key=lambda w: w.base):
+            if window.base > cursor:
+                gaps.append((cursor, window.base))
+            cursor = max(cursor, window.end)
+        if cursor < 2**self.addr_width:
+            gaps.append((cursor, 2**self.addr_width))
+        return gaps
+
     def testable_windows(self, source: str) -> list[Window]:
         """Windows `source` may access whose target the harness has a model for."""
         return [

@@ -47,7 +47,8 @@ tests/sim/
 |   `-- ahbchecker.py    passive AHB protocol checker
 |-- tiers/
 |   |-- tier0_build.py   cocotb tests of tier 0
-|   `-- tier1_smoke.py   cocotb tests of tier 1
+|   |-- tier1_smoke.py   cocotb tests of tier 1
+|   `-- tier2_negative.py cocotb tests of tier 2
 |-- test_bridges.py      pytest entry point of the converter tests
 |-- bridges/axi_ahb.py   cocotb tests of the AXI4 -> AHB3 bridge module alone
 `-- .build/              generated, git-ignored: RTL, simulator builds, logs
@@ -275,9 +276,17 @@ It also records the accepted NONSEQ and SEQ address phases (`xfers`) and the BUS
   - narrow writes of every size below the bus width, on every byte lane, change only their bytes
 * - `tier1_smoke.shared_visibility`
   - what one manager writes to a window, every other manager allowed there reads back; returns right away with a single manager
+* - `tier2_negative.unmapped_access`
+  - from every manager, reads and writes (one beat and 16 beats) to the first, the last and a random burst position of every gap of the address map: DECERR, and no memory changes
+* - `tier2_negative.mixed_legal_and_unmapped`
+  - every manager reads and writes at the same time, each access to a random legal or unmapped address: OKAY with the right data or DECERR, whatever order the responses come back in
 :::
 
 Each Tier 1 access is checked three ways: the response code, the data read back, and, through `prime()` and `check_write()`, that it landed in the right memory at the right address.
+
+Tier 2 collects accesses the interconnect has to refuse. The gaps come from `SpecModel.gaps()`, the address ranges no window covers; the access never reaches a target, so a leaked write shows as changed tags and a leaked read as an OKAY response.
+A gap smaller than a bus word is accessed with narrower beats, so no gap is skipped; `specs/small_gaps.yml` has gaps of 4 bytes and 1 byte for this. A specification has to leave a gap, and in `mixed_legal_and_unmapped` every manager needs a legal range to read and to write as well: the test fails otherwise, instead of testing nothing. Given that, every reader and writer issues both kinds of access.
+In `mixed_legal_and_unmapped`, reads use the lower half of a window, which nothing writes, and each manager writes only to its own part of the upper half, so the data checks hold with all managers running at once.
 
 ## Known failures and guards
 
@@ -314,7 +323,7 @@ A new tier is a module in `tiers/`, plus its name in `TIERS` in `harness/__init_
 - **Topwrap branch.** Generating the top level needs Topwrap from the `102039-interface-generation-include-width` branch. The two workarounds in `generate.build()` (#102866, #102867) mirror `tests/generate.sh`.
 - **Deprecation warnings.** cocotbext-axi uses APIs that cocotb 2.0 deprecates; the `py.warnings` lines in `sim.log` come from there.
 - **Known issue: builds with and without `--sim-waves` evict each other.** Removing a specification's older builds also removes its build of the other kind, so alternating between the two rebuilds every time.
-- **Not covered yet.** Error responses, bursts, concurrent traffic and performance, planned as further tiers.
+- **Not covered yet.** The rest of tier 2 (window edges, exclusive accesses, protocol violations), bursts, concurrent traffic and performance, planned as further tiers.
 
 ## Converter tests
 
