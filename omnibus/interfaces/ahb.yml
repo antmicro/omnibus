@@ -5,18 +5,60 @@ id:
   library: libdefault
   name: AHB3
   vendor: vendor
+
+parameters:
+  ADDR_WIDTH: 32
+  DATA_WIDTH: 64
+
 signals:
-  required:
-    out:
-      HADDR: haddr
-      HBURST: hburst
-      HMASTLOCK: hmastlock
-      HPROT: hprot
-      HSIZE: hsize
-      HTRANS: htrans
-      HWDATA: hwdata
-      HWRITE: hwrite
-    in:
-      HRDATA: hrdata
-      HREADY: hready
-      HRESP: hresp
+  HADDR:
+    pattern: haddr
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [ADDR_WIDTH - 1, 0]
+  HMASTLOCK:
+    pattern: hmastlock
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+  HBURST:
+    pattern: hburst
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [2, 0]
+  HPROT:
+    pattern: hprot
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [3, 0]
+  HSIZE:
+    pattern: hsize
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [2, 0]
+  HTRANS:
+    pattern: htrans
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [1, 0]
+  HWDATA:
+    pattern: hwdata
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+    bound: [DATA_WIDTH - 1, 0]
+  HWRITE:
+    pattern: hwrite
+    modes: {manager: [out, required], subordinate: [in, required]}
+    default: 0
+  HRDATA:
+    pattern: hrdata
+    modes: {manager: [in, required], subordinate: [out, required]}
+    default: 0
+    bound: [DATA_WIDTH - 1, 0]
+  HREADY:
+    pattern: hready
+    modes: {manager: [in, required], subordinate: [out, required]}
+    default: 0
+  HRESP:
+    pattern: hresp
+    modes: {manager: [in, required], subordinate: [out, required]}
+    default: 0
