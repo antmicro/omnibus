@@ -350,7 +350,8 @@ class Backend:
     It requires somewhat large number of external commands due to how topwrap operates
     See .ci.yml and tests/test_topwrapintegration.py to see what is necessary to fully build existing example
 
-    It contains 2 internal methods:
+    It contains 3 internal methods:
+        validate           - checks whether interconnect passed to it can be generated
         map_components     - creates mapping from internal abstract component to real modules
         generate_hierarchy - generate real modules and create final topwrap hierarchy file
     """
@@ -369,8 +370,33 @@ class Backend:
 
     def generate(self, outdir):
         """Convenience method for internal operation"""
+        if not self.validate():
+            return
         self.map_components(outdir)
         self.generate_hierarchy(outdir)
+
+    def validate(self):
+        for name, component in self.components.items():
+            if component.kind == "pr_conv":
+                protocol = self.ports[component.srcports[0]].attributes["protocol"]
+
+                if protocol != "axi4":
+                    self.errors.append(
+                        f"ERROR: protocol converter '{name}' generated with source port protocol '{protocol}', currently source protocol must be of type 'axi4'"
+                    )
+                    return False
+                continue
+
+            for portname in component.srcports + component.dstports:
+                protocol = self.ports[portname].attributes["protocol"]
+
+                if protocol != "axi4":
+                    self.errors.append(
+                        f"ERROR: component '{name}' generated with port '{portname}' of protocol '{protocol}', currently protocol must be of type 'axi4'"
+                    )
+                    return False
+
+        return True
 
     def map_components(self, outdir):
         """

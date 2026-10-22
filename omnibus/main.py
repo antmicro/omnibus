@@ -67,6 +67,11 @@ def main():
         default="./build",
         help="specifies Topwrap build directory, used with --verilog",
     )
+    argsparser.add_argument(
+        "--continueonerror",
+        action="store_true",
+        help="if specified, does not fail on invalid interconnect, primarily useful for inspecting invalid structure with graphviz",
+    )
 
     args = argsparser.parse_args()
 
@@ -78,7 +83,8 @@ def main():
         if 0 != ic.read_yaml(args.file):
             print_lines(ic.warns)
             print_lines(ic.errors)
-            return 1
+            if canfail:
+                return 1
 
         ic.generate(outdir=args.output, view=False, display_full_name=True)
         return 0
@@ -91,7 +97,8 @@ def main():
         if 0 != ic.read_yaml(args.file):
             print_lines(ic.warns)
             print_lines(ic.errors)
-            return 1
+            if canfail:
+                return 1
 
         ic.process()
         ic.generate(
@@ -107,7 +114,8 @@ def main():
     if 0 != ic.read_yaml(args.file):
         print_lines(ic.warns)
         print_lines(ic.errors)
-        return 1
+        if canfail:
+            return 1
 
     if args.debug:
         if args.debug == "parse":

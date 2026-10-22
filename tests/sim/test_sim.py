@@ -34,8 +34,7 @@ EXPECTED_MODULES = {
 
 # Known failures, keyed by (spec, tier or "build"). strict: a fix makes the test
 # XPASS and fail, so the entry gets removed together with the fix.
-XFAIL = {
-}
+XFAIL = {}
 
 
 def _xfail(request, spec: Path, key: str):

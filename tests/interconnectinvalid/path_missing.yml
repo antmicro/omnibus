@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+desc_version: 1.0
+
+default:
+  data_width: 64
+  clock: clk
+  frequency: 10MHz
+  protocol: axi4
+
+ports:
+  pain:
+    role: "subordinate"
+  paout:
+    role: "manager"
+  pbin:
+    role: "subordinate"
+  pbout:
+    role: "manager"
+
+crossbars:
+  a:
+    ports:
+      in: 
+        role: "subordinate"
+      out: 
+        role: "manager"
+  b:
+    ports:
+      in: 
+        role: "subordinate"
+      out: 
+        role: "manager"
+  
+connections:
+  "pain -> a.in":
+  "pbin -> b.in":
+  "a.out -> paout":
+  "b.out -> pbout":
+
+address_map:
+  paout:
+    to: paout
+    base: 0
+    size: 0xFFFF_FFFF
+  pbout:
+    to: pbout
+    base: 0
+    size: 0xFFFF_FFFF

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import copy
+import itertools
 import sys
 from collections import defaultdict
 from importlib import import_module
@@ -68,9 +69,101 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
         def process(self):
             """Shorthand for internal processing"""
+            self.verify()
+            if len(self.errors) > 0:
+                return
             self.find_routing_paths()
             self.propagate_parameters()
             self.insert_new_components()
+
+        def verify(self):
+            """
+            Checks whether interconnect makes sense
+            - no overlap in address maps
+            - proper connections
+            """
+            for (name0, entry0), (name1, entry1) in itertools.combinations(
+                self.address_map.items(), 2
+            ):
+                if entry0.dest == entry1.dest:
+                    continue
+
+                if entry0.size == 0 or entry1.size == 0:
+                    continue
+
+                if (
+                    entry0.base + entry0.size <= entry1.base
+                    or entry1.base + entry1.size <= entry0.base
+                ):
+                    continue
+
+                intersection = set(entry0.src).intersection(set(entry1.src))
+                if len(intersection) > 0:
+                    self.errors.append(
+                        f"ERROR: overlapping address map entries {name0} and {name1} for ports {intersection}"
+                    )
+
+            for name, port in self.ports.items():
+                # top level ports
+                if port.parent is None:
+                    if port.attributes["role"] == "subordinate":
+                        if len(port.edges) != 1:
+                            self.errors.append(
+                                f"ERROR: top level subordinate port must have exactly one outgoing connection, {name} has {len(port.edges)}"
+                            )
+                        if len(port.backedges) > 0:
+                            self.errors.append(
+                                f"ERROR: top level subordinate port cannot have incoming connections, {name} has {len(port.backedges)}"
+                            )
+
+                        for edge in port.edges:
+                            if self.ports[edge.dest].parent is None:
+                                self.errors.append(
+                                    f"ERROR: cannot connect top level ports, found connection between '{name}' and '{edge.dest}'"
+                                )
+                    else:
+                        if len(port.backedges) != 1:
+                            self.errors.append(
+                                f"ERROR: top level manager port must have exactly one incoming connection, {name} has {len(port.backedges)}"
+                            )
+                        if len(port.edges) > 0:
+                            self.errors.append(
+                                f"ERROR: top level manager port cannot have outgoing connections, {name} has {len(port.edges)}"
+                            )
+                    continue
+
+                # crossbars
+                if port.attributes["role"] == "subordinate":
+                    counts = defaultdict(int)
+                    for edge in port.edges:
+                        destname = edge.dest
+                        counts[destname] += 1
+
+                        dest = self.ports[destname]
+                        if "manager" != dest.attributes["role"]:
+                            self.errors.append(
+                                f"ERROR: two subordinate ports connected '{name}' and '{destname}'"
+                            )
+                        if port.parent != dest.parent:
+                            self.errors.append(
+                                f"ERROR: connection defined between different crossbars' internal ports, '{name}' of '{port.parent}' and '{destname}' of '{dest.parent}'"
+                            )
+
+                    if len(port.backedges) != 1:
+                        self.errors.append(
+                            f"ERROR: exactly one connection must lead to crossbar port '{name}', instead found {len(port.backedges)}"
+                        )
+
+                    for dest, count in counts.items():
+                        if count > 1:
+                            self.errors.append(
+                                f"ERROR: connection in crossbar defined in 'connections', between {name} and {dest}"
+                            )
+                else:  # manager
+                    if len(port.edges) != 1:
+                        self.errors.append(
+                            f"ERROR: exactly one connection must lead out of crossbar port '{name}', instead found {len(port.edges)}"
+                        )
 
         def find_routing_paths(self):
             """
@@ -125,6 +218,12 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                 dest = entry.dest
                 base = entry.base
                 size = entry.size
+
+                if size == 0:
+                    self.errors.append(
+                        f"ERROR: address map entry '{name}' has size of 0"
+                    )
+                    continue
 
                 for source in sources:
                     if not self.paths_complete.get(source + " -> " + dest):
@@ -205,8 +304,10 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                     ):
                         # TODO: this should somehow figure out exact conflict source
                         self.errors.append(
-                            "ERROR: it is not yet possible to have address map rules that are different based on source "
+                            "ERROR: it is not yet possible to have address map rules that are different based on source"
                         )
+
+            # finally, go over the results and figure out whether there is any overlap
 
         def propagate_parameters(self):
             """
@@ -369,6 +470,8 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
 
             Must be called after propagate_parameters()
 
+            First check whether new components can even be inserted
+
             insertion start with highest priority, AKA the ones that should be placed first in case of multiple components on single connection
             current prioretization is: registers > id width > data width > clock > protocol
 
@@ -382,7 +485,6 @@ def InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform"):
                b. for other parameters, get both ports' params from source port
             note: source/dest are regarding edge direction, on graph view, source is on the left
             """
-
             newports = {}
             for portname, port in self.ports.items():
                 for edge in port.edges:

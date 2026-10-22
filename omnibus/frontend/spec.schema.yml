@@ -154,7 +154,7 @@ properties:
     type: object
     propertyNames:
       pattern: "^[^\\s]+ -> [^\\s]+$"
-      x-error-message: "invalid connection '{instance}', expected format 'a -> b'"
+      x-error-message: "invalid connection '{instance}', expected format 'a -> b', with only one space inbetween"
     additionalProperties:
       type: [object, "null"]
       properties:

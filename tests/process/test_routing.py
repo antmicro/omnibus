@@ -1,28 +1,16 @@
 # Copyright (c) 2026 Antmicro
 # SPDX-License-Identifier: Apache-2.0
 
-import subprocess
-import sys
-
-from omnibus import InterconnectBuilder
-
-from tests.filediff import filediff
+from base import TestCorrect
 
 
 # These tests check whether routing properly finds paths for each crossbars
-class TestRouting:
-    def _test(self, name, path = None):
-        ic = InterconnectBuilder(frontend="yaml")
+class TestRouting(TestCorrect):
+    directory = "routing"
 
-        ic.read_yaml(f"examples/{name}.yml" if not path else path)
-
+    def _process(self, ic):
         ic.find_routing_paths()
-        ic._print_set_output("tests/output.txt")
         ic._print_address_maps()
-
-        assert not filediff(
-            "tests/output.txt", f"tests/ideal/process/routing/{name}.txt"
-        )
 
     def test_simple(self):
         self._test("simple")

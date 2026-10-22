@@ -1,0 +1,40 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# top level subordinate pin2 has no connection, pin has two
+desc_version: 1.0
+default:
+  data_width: 64
+  frequency: 10MHz
+  protocol: axi4
+  clock: clk
+ports:
+  pin:
+    role: "subordinate"
+  pin2:
+    role: "subordinate"
+  pout:
+    role: "manager"
+crossbars:
+  xa:
+    ports:
+      in:
+        role: "subordinate"
+      out:
+        role: "manager"
+  xb:
+    ports:
+      in:
+        role: "subordinate"
+      out:
+        role: "manager"
+connections:
+  "pin -> xa.in":
+  "pin -> xb.in":
+  "xa.out -> pout":
+  "xb.out -> pout":
+address_map:
+  pout:
+    to: pout
+    base: 0x0000_0000
+    size: 0xFFFF_FFFF

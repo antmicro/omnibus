@@ -365,7 +365,7 @@ class Frontend(FrontendBase):
         ## Connections
         if len(connections) < top_level_ports:
             self.errors.append(
-                "ERROR: insufficient number of connections, each top level port must include connection"
+                "ERROR: insufficient number of connections, each top level port must include connection to or from a crossbar"
             )
 
         for conn, params in connections.items():

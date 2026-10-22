@@ -19,9 +19,7 @@ from harness import TIERS
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--sim-waves", action="store_true", help="dump FST waveforms"
-    )
+    parser.addoption("--sim-waves", action="store_true", help="dump FST waveforms")
     parser.addoption(
         "--sim-seed",
         type=int,

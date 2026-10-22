@@ -447,8 +447,8 @@ class TestYaml:
         self._test(
             "connections_err",
             [
-                "tests/specinvalid/connections_err.yml:36:3: ERROR: in 'connections', invalid connection '', expected format 'a -> b'",
-                "tests/specinvalid/connections_err.yml:38:3: ERROR: in 'connections', invalid connection 'a b', expected format 'a -> b'",
+                "tests/specinvalid/connections_err.yml:36:3: ERROR: in 'connections', invalid connection '', expected format 'a -> b', with only one space inbetween",
+                "tests/specinvalid/connections_err.yml:38:3: ERROR: in 'connections', invalid connection 'a b', expected format 'a -> b', with only one space inbetween",
                 "tests/specinvalid/connections_err.yml:46:3: ERROR: in 'connections.a -> b', expected a mapping or nothing, got a list ([1, 2])",
             ],
         )
@@ -468,7 +468,7 @@ class TestYaml:
     def test_connections_insufficient(self):
         self._test(
             "connections_insufficient",
-            "ERROR: insufficient number of connections, each top level port must include connection",
+            "ERROR: insufficient number of connections, each top level port must include connection to or from a crossbar",
         )
 
     def test_address_map_field(self):

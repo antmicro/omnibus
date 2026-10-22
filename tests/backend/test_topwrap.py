@@ -20,6 +20,7 @@ class TestTopwrapBackend:
         ic.read_yaml(f"examples/{name}.yml")
         ic.process()
         ic.generate("tests/out/")
+        assert len(ic.errors) == 0
         os.sync()
 
         assert not filediff(

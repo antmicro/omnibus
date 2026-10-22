@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+# top level manager pout2 has no connection leading to it, pout has two
+desc_version: 1.0
+default:
+  data_width: 64
+  frequency: 10MHz
+  protocol: axi4
+  clock: clk
+ports:
+  pin:
+    role: "subordinate"
+  pout:
+    role: "manager"
+  pout2:
+    role: "manager"
+crossbars:
+  xa:
+    ports:
+      in:
+        role: "subordinate"
+      out:
+        role: "manager"
+      out2:
+        role: "manager"
+connections:
+  "pin -> xa.in":
+  "xa.out -> pout":
+  "xa.out2 -> pout":
+address_map:
+  pout:
+    to: pout
+    base: 0x0000_0000
+    size: 0xFFFF_FFFF

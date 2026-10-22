@@ -1,28 +1,18 @@
 # Copyright (c) 2026 Antmicro
 # SPDX-License-Identifier: Apache-2.0
 
-import subprocess
-
-from omnibus import InterconnectBuilder
-
-from tests.filediff import filediff
+from base import TestCorrect
 
 
 # These tests check whether parameters are properly propagated and components properly inserted
-class TestComponents:
-    def _test(self, name, directory="examples"):
-        ic = InterconnectBuilder(frontend="yaml")
+class TestComponents(TestCorrect):
+    directory = "components"
 
-        ic.read_yaml(f"{directory}/{name}.yml")
+    def _process(self, ic):
         ic.propagate_parameters()
         ic.insert_new_components()
-        ic._print_set_output("tests/output.txt")
         ic._print_ports()
         ic._print_components()
-
-        assert not filediff(
-            "tests/output.txt", f"tests/ideal/process/components/{name}.txt"
-        )
 
     def test_simple(self):
         self._test("simple")
@@ -37,4 +27,4 @@ class TestComponents:
         self._test("asoca")
 
     def test_idwidth(self):
-        self._test("idwidth_butterflyish", "tests/spec/")
+        self._test("idwidth_butterflyish", "tests/spec/idwidth_butterflyish.yml")

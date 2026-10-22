@@ -29,6 +29,7 @@ CHANNELS = {
 }
 MAX_REPORTED = 20
 
+
 class ApbChecker:
     def __init__(
         self, dut: HierarchyObject, port: str, clock: LogicObject, reset: LogicObject
@@ -46,7 +47,7 @@ class ApbChecker:
     def _clear(self):
         self.prev = None
         self.transfer = False
-        self.write_transfer  = False
+        self.write_transfer = False
 
     def _violation(self, msg: str):
         if len(self.violations) < MAX_REPORTED:
@@ -66,11 +67,21 @@ class ApbChecker:
 
             if self.transfer:
                 if not int(self.channels["psel"].value):
-                    self._violation("PSEL deasserted while transfer in progress");
+                    self._violation("PSEL deasserted while transfer in progress")
 
-                stable = (self.channels["paddr"], self.channels["pwrite"], self.channels["pprot"])
+                stable = (
+                    self.channels["paddr"],
+                    self.channels["pwrite"],
+                    self.channels["pprot"],
+                )
                 if self.write_transfer:
-                    stable = (self.channels["paddr"], self.channels["pwrite"], self.channels["pwdata"], self.channels["pstrb"], self.channels["pprot"])
+                    stable = (
+                        self.channels["paddr"],
+                        self.channels["pwrite"],
+                        self.channels["pwdata"],
+                        self.channels["pstrb"],
+                        self.channels["pprot"],
+                    )
 
                 if self.prev is None:
                     # first cycle of transfer here
@@ -84,10 +95,14 @@ class ApbChecker:
 
                     if self.prev != stable:
                         if self.write_transfer:
-                            self._violation("PADDR/PWRITE/PWDATA/PSTRB/PPROT changed before transfer end")
+                            self._violation(
+                                "PADDR/PWRITE/PWDATA/PSTRB/PPROT changed before transfer end"
+                            )
                         else:
-                            self._violation("PADDR/PWRITE/PPROT changed before transfer end")
-                    
+                            self._violation(
+                                "PADDR/PWRITE/PPROT changed before transfer end"
+                            )
+
                     if int(self.channels["pready"].value):
                         self.write_transfer = False
                         self.transfer = False

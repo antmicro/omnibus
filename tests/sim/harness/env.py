@@ -24,7 +24,15 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, with_timeout
 from cocotb_AHB.drivers.DutManager import DUTManager
-from cocotbext.axi import AxiBus, AxiLiteBus, AxiLiteRam, AxiMaster, AxiRam, ApbBus, ApbRam
+from cocotbext.axi import (
+    AxiBus,
+    AxiLiteBus,
+    AxiLiteRam,
+    AxiMaster,
+    AxiRam,
+    ApbBus,
+    ApbRam,
+)
 
 from omnibus.backend.topwrap_pulpplatform import set_clock_and_reset
 

@@ -1,22 +1,15 @@
 # Copyright (c) 2026 Antmicro
 # SPDX-License-Identifier: Apache-2.0
 
-import subprocess
-
-from omnibus import InterconnectBuilder
-
-from tests.filediff import filediff
+from base import TestCorrect
 
 
 # These tests check whether data is properly passed to the internal represntation
-class TestBasic:
-    def _test(self, name):
-        ic = InterconnectBuilder(frontend="yaml")
+class TestBasic(TestCorrect):
+    directory = "basic"
 
-        ic.read_yaml(f"examples/{name}.yml")
+    def _process(self, ic):
         ic._print_elements("tests/output.txt")
-
-        assert not filediff("tests/output.txt", f"tests/ideal/process/basic/{name}.txt")
 
     def test_simple(self):
         self._test("simple")
