@@ -101,6 +101,10 @@ def main():
                 return 1
 
         ic.process()
+        print_lines(ic.warns)
+        print_lines(ic.errors)
+        if len(ic.errors) > 0:
+            return 2
         ic.generate(
             outdir=args.output,
             view=bool(args.graphview),
