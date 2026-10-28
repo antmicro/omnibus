@@ -11,48 +11,48 @@ parameters:
   DATA_WIDTH: 32
 
 signals:
-  PADDR:
+  paddr:
     pattern: paddr
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [ADDR_WIDTH - 1, 0]
-  PPROT:
+  pprot:
     pattern: pprot
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [2, 0]
-  PSEL:
+  psel:
     pattern: psel
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
-  PENABLE:
+  penable:
     pattern: penable
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
-  PWRITE:
+  pwrite:
     pattern: pwrite
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
-  PWDATA:
+  pwdata:
     pattern: pwdata
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [DATA_WIDTH - 1, 0]
-  PSTRB:
+  pstrb:
     pattern: pstrb
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [DATA_WIDTH/8 - 1, 0]
-  PREADY:
+  pready:
     pattern: pready
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0
-  PRDATA:
+  prdata:
     pattern: prdata
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0
     bound: [DATA_WIDTH - 1, 0]
-  PSLVERR:
+  pslverr:
     pattern: pslverr
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0

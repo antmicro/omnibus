@@ -28,10 +28,10 @@ external:
     - rst_ni
 ips:
   main:
-    file: file:tests/out/modules/cores/axi_crossbar_main/module.yaml
+    file: modules/cores/axi_crossbar_main/module.yaml
     parameters: {}
   pr_conv_main_pout1_axi4_to_pout1_axi4lite:
-    file: file:tests/out/modules/cores/axi_prconv_axi_axilite/module.yaml
+    file: modules/cores/axi_prconv_axi_axilite/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 64

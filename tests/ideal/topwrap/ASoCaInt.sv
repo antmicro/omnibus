@@ -368,7 +368,7 @@ module ASoCaInt (
     output logic [2:0] timers_csr_pprot,
     input logic [63:0] timers_csr_prdata,
     input logic timers_csr_pready,
-    output logic [0:0] timers_csr_psel,
+    output logic timers_csr_psel,
     input logic timers_csr_pslverr,
     output logic [7:0] timers_csr_pstrb,
     output logic [63:0] timers_csr_pwdata,

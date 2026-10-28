@@ -75,7 +75,7 @@ test_build[spec]
     _check_generation(spec)       |
     omnibus <spec>                |
     topwrap repo parse ...        |
-    topwrap build ...             |
+    topwrap generate ...          |
     Verilator build (runner)      |
   check EXPECTED_MODULES  <-------+
 test_tier[spec-tier]  (per tier)
@@ -106,10 +106,9 @@ If the build fails, the fixture remembers the exception: `test_build` reports it
 1. `_check_generation()` runs `read_yaml()` and `process()` in-process and fails on any recorded error.
    The `omnibus` command line tool exits 0 even when `process()` records errors, so without this a broken specification would still produce RTL.
 2. `omnibus <spec>` generates the interconnect RTL and a Topwrap design of it into `out/`.
-   It also writes `topwrap.yaml`, a Topwrap configuration that registers `out/modules` as a repository named `repo`.
+   It also writes `topwrap.yaml`, a Topwrap configuration that registers `out/modules` as a repository named `repo`, and `out/interfaces`, which holds the AHB and APB interface definitions, as a repository named `interfaces`.
 3. `topwrap repo parse repo out/src -I` infers Topwrap IP core descriptions for the generated modules and stores them in that repository.
-   Vendor interface definitions it writes there are then deleted (workaround for #102866).
-4. The design `out/<name>.yml` is copied next to `out/` (workaround for #102867), and `topwrap build --design <name>.yml` writes the top-level module `build/<name>.sv`.
+4. `topwrap generate --verilog out/<name>.yml --flatten-interfaces` writes the top-level module `build/src/<name>.sv`.
 5. cocotb's runner builds that top level with Verilator (see [Building the simulator](#building-the-simulator)).
 
 All commands and their output go to `generate.log`, so a failed generation can be read, and re-run by hand, from there.
@@ -122,18 +121,18 @@ For a specification `specs/<spec>.yml` with `name: <name>`:
 ```
 tests/sim/.build/<spec>-<hash>[-waves]/
 |-- generate.log                   commands of steps 2-4 and their output
-|-- topwrap.yaml                   step 2: Topwrap config, repository `repo`
+|-- topwrap.yaml                   step 2: Topwrap config, repositories `repo` and `interfaces`
 |-- out/                           step 2, omnibus:
 |   |-- src/*.sv, *.vh             RTL: crossbars (from axi_intercon_gen),
 |   |                              converter and register slice wrappers
 |   |-- <name>.yml                 Topwrap design of the interconnect
 |   |-- <name>.f                   filelist of the RTL in src/ to compile
 |   |-- *.core                     FuseSoC cores written by axi_intercon_gen
-|   `-- modules/                   the `repo` repository:
-|       |-- cores/<m>/module.yaml  step 3: inferred IP core descriptions
-|       `-- interfaces/            step 2: AHB/APB interfaces, when used
-|-- <name>.yml                     step 4, copy of out/<name>.yml
-|-- build/<name>.sv                step 4, topwrap build: the top level (DUT)
+|   |-- modules/                   the `repo` repository:
+|   |   `-- cores/<m>/module.yaml  step 3: inferred IP core descriptions
+|   `-- interfaces/interfaces/     the `interfaces` repository, step 2:
+|                                  AHB/APB interfaces, when used
+|-- build/src/<name>.sv            step 4, topwrap generate: the top level (DUT)
 |-- sim_build/                     step 5: Verilator model, simulator binary
 |-- build.log                      Verilator's output
 |-- built                          marker: the build completed
@@ -151,7 +150,7 @@ The Verilator build compiles, in this order:
 
 1. the pulp sources listed in `tests/verilator/pulp_platform_filelist.f`, from the `omnibus/third_party` submodules;
 2. the generated RTL listed in `out/<name>.f`;
-3. the top level `build/<name>.sv`.
+3. the top level `build/src/<name>.sv`.
 
 The order matters: the generated wrappers use the `axi/typedef.svh` macros without including the file, and get them from the pulp files compiled before them.
 That is also why the generated filelist is passed as sources and not with `-F`: cocotb's runner puts build arguments before the sources.
@@ -320,7 +319,7 @@ A new tier is a module in `tiers/`, plus its name in `TIERS` in `harness/__init_
 
 ## Notes for reviewers
 
-- **Topwrap branch.** Generating the top level needs Topwrap from the `102039-interface-generation-include-width` branch. The two workarounds in `generate.build()` (#102866, #102867) mirror `tests/generate.sh`.
+- **Topwrap branch.** Generating the top level needs Topwrap from its `main` branch.
 - **Deprecation warnings.** cocotbext-axi uses APIs that cocotb 2.0 deprecates; the `py.warnings` lines in `sim.log` come from there.
 - **Known issue: builds with and without `--sim-waves` evict each other.** Removing a specification's older builds also removes its build of the other kind, so alternating between the two rebuilds every time.
 - **Not covered yet.** The rest of tier 2 (window edges, exclusive accesses, protocol violations), bursts, concurrent traffic and performance, planned as further tiers.

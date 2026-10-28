@@ -123,14 +123,9 @@ def build(spec: Path, work_dir: Path = DEFAULT_WORK_DIR, waves: bool = False) ->
             out,
             log,
         )
-        # workaround for #102866
-        for vendor in (out / "out" / "modules" / "interfaces").glob("vendor*"):
-            vendor.unlink()
-        # workaround for #102867
-        shutil.copy(out / "out" / f"{model.name}.yml", out / f"{model.name}.yml")
         _run(
-            [str(bindir / "topwrap"), "build", "--design", f"{model.name}.yml"]
-            + ["--log-level", "error"],
+            [str(bindir / "topwrap"), "generate", "--verilog", f"out/{model.name}.yml"]
+            + ["--log-level", "error", "--flatten-interfaces"],
             out,
             log,
         )
@@ -140,7 +135,7 @@ def build(spec: Path, work_dir: Path = DEFAULT_WORK_DIR, waves: bool = False) ->
     generated, _, _ = _filelist(out / "out" / f"{model.name}.f", out / "out")
     get_runner("verilator").build(
         # pulp first: the generated RTL relies on macros leaking from axi/typedef.svh
-        sources=[*pulp_sources, *generated, out / "build" / f"{model.name}.sv"],
+        sources=[*pulp_sources, *generated, out / "build" / "src" / f"{model.name}.sv"],
         includes=pulp_includes,
         build_args=[
             *VERILATOR_ARGS,

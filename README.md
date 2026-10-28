@@ -51,11 +51,11 @@ You can generate the interconnect graph from example given in specification and 
 ### Topwrap generation
 Generating a full Topwrap project takes a few more steps. You can generate one from the ASoCa specification with:
 ```sh
-omnibus examples/asoca.yml 
-topwrap repo init repo out/modules/
-topwrap repo parse repo out/src/ 
+omnibus examples/asoca.yml
+topwrap repo parse repo out/src -I
+topwrap generate out/ASoCaInt.yml --verilog --flatten-interfaces
 ```
-You'll then find the interconnect in `out/ASoCaInt.yml`. You can view it with `topwrap gui` or generate Verilog from it with `topwrap build`
+You'll then find the Topwrap design in `out/ASoCaInt.yml`, which you can view with `topwrap gui`, and the Verilog top level in `build/src/ASoCaInt.sv`.
 see Topwrap documentation for more details on topwrap usage: https://antmicro.github.io/topwrap/getting_started.html
 
 ![](./docs/images/asoca_topwrap.png)

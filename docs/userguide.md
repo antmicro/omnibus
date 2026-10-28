@@ -78,16 +78,12 @@ Then, parse the created files with Topwrap:
 ```
 topwrap repo parse repo out/src/*sv -I --log-level=error
 ```
-Before generating with Topwrap, change the file structure slightly:  
+And then generate the top level:
 ```
-mv out/simple.yml ./
-```
-And then
-```
-topwrap build --design simple.yml --log-level=error
+topwrap generate out/simple.yml --verilog --log-level=error --flatten-interfaces
 ```
 
-You'll find the interconnect in `build/`. 
+You'll find the interconnect in `build/src/`. 
 It contains instantiation of all used components, in this case that is just crossbar. 
 
 ## Compilation with Verilator
@@ -104,6 +100,6 @@ verilator --lint-only -Wall \
     out/verilator/general_config.vlt \
     out/verilator/pulp_platform_config.vlt \
     -f out/verilator/pulp_platform_filelist.vc \
-    out/src/*sv build/*sv  \
+    out/src/*sv build/src/*sv  \
     --top-module simple
 ```

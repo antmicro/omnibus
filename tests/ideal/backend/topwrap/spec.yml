@@ -75,39 +75,39 @@ external:
     - rst_lpp_ni
 ips:
   cdc_axi_cpu_clk_cpu_to_sb_cpu_cpu_clk_bus:
-    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 1
   cdc_sb_cpu_lpp_clk_bus_to_sb_lpp_up_clk_lpp:
-    file: file:tests/out/modules/cores/axi_cdc_wrapper/module.yaml
+    file: modules/cores/axi_cdc_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   pr_conv_sb_lpp_i2c_axi4_to_apb_i2c_apb3:
-    file: file:tests/out/modules/cores/axi_prconv_axi_apb/module.yaml
+    file: modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   pr_conv_sb_lpp_uart_axi4_to_apb_uart_apb3:
-    file: file:tests/out/modules/cores/axi_prconv_axi_apb/module.yaml
+    file: modules/cores/axi_prconv_axi_apb/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   register_sb_cpu_mem_to_axi_mem_1:
-    file: file:tests/out/modules/cores/axi_buffer_wrapper/module.yaml
+    file: modules/cores/axi_buffer_wrapper/module.yaml
     parameters:
       AxiAddrWidth: 32
       AxiDataWidth: 32
       AxiIdWidth: 2
   sb_cpu:
-    file: file:tests/out/modules/cores/axi_crossbar_sb_cpu/module.yaml
+    file: modules/cores/axi_crossbar_sb_cpu/module.yaml
     parameters: {}
   sb_lpp:
-    file: file:tests/out/modules/cores/axi_crossbar_sb_lpp/module.yaml
+    file: modules/cores/axi_crossbar_sb_lpp/module.yaml
     parameters: {}
 name: MyInterconnect

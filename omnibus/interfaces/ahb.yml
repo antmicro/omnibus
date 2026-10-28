@@ -11,54 +11,54 @@ parameters:
   DATA_WIDTH: 64
 
 signals:
-  HADDR:
+  haddr:
     pattern: haddr
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [ADDR_WIDTH - 1, 0]
-  HMASTLOCK:
+  hmastlock:
     pattern: hmastlock
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
-  HBURST:
+  hburst:
     pattern: hburst
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [2, 0]
-  HPROT:
+  hprot:
     pattern: hprot
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [3, 0]
-  HSIZE:
+  hsize:
     pattern: hsize
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [2, 0]
-  HTRANS:
+  htrans:
     pattern: htrans
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [1, 0]
-  HWDATA:
+  hwdata:
     pattern: hwdata
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
     bound: [DATA_WIDTH - 1, 0]
-  HWRITE:
+  hwrite:
     pattern: hwrite
     modes: {manager: [out, required], subordinate: [in, required]}
     default: 0
-  HRDATA:
+  hrdata:
     pattern: hrdata
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0
     bound: [DATA_WIDTH - 1, 0]
-  HREADY:
+  hready:
     pattern: hready
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0
-  HRESP:
+  hresp:
     pattern: hresp
     modes: {manager: [in, required], subordinate: [out, required]}
     default: 0

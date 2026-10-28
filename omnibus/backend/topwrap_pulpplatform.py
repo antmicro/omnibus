@@ -224,7 +224,7 @@ class PulpPrAXIAPB(MappedComponent):
         src = os.path.join(resources.files("omnibus"), "wrappers", "pulp_platform")
         dst = os.path.join(outdir, "src")
         inf = os.path.join(resources.files("omnibus"), "interfaces")
-        dstinf = os.path.join(outdir, "modules", "interfaces")
+        dstinf = os.path.join(outdir, "interfaces", "interfaces")
 
         filename = f"{self.core}.sv"
         shutil.copyfile(
@@ -292,7 +292,7 @@ class PrAXIAHB(MappedComponent):
         src = os.path.join(resources.files("omnibus"), "modules")
         dst = os.path.join(outdir, "src")
         inf = os.path.join(resources.files("omnibus"), "interfaces")
-        dstinf = os.path.join(outdir, "modules", "interfaces")
+        dstinf = os.path.join(outdir, "interfaces", "interfaces")
 
         for filename in (f"{self.core}.sv", "axi_prconv_fifo.sv"):
             shutil.copyfile(
@@ -455,13 +455,20 @@ class Backend:
         Must be called after map_components()
         """
 
-        os.makedirs(os.path.join(outdir, "modules", "interfaces"), exist_ok=True)
+        os.makedirs(os.path.join(outdir, "interfaces", "interfaces"), exist_ok=True)
 
         with open("topwrap.yaml", "w") as file:
             yaml = ruamel.yaml.YAML(typ="safe")
             yaml.default_flow_style = False
             yaml.dump(
-                {"repositories": {"repo": f"file:{os.path.join(outdir, 'modules')}"}},
+                {
+                    "repositories": {
+                        "repo": f"{os.path.join(outdir, 'modules')}",
+                        # interface definitions get a repository of their own: `topwrap repo parse repo`
+                        # saves all of `repo` and would add copies of them under other names (#102866)
+                        "interfaces": f"{os.path.join(outdir, 'interfaces')}",
+                    }
+                },
                 file,
             )
 
@@ -507,7 +514,8 @@ class Backend:
 
         for comp in self.real_components:
             tree["ips"][comp.name] = {
-                "file": f"file:{os.path.join(outdir, 'modules', 'cores', comp.core, 'module.yaml')}",
+                # relative to the design file, which topwrap resolves it against
+                "file": f"{os.path.join('modules', 'cores', comp.core, 'module.yaml')}",
                 "parameters": {},
             }
 

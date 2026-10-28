@@ -13,7 +13,7 @@ from tests.filediff import filediff
 # These tests check whether topwrap backend operates properly
 class TestTopwrapBackend:
     def _test(self, name, icname=None):
-        subprocess.call("rm -fr tests/out/src/* tests/out/modules/*", shell=True)
+        subprocess.call("rm -fr tests/out/src/* tests/out/modules/* tests/out/interfaces/*", shell=True)
         subprocess.call("rm -f tests/out/*yml tests/out/*core tests/out/*f", shell=True)
 
         ic = InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform")
@@ -42,7 +42,7 @@ class TestTopwrapBackend:
         assert os.path.isfile("tests/out/src/axi_cdc_wrapper.sv")
         assert os.path.isfile("tests/out/src/axi_buffer_wrapper.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_axi_apb.sv")
-        assert os.path.isfile("tests/out/modules/interfaces/apb.yml")
+        assert os.path.isfile("tests/out/interfaces/interfaces/apb.yml")
 
     # NOTE: this test is not full until routing in multipath interconnects is implemented
     def test_butterfly(self):
@@ -71,5 +71,5 @@ class TestTopwrapBackend:
         assert os.path.isfile("tests/out/src/axi_prconv_axi_apb.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_axi_ahb.sv")
         assert os.path.isfile("tests/out/src/axi_prconv_fifo.sv")
-        assert os.path.isfile("tests/out/modules/interfaces/apb.yml")
-        assert os.path.isfile("tests/out/modules/interfaces/ahb.yml")
+        assert os.path.isfile("tests/out/interfaces/interfaces/apb.yml")
+        assert os.path.isfile("tests/out/interfaces/interfaces/ahb.yml")
