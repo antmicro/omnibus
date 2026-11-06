@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import subprocess
 
 from .interconnect import InterconnectBuilder
 
@@ -54,6 +55,17 @@ def main():
         "--fulldisplay",
         action="store_true",
         help="if specified, provides full port names in the graph output, otherwise shortens them for readability",
+    )
+    argsparser.add_argument(
+        "--verilog",
+        action="store_true",
+        help="also run Topwrap to generate the interconnect's SystemVerilog in the build directory",
+    )
+    argsparser.add_argument(
+        "-b",
+        "--build-dir",
+        default="./build",
+        help="specifies Topwrap build directory, used with --verilog",
     )
 
     args = argsparser.parse_args()
@@ -127,5 +139,30 @@ def main():
     print_lines(ic.errors)
     if len(ic.errors) > 0:
         return 3
+
+    if args.verilog:
+        for cmd in (
+            [
+                "topwrap",
+                "repo",
+                "parse",
+                "repo",
+                f"{args.output}/src",
+                "-I",
+                "-e",
+                "overwrite",
+            ],
+            [
+                "topwrap",
+                "generate",
+                f"{args.output}/{ic.name}.yml",
+                "--verilog",
+                "--flatten-interfaces",
+                "-t",
+                args.build_dir,
+            ],
+        ):
+            if subprocess.call(cmd) != 0:
+                return 4
 
     return 0
