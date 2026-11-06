@@ -1,6 +1,6 @@
-Copyright Antmicro 2026
-
 # Omnibus
+
+Copyright (c) 2026 [Antmicro](https://antmicro.com)
 
 Omnibus can be used to generate desired interconnect from supplied specification.
 Currently it is used as a supplementary to Topwrap - it generates necessary wrappers and creates Topwrap project file. 
