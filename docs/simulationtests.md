@@ -1,17 +1,17 @@
 # Simulation Tests
 
-`tests/sim` holds simulation tests of the RTL Omnibus generates.
+`tests/sim` holds simulation tests of the RTL that Omnibus generates.
 Each specification in `tests/sim/specs/` is turned into SystemVerilog, compiled with [Verilator](https://verilator.org), and exercised by [cocotb](https://www.cocotb.org/) 2.0 tests using [cocotbext-axi](https://github.com/alexforencich/cocotbext-axi) managers and memories, and a [cocotb-ahb](https://github.com/antmicro/cocotb-ahb) memory for AHB3 ports.
 
 The bridge `axi_prconv_axi_ahb` also has UVM tests, with the AXI4 and AHB AVIPs on Verilator; see [uvmtests.md](uvmtests.md).
 
-This page describes how the suite is organized, what it generates while running, and how a single test runs, for reviewers of the suite and for anyone extending it.
+This page describes how the suite is organized, what it generates while running, and how a single test runs.
+It is intended for reviewers of the suite and for anyone extending it.
 
 ## Quick start
 
 Requirements:
 - Verilator on `PATH`; the suite was run with v5.052, 5.053 and a newer commit of Verilator's master.
-- Topwrap (see [Installation](installation.md)).
 - The Python packages in the `sim` extra: `pip install ".[sim]"` (cocotb, cocotbext-axi, cocotb-ahb, pytest).
 - The pulp submodules in `omnibus/third_party` (`axi`, `common_cells`, `tech_cells_generic`): `git submodule update --init`.
 
@@ -97,21 +97,21 @@ test_tier[spec-tier]  (per tier)
 Each tier gets a pytest marker of the same name (registered in `conftest.py`), which is what `-m tier1_smoke` selects.
 
 The session-scoped `builds` fixture builds each specification once and hands the same build to `test_build` and every `test_tier` of that specification.
-If the build fails, the fixture remembers the exception: `test_build` reports it, and every `test_tier` of that specification is skipped with a pointer to `test_build`, instead of failing with the same error.
+If the build fails, the fixture remembers the exception; `test_build` reports it, and every `test_tier` of that specification is skipped with a pointer to `test_build`, instead of failing with the same error.
 
 ### Generating the DUT
 
 `generate.build()` (in `harness/generate.py`) runs the same steps as `tests/generate.sh`, in a build directory of its own:
 
 1. `_check_generation()` runs `read_yaml()` and `process()` in-process and fails on any recorded error.
-   The `omnibus` command line tool exits 0 even when `process()` records errors, so without this a broken specification would still produce RTL.
+   The `omnibus` command line tool exits 0 even when `process()` records errors, so without this, a broken specification would still produce RTL.
 2. `omnibus <spec>` generates the interconnect RTL and a Topwrap design of it into `out/`.
    It also writes `topwrap.yaml`, a Topwrap configuration that registers `out/modules` as a repository named `repo`, and `out/interfaces`, which holds the AHB and APB interface definitions, as a repository named `interfaces`.
 3. `topwrap repo parse repo out/src -I` infers Topwrap IP core descriptions for the generated modules and stores them in that repository.
 4. `topwrap generate --verilog out/<name>.yml --flatten-interfaces` writes the top-level module `build/src/<name>.sv`.
 5. cocotb's runner builds that top level with Verilator (see [Building the simulator](#building-the-simulator)).
 
-All commands and their output go to `generate.log`, so a failed generation can be read, and re-run by hand, from there.
+All commands and their output go to `generate.log`, so a failed generation can be read and re-run by hand from there.
 
 ### What is generated
 
@@ -142,17 +142,18 @@ tests/sim/.build/<spec>-<hash>[-waves]/
     `-- dump.fst                   waveform, with --sim-waves
 ```
 
-Nothing is generated outside `.build/`: the harness runs every command inside the build directory, because the Omnibus backend writes `topwrap.yaml` into the working directory.
+Nothing is generated outside `.build/`.
+The harness runs every command inside the build directory, because the Omnibus backend writes `topwrap.yaml` into the working directory.
 
 ### Building the simulator
 
-The Verilator build compiles, in this order:
+The Verilator build compiles:
 
 1. the pulp sources listed in `tests/verilator/pulp_platform_filelist.f`, from the `omnibus/third_party` submodules;
 2. the generated RTL listed in `out/<name>.f`;
 3. the top level `build/src/<name>.sv`.
 
-The order matters: the generated wrappers use the `axi/typedef.svh` macros without including the file, and get them from the pulp files compiled before them.
+The order matters, as the generated wrappers use the `axi/typedef.svh` macros without including the file and get them from the pulp files compiled before them.
 That is also why the generated filelist is passed as sources and not with `-F`: cocotb's runner puts build arguments before the sources.
 
 Other options:
@@ -319,7 +320,6 @@ A new tier is a module in `tiers/`, plus its name in `TIERS` in `harness/__init_
 
 ## Notes for reviewers
 
-- **Topwrap branch.** Generating the top level needs Topwrap from its `main` branch.
 - **Deprecation warnings.** cocotbext-axi uses APIs that cocotb 2.0 deprecates; the `py.warnings` lines in `sim.log` come from there.
 - **Known issue: builds with and without `--sim-waves` evict each other.** Removing a specification's older builds also removes its build of the other kind, so alternating between the two rebuilds every time.
 - **Not covered yet.** The rest of tier 2 (window edges, exclusive accesses, protocol violations), bursts, concurrent traffic and performance, planned as further tiers.

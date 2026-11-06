@@ -1,8 +1,8 @@
 # Examples 
 ## Two crossbars with memory and APB devices
 
-This example demonstrates usage of Omnibus to generate interconnect with two crossbars. 
-End ports are assigned to two different interfaces, and three different clocks. 
+This example demonstrates the usage of Omnibus to generate an interconnect with two crossbars. 
+End ports are assigned to two different interfaces and three different clocks. 
 Omnibus automatically generates appropriate clock domain crossings and protocol conversions.  
 
 ![](./images/spec_example_graph_clock.png)
@@ -96,8 +96,8 @@ address_map:
 
 ## ASoCa
 
-This example demonstrates usage of Omnibus to generate ASoCa's interconnect.
-It does not have explicit crossbar specified but instead automatically generates an all-to-all one.
+This example demonstrates the usage of Omnibus to generate ASoCa's interconnect.
+It does not have an explicit crossbar specified, but instead automatically generates an all-to-all one.
 
 ![](./images/asoca_graph_datawidth.png)
 
@@ -195,7 +195,7 @@ address_map:
 
 ## Butterfly
 
-This example demonstrates more complex network of crossbars - butterfly configuration.
+This example demonstrates a more complex network of crossbars - a butterfly configuration.
 
 ![](./images/butterfly_graph.png)
 

@@ -54,7 +54,7 @@ AXI4 AVIP master agent --> bridge --> AHB AVIP slave agent
 ```
 
 The tests build AXI transactions directly (not randomized with constraints, so the strobes, addresses and lengths are exactly what the test says) and run them on the write and read sequencers of the AXI4 master agent, which can run at the same time.
-The AHB slave answers every transfer with random read data and a random number of wait states, and with an ERROR outside of the address window the test sets.
+The AHB subordinate answers every transfer with random read data and a random number of wait states, and with an ERROR outside of the address window the test sets.
 
 The scoreboard is given the order of the bridge's transactions by the AW and AR handshakes, and for each one:
 

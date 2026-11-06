@@ -2,8 +2,7 @@
 ## System Dependencies
 
 Omnibus always depends on `python` and [uv](https://docs.astral.sh/uv/).  
-Graphviz (graph visualization) backend also uses `graphviz`.  
-Topwrap backend depends on Topwrap, refer to [its documentation](https://antmicro.github.io/topwrap/installation.html) for directions.
+The Graphviz (graph visualization) backend also uses `graphviz`.  
 
 ### Debian based systems
 ```

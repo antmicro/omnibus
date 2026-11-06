@@ -1,11 +1,12 @@
 # Interconnect Specification
-The input depends on frontend used, below are specifications for available frontends.
+The input depends on frontend used.
+Below are the specifications for available frontends.
 
-## Yaml Syntax Specification
+## YAML Syntax Specification
 
 Full examples are provided at the bottom of this file and in [examples](examples.md).
 
-Current version of the specification is `1.0`. 
+The current version of the specification is `1.0`. 
 
 ### Top Level Fields
 :::{list-table}
@@ -63,8 +64,9 @@ These sections are explained in detail in their own subsections of this document
 ### Global
 Global parameters for configuring global interconnect behavior.
 
-None of the fields are required, if they are unspecified then they are set to default value.   
-If the `global` field would be empty, it is valid to omit it completely.
+None of the fields are required.
+If they are unspecified, they are set to default value.   
+If the `global` field is empty, it is valid to omit it completely.
 
 :::{list-table}
 * - **Field Name**
@@ -78,11 +80,11 @@ If the `global` field would be empty, it is valid to omit it completely.
 :::
 
 ### Default 
-Default parameters specify default value for various fields used throughout the specification.  
+Default parameters specify the default value for various fields used throughout the specification.  
 
-None of the fields are required, if they are unspecified then they are unset.  
-If the `default` field would be empty, it is valid to omit it completely.
-For allowed set of values see corresponding fields in other sections.
+None of the fields are required; if they are unspecified, they are unset.  
+If the `default` field is empty, it is valid to omit it completely.
+For the allowed set of values, see the corresponding fields in other sections.
 
 :::{list-table}
 * - **Field Name**
@@ -99,7 +101,8 @@ For allowed set of values see corresponding fields in other sections.
 
 #### Backend Specific
 ##### Pulp Platform Axi
-Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`. Other backends report them as unknown, with a warning.
+Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`.
+Other backends report them as unknown with a warning.
 
 :::{list-table}
 * - **Field Name**
@@ -109,21 +112,24 @@ Accepted only with the `topwrap_pulpplatform` backend (the default), which defin
 :::
 
 ### Clocks
-Specifies clocks and their frequencies, each clock implies reset domain. 
+Specifies clocks and their frequencies.
+Each clock implies a reset domain. 
 
 Each clock is defined as:
 ```yaml
 name:
     frequency: ...
 ```
-where `name` has to be unique clock identifier.
+where `name` has to be a unique clock identifier.
 `frequency` can be omitted, in which case it is taken from [Defaults](#Defaults), or set to `n/a` if not available.
 Valid values for `frequency` are positive numbers in Hz (e.g. `100e6`), or strings made of an optional positive integer and an optional suffix `Hz`, `k`, `kHz`, `M`, `MHz`, `G` or `GHz`, which scales the value accordingly (e.g. `"100MHz"`, `"25k"`), or `n/a`. Strings can't hold fractions or exponents: write `"2500kHz"` or `2.5e6` rather than `"2.5MHz"`.
 
-When omitted, one clock with name `clk` and default frequency is created.
+When omitted, one clock with the name `clk` and a default frequency is created.
 
 ### Ports
-Interconnect ports, each port has to have unique name.  
+Interconnect ports.
+
+Each port has to have a unique name.  
 
 :::{list-table}
 :Port parameters:
@@ -155,8 +161,10 @@ Interconnect ports, each port has to have unique name.
 \* optional only if default exists, see [Defaults](#Defaults)
 
 ### Crossbars
-Interconnect crossbars, each crossbar has to have unique name. 
-If crossbar's clock is not specified and no default exists, then the clock will be inferred from the design.
+Interconnect crossbars.
+
+Each crossbar has to have a unique name. 
+If a crossbar's clock is not specified and no default exists, then the clock will be inferred from the design.
 
 :::{list-table}
 :Crossbar parameters:
@@ -174,24 +182,26 @@ If crossbar's clock is not specified and no default exists, then the clock will 
   - ports of the crossbar
 :::
 
-Each port is defined as 
+Each port is defined as:
 ```yaml
 name:
     role: ...
 ```
-where `name` has to be unique to the crossbar, while `role` takes either `subordinate` or `manager` as arguments, they specify whether port is subordinate or manager with respect to crossbar.
+where `name` has to be unique to the crossbar, while `role` takes either `subordinate` or `manager` as arguments.
+They specify whether the port is a subordinate or a manager with respect to the crossbar.
 
-Crossbars field can be omitted, in such case:
+The crossbars field can be omitted.
+In such case:
 - `connections` field must also be omitted
-- one all to all crossbar is generated
+- one all-to-all crossbar is generated
 
 ### Connections
-Interconnect connections between ports and crossbars.  
-If `crossbars` field is omitted, this field must be omitted too, otherwise it must be specified.
+Interconnect connections between ports and crossbars.
+If the `crossbars` field is omitted, this field must be omitted too; otherwise, it must be specified.
 
 Each connection is specified as `porta -> portb` in the direction of interconnect subordinate ports to interconnect manager ports (device manager to device subordinate).
-If port is top level port (from `ports` field) then its name is taken as is, e.g. `cpu`.
-If port is crossbar port then its name is "crossbar.port", e.g. `main.cpu`.  
+If a port is a top level port (from `ports` field), its name is taken as is, e.g. `cpu`.
+If a port is a crossbar port, its name is "crossbar.port", e.g. `main.cpu`.  
 
 :::{list-table}
 :Connection Parameters:
@@ -224,7 +234,8 @@ If port is crossbar port then its name is "crossbar.port", e.g. `main.cpu`.
 
 #### Backend specific parameters
 ##### Pulp Platform Axi
-Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`. Other backends report them as unknown, with a warning.
+Accepted only with the `topwrap_pulpplatform` backend (the default), which defines them in `omnibus/backend/topwrap_pulpplatform.schema.yml`.
+Other backends report them as unknown, with a warning.
 
 :::{list-table}
 * - **Field Name**
@@ -240,8 +251,9 @@ Accepted only with the `topwrap_pulpplatform` backend (the default), which defin
 :::
 
 ### Address Map
-Address map inside interconnect. 
-It is specified as a set of entries, each entry is identified by unique name.
+Address map inside an interconnect. 
+It is specified as a set of entries.
+Each entry is identified by a unique name.
 
 :::{list-table}
 :Address Map Entry Parameters:

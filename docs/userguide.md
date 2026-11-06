@@ -9,7 +9,7 @@ There are no requirements on the file location or name.
 
 A very simple specification of interconnect: 
 ```yaml
-docs_version: 1.0
+desc_version: 1.0
 
 name: simple
 version: 1.0
@@ -42,48 +42,39 @@ address_map:
 The file can also be found in [examples/simple.yml](https://github.com/antmicro/omnibus/blob/main/examples/simple.yml).  
 
 Most of the fields are automatically inferred by Omnibus or are taken from the `default`, so you don't need to specify them explicitly. 
-The file specifies interconnect with one input port and two output ports, where lower half of address leads to first output, and upper half to second output.  
+The file specifies an interconnect with one input port and two output ports, where the lower half of address leads to the first output, and the upper half to the second output.  
 
-The ports are described from the perspective of interconnect, so connect the manager device to the subordinate port.  
+The ports are described from the perspective of the interconnect, so connect the manager device to the subordinate port.  
 
-The interconnect has data width of 64, automatically generated clock `clk` with frequency of 10MHz assigned to all ports and components.
+The interconnect has the data width of 64, automatically generated clock `clk` with frequency of 10MHz assigned to all ports and components.
 The interconnect mostly uses AXI4 protocol, but `pout1` uses AXI4Lite, Omnibus notices that and inserts protocol converters.  
 
-Currently, you can use Omnibus in two ways - visualization and generation. 
+Currently, you can use Omnibus in two ways - visualization and generation.
 
 ## Visualization
 
-By running
+By running:
 ```
 omnibus examples/simple.yml -g --colorby protocol
 ```
 The window opens displaying the following interconnect graph:
 ![](./images/simple_graph.png)
 
-The colors are assigned based on protocol assigned to each port. 
-Notice that `pr_conv` (protocol converter) has two ports, each of them uses different protocol.
+The colors are assigned based on the protocol assigned to each port. 
+Notice that `pr_conv` (protocol converter) has two ports, each of them uses a different protocol.
 This visualization is very useful for debugging problems with interconnect structure as it abstracts implementation details.  
 
 ## Generation
 
-While pretty to look at, the graph is not very useful. 
-Generating final interconnect currently requires [Topwrap](https://github.com/antmicro/topwrap). 
+Omnibus generates the final interconnect with [Topwrap](https://github.com/antmicro/topwrap).
 
-First, run Omnibus:
+Run Omnibus with `--verilog`:
 ```
-omnibus examples/simple.yml
+omnibus examples/simple.yml --verilog
 ```
-This generates necessary files in `out/` and topwrap repo.  
-Then, parse the created files with Topwrap: 
-```
-topwrap repo parse repo out/src/*sv -I --log-level=error
-```
-And then generate the top level:
-```
-topwrap generate out/simple.yml --verilog --log-level=error --flatten-interfaces
-```
+This generates the necessary files in `out/`, then runs Topwrap to parse them (`topwrap repo parse`) and generate the top level (`topwrap generate --verilog --flatten-interfaces`).
 
-You'll find the interconnect in `build/src/`. 
+You'll find the interconnect in `build/src/`; use `-b` to choose a different build directory. 
 It contains instantiation of all used components, in this case that is just crossbar. 
 
 ## Compilation with Verilator
