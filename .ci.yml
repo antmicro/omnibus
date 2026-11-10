@@ -1,1 +1,4 @@
-include: topwrap-interconnect-ci@main:ci.yml
+include: 
+ - topwrap-interconnect-ci@main:topwrap-integration-ci.yml
+ - topwrap-interconnect-ci@main:common-deps.yml
+ - topwrap-interconnect-ci@main:ci.yml
