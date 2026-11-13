@@ -78,6 +78,8 @@ def main():
     os.makedirs(f"{args.output}/src", exist_ok=True)
     os.makedirs(f"{args.output}/modules", exist_ok=True)
 
+    canfail = not args.continueonerror
+
     if args.debug == "graph":
         ic = InterconnectBuilder(backend="graphviz")
         if 0 != ic.read_yaml(args.file):
@@ -103,7 +105,7 @@ def main():
         ic.process()
         print_lines(ic.warns)
         print_lines(ic.errors)
-        if len(ic.errors) > 0:
+        if len(ic.errors) > 0 and canfail:
             return 2
         ic.generate(
             outdir=args.output,
@@ -140,7 +142,7 @@ def main():
     ic.process()
     print_lines(ic.warns)
     print_lines(ic.errors)
-    if len(ic.errors) > 0:
+    if len(ic.errors) > 0 and canfail:
         return 2
 
     ic.warns = []
@@ -149,7 +151,7 @@ def main():
     ic.generate(args.output)
     print_lines(ic.warns)
     print_lines(ic.errors)
-    if len(ic.errors) > 0:
+    if len(ic.errors) > 0 and canfail:
         return 3
 
     if args.verilog:
