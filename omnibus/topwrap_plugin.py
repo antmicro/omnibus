@@ -34,7 +34,13 @@ from topwrap.model.connections import InterfaceConnection
 from topwrap.model.hdl_types import ElabvalueEvaluator
 from topwrap.model.inference.inference import infer_interfaces_from_module
 from topwrap.model.module import Module
-from topwrap.plugin.base import BasePlugin, BuildContext, OutputDir
+from topwrap.plugin.base import (
+    BasePlugin,
+    BuildContext,
+    IPGenerationException,
+    IPGeneratorOptionsException,
+    OutputDir,
+)
 
 from .interconnect import InterconnectBuilder
 
@@ -55,8 +61,16 @@ class OmnibusPlugin(BasePlugin):
         return {"omnibus": self.generate}
 
     def generate(self, options, base_dir: Path) -> Module:
+        if set(options) != {"spec"}:
+            raise IPGeneratorOptionsException(
+                f"expected only the 'spec' option, got {sorted(options)}"
+            )
+        spec = base_dir / options["spec"]
+        if not spec.is_file():
+            raise IPGeneratorOptionsException(f"spec file '{spec}' does not exist")
+
         ic = InterconnectBuilder()
-        if ic.read_yaml(str(base_dir / options["spec"])) == 0:
+        if ic.read_yaml(str(spec)) == 0:
             ic.process()
         if not ic.errors:
             outdir = Path(tempfile.mkdtemp(dir=self.tmpdir.name))
@@ -67,7 +81,7 @@ class OmnibusPlugin(BasePlugin):
         for warn in ic.warns:
             logger.warning(warn)
         if ic.errors:
-            raise RuntimeError("\n".join(ic.errors))
+            raise IPGenerationException("\n".join(ic.errors))
 
         interfaces = list(load_interfaces_from_repos()) + [
             InterfaceDefinitionDescriptionFrontend().parse(
@@ -153,7 +167,7 @@ class OmnibusPlugin(BasePlugin):
                             logger.warning(msg)
 
         if errors:
-            raise RuntimeError("\n".join(errors))
+            raise IPGenerationException("\n".join(errors))
 
     def post_output_writing(self, ctx: BuildContext, target_dir: OutputDir):
         for _, outdir, vlnv in self.generated.values():

@@ -84,3 +84,11 @@ def test_mismatch_warning(tmp_path):
         "ID_WIDTH is 1 in the interconnect, 2 in the peripheral"
         in res.stdout + res.stderr
     )
+
+
+def test_options_error(tmp_path):
+    res = generate(
+        tmp_path, "design.yaml", "spec: interconnect.yml", "spec: missing.yml"
+    )
+    assert res.returncode != 0
+    assert "IP 'axi_ic' (provider 'omnibus'): spec file" in res.stdout + res.stderr
