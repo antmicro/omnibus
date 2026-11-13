@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+name: omnibus_example
+
+ips:
+  manager_axi4:
+    file: sources/manager_axi4.yaml
+  subordinator_axi:
+    file: sources/subordinator_axi.yaml
+  axi_ic:
+    generate:
+      provider: omnibus
+      options:
+        spec: interconnect.yml
+
+connections:
+  ports:
+    manager_axi4:
+      clk: clk
+      rst: rst
+    subordinator_axi:
+      clk: clk
+      rst: rst
+    axi_ic:
+      clk_i: clk
+      rst_ni: rst
+  interfaces:
+    axi_ic:
+      from_manager: [manager_axi4, m_axi]
+      to_subordinate: [subordinator_axi, example_iface]
+
+external:
+  ports:
+    in:
+      - clk
+      - rst

@@ -1,0 +1,43 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+id:
+  library: libdefault
+  name: subordinator_axi
+  vendor: vendor
+  version: '0.1'
+interfaces:
+  example_iface:
+    mode: subordinate
+    parameters:
+      ADDR_WIDTH: '32'
+      DATA_WIDTH: '32'
+    signals:
+      in:
+        araddr: {bound: ['31', '0'], name: example_ifaceARADDR}
+        arvalid: {name: example_ifaceARVALID}
+        awaddr: {bound: ['31', '0'], name: example_ifaceAWADDR}
+        awvalid: {name: example_ifaceAWVALID}
+        bready: {name: example_ifaceBREADY}
+        rready: {name: example_ifaceRREADY}
+        wdata: {bound: ['31', '0'], name: example_ifaceWDATA}
+        wstrb: {bound: ['4', '0'], name: example_ifaceWSTRB}
+        wvalid: {name: example_ifaceWVALID}
+      out:
+        arready: {name: example_ifaceARREADY}
+        awready: {name: example_ifaceAWREADY}
+        bresp: {bound: ['1', '0'], name: example_ifaceBRESP}
+        bvalid: {name: example_ifaceBVALID}
+        rdata: {bound: ['31', '0'], name: example_ifaceRDATA}
+        rresp: {bound: ['1', '0'], name: example_ifaceRRESP}
+        rvalid: {name: example_ifaceRVALID}
+        wready: {name: example_ifaceWREADY}
+    type:
+      library: topwrap-interfaces
+      name: axi4lite
+      vendor: antmicro.com
+      version: '0.1'
+signals:
+  in:
+    - {name: clk}
+    - {name: rst}

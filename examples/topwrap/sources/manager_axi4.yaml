@@ -1,0 +1,66 @@
+# Copyright (c) 2026 Antmicro
+# SPDX-License-Identifier: Apache-2.0
+
+id:
+  library: libdefault
+  name: manager_axi4
+  vendor: vendor
+  version: '0.1'
+interfaces:
+  m_axi:
+    mode: manager
+    parameters:
+      ADDR_WIDTH: '32'
+      DATA_WIDTH: '32'
+      ID_WIDTH: '1'
+    signals:
+      in:
+        arready: {name: m_axi_arready}
+        awready: {name: m_axi_awready}
+        bid: {bound: ['0', '0'], name: m_axi_bid}
+        bresp: {bound: ['1', '0'], name: m_axi_bresp}
+        bvalid: {name: m_axi_bvalid}
+        rdata: {bound: ['31', '0'], name: m_axi_rdata}
+        rid: {bound: ['0', '0'], name: m_axi_rid}
+        rlast: {name: m_axi_rlast}
+        rresp: {bound: ['1', '0'], name: m_axi_rresp}
+        rvalid: {name: m_axi_rvalid}
+        wready: {name: m_axi_wready}
+      out:
+        araddr: {bound: ['31', '0'], name: m_axi_araddr}
+        arburst: {bound: ['1', '0'], name: m_axi_arburst}
+        arcache: {bound: ['3', '0'], name: m_axi_arcache}
+        arid: {bound: ['0', '0'], name: m_axi_arid}
+        arlen: {bound: ['7', '0'], name: m_axi_arlen}
+        arlock: {name: m_axi_arlock}
+        arprot: {bound: ['2', '0'], name: m_axi_arprot}
+        arqos: {bound: ['3', '0'], name: m_axi_arqos}
+        arregion: {bound: ['3', '0'], name: m_axi_arregion}
+        arsize: {bound: ['2', '0'], name: m_axi_arsize}
+        arvalid: {name: m_axi_arvalid}
+        awaddr: {bound: ['31', '0'], name: m_axi_awaddr}
+        awburst: {bound: ['1', '0'], name: m_axi_awburst}
+        awcache: {bound: ['3', '0'], name: m_axi_awcache}
+        awid: {bound: ['0', '0'], name: m_axi_awid}
+        awlen: {bound: ['7', '0'], name: m_axi_awlen}
+        awlock: {name: m_axi_awlock}
+        awprot: {bound: ['2', '0'], name: m_axi_awprot}
+        awqos: {bound: ['3', '0'], name: m_axi_awqos}
+        awregion: {bound: ['3', '0'], name: m_axi_awregion}
+        awsize: {bound: ['2', '0'], name: m_axi_awsize}
+        awvalid: {name: m_axi_awvalid}
+        bready: {name: m_axi_bready}
+        rready: {name: m_axi_rready}
+        wdata: {bound: ['31', '0'], name: m_axi_wdata}
+        wlast: {name: m_axi_wlast}
+        wstrb: {bound: ['3', '0'], name: m_axi_wstrb}
+        wvalid: {name: m_axi_wvalid}
+    type:
+      library: topwrap-interfaces
+      name: axi4
+      vendor: antmicro.com
+      version: '0.1'
+signals:
+  in:
+    - {name: rst}
+    - {name: clk}

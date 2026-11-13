@@ -29,6 +29,10 @@ sim = [
 [project.scripts]
 omnibus = "omnibus.main:main"
 
+# loaded by Topwrap only when both are installed in the same environment
+[project.entry-points."topwrap.plugins"]
+omnibus = "omnibus.topwrap_plugin:OmnibusPlugin"
+
 [tool.setuptools]
 include-package-data = true
 
