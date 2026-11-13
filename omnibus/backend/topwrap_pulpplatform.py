@@ -72,14 +72,14 @@ class PulpCrossbar(MappedComponent):
             srcattr = next(iter(self.srcports.values())).attributes
             config = {
                 "parameters": {
-                    "output_file": os.path.join("src", f"axi_crossbar_{self.name}.sv"),
+                    "output_file": os.path.join("src", f"{self.core}.sv"),
                     "slaves": slaves,
                     "masters": masters,
                     "addr_width": self.glbattr["addr_width"],
                     "data_width": srcattr["data_width"],
                     "atop": 0,
                 },
-                "vlnv": f"vendor:library:axi_crossbar_{self.name}:1.0",
+                "vlnv": f"vendor:library:{self.core}:1.0",
             }
 
             yaml = ruamel.yaml.YAML(typ="safe")
@@ -91,13 +91,11 @@ class PulpCrossbar(MappedComponent):
             os.chdir(outdir)
             save_stdout = sys.stdout
             with open(os.devnull, "w") as sys.stdout:
-                axi_intercon_gen.AxiIntercon(
-                    f"axi_crossbar_{self.name}", file.name
-                ).write()
+                axi_intercon_gen.AxiIntercon(self.core, file.name).write()
             sys.stdout = save_stdout
             os.chdir(prevdir)
 
-        filelist.append(str(os.path.join("src", f"axi_crossbar_{self.name}.sv")))
+        filelist.append(str(os.path.join("src", f"{self.core}.sv")))
 
     def generate_hierarchy(self, ports, params):
         set_clock_and_reset(
@@ -368,11 +366,17 @@ class Backend:
         # where the components reading them look for them
         self.port_connection_params = ["axi_max_reads"]
 
-    def generate(self, outdir):
+    def generate(self, outdir, prefix=None):
         """Convenience method for internal operation"""
         if not self.validate():
             return
         self.map_components(outdir)
+        # the interconnect and crossbars are the only modules that differ between interconnects
+        if prefix:
+            self.name = f"{prefix}_{self.name}"
+            for comp in self.real_components:
+                if isinstance(comp, PulpCrossbar):
+                    comp.core = f"{prefix}_{comp.core}"
         self.generate_hierarchy(outdir)
 
     def validate(self):

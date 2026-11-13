@@ -62,6 +62,19 @@ class TestTopwrapBackend:
         assert os.path.isfile("tests/out/src/axi_crossbar_x22.sv")
         assert os.path.isfile("tests/out/src/axi_crossbar_x23.sv")
 
+    def test_prefix(self, tmp_path, monkeypatch):
+        (tmp_path / "src").mkdir()
+        ic = InterconnectBuilder(frontend="yaml", backend="topwrap_pulpplatform")
+        ic.read_yaml(os.path.abspath("examples/simple.yml"))
+        ic.process()
+        monkeypatch.chdir(tmp_path)
+        ic.generate(str(tmp_path), "ic0")
+        assert len(ic.errors) == 0
+
+        assert os.path.isfile(tmp_path / "ic0_simple.yml")
+        assert os.path.isfile(tmp_path / "src" / "ic0_axi_crossbar_main.sv")
+        assert os.path.isfile(tmp_path / "src" / "axi_prconv_axi_axilite.sv")
+
     def test_asoca(self):
         self._test("asoca", "ASoCaInt")
 

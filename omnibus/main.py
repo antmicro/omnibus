@@ -68,6 +68,10 @@ def main():
         help="specifies Topwrap build directory, used with --verilog",
     )
     argsparser.add_argument(
+        "--prefix",
+        help="prefix added to the names of the generated interconnect and crossbar modules",
+    )
+    argsparser.add_argument(
         "--continueonerror",
         action="store_true",
         help="if specified, does not fail on invalid interconnect, primarily useful for inspecting invalid structure with graphviz",
@@ -148,7 +152,7 @@ def main():
     ic.warns = []
     ic.errors = []
 
-    ic.generate(args.output)
+    ic.generate(args.output, args.prefix)
     print_lines(ic.warns)
     print_lines(ic.errors)
     if len(ic.errors) > 0 and canfail:

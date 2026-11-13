@@ -39,13 +39,20 @@ def test_generate(tmp_path):
     src = tmp_path / "build" / "src"
     for f in [
         "omnibus_example.sv",
-        "axi_crossbar_main.sv",
-        "axi_prconv_axi_axilite.sv",
+        "axi_ic/axi_ic_axi_crossbar_main.sv",
+        "omnibus_common/axi_prconv_axi_axilite.sv",
     ]:
         assert (src / f).is_file()
-    assert "pulp-platform.org::axi" in (src / "axi_ic.core").read_text()
     assert (
-        "antmicro.com:omnibus:axi_ic:1.0" in (src / "omnibus_example.core").read_text()
+        "antmicro.com:omnibus:common:"
+        in (src / "axi_ic" / "axi_ic_axi_ic.core").read_text()
+    )
+    assert (
+        "pulp-platform.org::axi" in (src / "omnibus_common" / "common.core").read_text()
+    )
+    assert (
+        "antmicro.com:omnibus:axi_ic_axi_ic:1.0"
+        in (src / "omnibus_example.core").read_text()
     )
 
 

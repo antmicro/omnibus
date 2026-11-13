@@ -17,6 +17,7 @@ are checked against the generated interconnect.
 """
 
 import contextlib
+import importlib.metadata
 import logging
 import shutil
 import tempfile
@@ -54,13 +55,22 @@ CHECKED_PARAMS = {"DATA_WIDTH": True, "ADDR_WIDTH": False, "ID_WIDTH": False}
 class OmnibusPlugin(BasePlugin):
     def __init__(self):
         self.tmpdir = tempfile.TemporaryDirectory(prefix="omnibus-")
-        #: Generated interconnect modules with their source directories and core VLNVs
-        self.generated: dict[int, tuple[Module, Path, str]] = {}
+        #: Generated interconnect modules with their instance names, source directories
+        #: and core VLNVs
+        self.generated: dict[int, tuple[Module, str, Path, str]] = {}
 
     def ip_generators(self):
         return {"omnibus": self.generate}
 
-    def generate(self, options, base_dir: Path) -> Module:
+    def pre_ir_generation(self, ctx: BuildContext):
+        self.generated.clear()
+
+    def generate(self, name: str, options, base_dir: Path) -> Module:
+        if any(n == name for _, n, _, _ in self.generated.values()):
+            raise IPGenerationException(
+                f"another omnibus IP is named '{name}', the names prefix the generated "
+                "modules so they must be unique across the whole design"
+            )
         if set(options) != {"spec"}:
             raise IPGeneratorOptionsException(
                 f"expected only the 'spec' option, got {sorted(options)}"
@@ -77,7 +87,7 @@ class OmnibusPlugin(BasePlugin):
             (outdir / "src").mkdir()
             # the backend writes a legacy topwrap.yaml into the working directory
             with contextlib.chdir(outdir):
-                ic.generate(str(outdir))
+                ic.generate(str(outdir), name)
         for warn in ic.warns:
             logger.warning(warn)
         if ic.errors:
@@ -107,13 +117,13 @@ class OmnibusPlugin(BasePlugin):
         design, _ = DesignDescriptionFrontend(modules).parse_str(yaml.safe_dump(tree))
 
         vlnv = f"antmicro.com:omnibus:{ic.name}:{ic.version}"
-        self.generated[id(design.parent)] = (design.parent, outdir, vlnv)
+        self.generated[id(design.parent)] = (design.parent, name, outdir, vlnv)
         return design.parent
 
     def post_ir_generation(self, ctx: BuildContext):
         if ctx.top_module is None:
             return
-        ctx.fusesoc_dependencies += [vlnv for _, _, vlnv in self.generated.values()]
+        ctx.fusesoc_dependencies += [vlnv for _, _, _, vlnv in self.generated.values()]
 
         errors = []
         for mod in ctx.top_module.hierarchy():
@@ -170,17 +180,25 @@ class OmnibusPlugin(BasePlugin):
             raise IPGenerationException("\n".join(errors))
 
     def post_output_writing(self, ctx: BuildContext, target_dir: OutputDir):
-        for _, outdir, vlnv in self.generated.values():
-            shutil.copytree(outdir / "src", target_dir.gensrc_dir, dirs_exist_ok=True)
-            # the Pulp sources come from the pulp-platform.org::axi core and its dependencies,
-            # github.com/antmicro/axi provides the version omnibus is developed against
+        # the Pulp sources come from the pulp-platform.org::axi core and its dependencies,
+        # github.com/antmicro/axi provides the version omnibus is developed against
+        common_vlnv = (
+            f"antmicro.com:omnibus:common:{importlib.metadata.version('omnibus')}"
+        )
+        common_dir = target_dir.gensrc_dir / "omnibus_common"
+
+        def write_core(
+            core_dir: Path, vlnv: str, sources: list[Path], depend: list[str]
+        ):
+            core_dir.mkdir(parents=True, exist_ok=True)
+            for f in sources:
+                shutil.copy(f, core_dir)
             files = [
-                (
-                    {f.name: {"is_include_file": True}}
-                    if f.suffix in (".vh", ".svh")
-                    else f.name
-                )
-                for f in sorted((outdir / "src").iterdir())
+                {f.name: {"is_include_file": True}}
+                if f.suffix in (".vh", ".svh")
+                else f.name
+                for f in sorted(core_dir.iterdir())
+                if f.suffix != ".core"
             ]
             core = {
                 "name": vlnv,
@@ -188,11 +206,22 @@ class OmnibusPlugin(BasePlugin):
                     "rtl": {
                         "files": files,
                         "file_type": "systemVerilogSource",
-                        "depend": ["pulp-platform.org::axi"],
+                        "depend": depend,
                     }
                 },
                 "targets": {"default": {"filesets": ["rtl"]}},
             }
-            (target_dir.gensrc_dir / f"{vlnv.split(':')[2]}.core").write_text(
+            (core_dir / f"{vlnv.split(':')[2]}.core").write_text(
                 "CAPI=2:\n" + yaml.safe_dump(core, sort_keys=False)
             )
+
+        common = []
+        for _, name, outdir, vlnv in self.generated.values():
+            # only the crossbars carry the name prefix, the other sources are the same
+            # for every interconnect and go to the shared core
+            sources = sorted((outdir / "src").iterdir())
+            own = [f for f in sources if f.name.startswith(f"{name}_")]
+            common += [f for f in sources if f not in own]
+            write_core(target_dir.gensrc_dir / name, vlnv, own, [common_vlnv])
+        if self.generated:
+            write_core(common_dir, common_vlnv, common, ["pulp-platform.org::axi"])
