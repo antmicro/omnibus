@@ -13,7 +13,7 @@ dependencies=[
     "pyyaml",
     "graphviz",
     "jsonschema>=4.18",
-    "topwrap @ git+https://github.com/antmicro/topwrap@8ada28df663bc3329ba13e8df430c0a2703c232b"]
+    "topwrap @ git+https://github.com/antmicro/topwrap@1952fb06e3df15445ebf7c27184c9c9054e2b070"]
 
 [project.optional-dependencies]
 test = [

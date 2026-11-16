@@ -21,7 +21,7 @@ rm -fr topwrap.yaml out/ build/
 omnibus $2
 
 #parse verilog files
-topwrap repo parse repo out/src -I --log-level error
+topwrap repo parse repo out/src -I --log-level error --frontend-approach best-effort
 
 #build verilog
 topwrap generate out/$1.yml --verilog --log-level error --flatten-interfaces

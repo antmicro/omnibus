@@ -119,7 +119,7 @@ def build(spec: Path, work_dir: Path = DEFAULT_WORK_DIR, waves: bool = False) ->
         _run([str(bindir / "omnibus"), str(spec)], out, log)
         _run(
             [str(bindir / "topwrap"), "repo", "parse", "repo", "out/src", "-I"]
-            + ["--log-level", "error"],
+            + ["--log-level", "error", "--frontend-approach", "best-effort"],
             out,
             log,
         )
