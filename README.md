@@ -2,6 +2,12 @@
 
 Copyright (c) 2026 [Antmicro](https://antmicro.com)
 
+<picture>
+  <source srcset="img/omnibus-logo--color.png" media="(prefers-color-scheme: light)"/>
+  <source srcset="img/omnibus-logo--white.png" media="(prefers-color-scheme: dark)"/>
+  <img src="img/omnibus-logo--color.png" alt="Omnibus logo"/>
+</picture>
+
 Omnibus can be used to generate a desired interconnect from a supplied specification.
 It generates all necessary wrappers and creates a Topwrap project file and calls [Topwrap](https://github.com/antmicro/topwrap) to generate the SystemVerilog code.
 
