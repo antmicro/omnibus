@@ -1423,7 +1423,7 @@ wheels = [
 
 [[package]]
 name = "omnibus"
-version = "0.0.0"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "graphviz" },
@@ -1457,7 +1457,7 @@ requires-dist = [
     { name = "pyyaml" },
     { name = "rich", marker = "extra == 'test'" },
     { name = "ruamel-yaml" },
-    { name = "topwrap", git = "https://github.com/antmicro/topwrap?rev=8ada28df663bc3329ba13e8df430c0a2703c232b" },
+    { name = "topwrap", git = "https://github.com/antmicro/topwrap?rev=dd557188d733a36e5f782ab682d200509cdb286d" },
 ]
 provides-extras = ["test", "sim"]
 
@@ -1484,8 +1484,8 @@ wheels = [
 
 [[package]]
 name = "pipeline-manager"
-version = "0.5.4"
-source = { url = "https://github.com/antmicro/kenning-pipeline-manager/releases/download/v0.5.4/pipeline_manager-0.5.4-py3-none-any.whl" }
+version = "0.5.5"
+source = { url = "https://github.com/antmicro/kenning-pipeline-manager/releases/download/v0.5.5/pipeline_manager-0.5.5-py3-none-any.whl" }
 dependencies = [
     { name = "attrs" },
     { name = "beautifulsoup4" },
@@ -1504,7 +1504,7 @@ dependencies = [
     { name = "uvicorn", extra = ["standard"] },
 ]
 wheels = [
-    { url = "https://github.com/antmicro/kenning-pipeline-manager/releases/download/v0.5.4/pipeline_manager-0.5.4-py3-none-any.whl", hash = "sha256:de5ef6bec9d9bf4e4c5f5d514e9bf124dc398f042dd3a8ed21172f2d3a8d4d7d" },
+    { url = "https://github.com/antmicro/kenning-pipeline-manager/releases/download/v0.5.5/pipeline_manager-0.5.5-py3-none-any.whl", hash = "sha256:417167ce1e3e3bb2e1ab7643bb35759302ead55fb8c221ec70c85572bea8eb5b" },
 ]
 
 [package.metadata]
@@ -1513,7 +1513,7 @@ requires-dist = [
     { name = "attrs", specifier = "==23.2.0" },
     { name = "beautifulsoup4", specifier = "==4.12.2" },
     { name = "click", specifier = "==8.1.3" },
-    { name = "deepdiff", marker = "extra == 'mirror'", specifier = "==6.7.0" },
+    { name = "deepdiff", marker = "extra == 'mirror'", specifier = "==8.6.2" },
     { name = "fastapi", specifier = ">=0.104.1" },
     { name = "html2image", marker = "extra == 'to-image'" },
     { name = "jinja2", specifier = ">=3.1.6" },
@@ -1523,14 +1523,16 @@ requires-dist = [
     { name = "markupsafe", specifier = "==2.1.1" },
     { name = "pexpect", marker = "extra == 'test'", specifier = "==4.8.0" },
     { name = "pipeline-manager", extras = ["backend-communication"], marker = "extra == 'mirror'" },
+    { name = "pipeline-manager", extras = ["mirror"], marker = "extra == 'test'" },
     { name = "pipeline-manager", extras = ["to-image"], marker = "extra == 'docs'" },
     { name = "pipeline-manager-backend-communication", marker = "extra == 'backend-communication'", git = "https://github.com/antmicro/kenning-pipeline-manager-backend-communication.git" },
     { name = "playwright", marker = "extra == 'test'", specifier = "==1.64.0" },
     { name = "pyrsistent", specifier = "==0.18.1" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==7.4.0" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==0.21.1" },
+    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.3" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
     { name = "pytest-httpserver", marker = "extra == 'test'", specifier = "==1.0.10" },
     { name = "pytest-retry", marker = "extra == 'test'", specifier = "==1.7.0" },
+    { name = "pytest-xdist", marker = "extra == 'test'", specifier = "==3.8.0" },
     { name = "python-socketio", extras = ["asyncio-client"], specifier = ">=5.16.2" },
     { name = "referencing", specifier = "==0.29.0" },
     { name = "requests", specifier = ">=2.28.2" },
@@ -1544,7 +1546,7 @@ provides-extras = ["test", "docs", "backend-communication", "mirror", "to-image"
 [[package]]
 name = "pipeline-manager-backend-communication"
 version = "0.0.1"
-source = { git = "https://github.com/antmicro/kenning-pipeline-manager-backend-communication?rev=b39681ee785d7c094b78226243c44fe956e12d76#b39681ee785d7c094b78226243c44fe956e12d76" }
+source = { git = "https://github.com/antmicro/kenning-pipeline-manager-backend-communication?rev=e26894d9bdd97da49ad4d04f1ffd00c8de9024ca#e26894d9bdd97da49ad4d04f1ffd00c8de9024ca" }
 dependencies = [
     { name = "json-rpc" },
     { name = "uvloop" },
@@ -2304,8 +2306,8 @@ wheels = [
 
 [[package]]
 name = "topwrap"
-version = "0.8.1.dev72+g8ada28df6"
-source = { git = "https://github.com/antmicro/topwrap?rev=8ada28df663bc3329ba13e8df430c0a2703c232b#8ada28df663bc3329ba13e8df430c0a2703c232b" }
+version = "0.8.1.dev104+gdd557188d"
+source = { git = "https://github.com/antmicro/topwrap?rev=dd557188d733a36e5f782ab682d200509cdb286d#dd557188d733a36e5f782ab682d200509cdb286d" }
 dependencies = [
     { name = "amaranth" },
     { name = "amaranth-soc" },
